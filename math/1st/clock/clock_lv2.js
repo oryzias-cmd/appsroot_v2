@@ -11,6 +11,7 @@
     correctCount: 0,
     results: [],
     currentTarget: {hour:3, minute:30},
+    nextForcedTarget:null,
     settings: {minuteStep:5, sound:'on'},
     manualAssistState: {showHelpers:false,showSectors:false,showHighlight:false,showRedMarks:false},
     forcedAssistState: null,
@@ -77,6 +78,18 @@
     else if(step===1) minute=Math.floor(Math.random()*60);
     else minute=Math.floor(Math.random()*Math.floor(60/step))*step;
     return {hour,minute};
+  }
+
+  function takeEntryForcedTime(){
+    try{
+      const raw=sessionStorage.getItem('clockEntry:forcedFirstTime');
+      if(!raw)return null;
+      sessionStorage.removeItem('clockEntry:forcedFirstTime');
+      const v=JSON.parse(raw);
+      const hour=Number(v?.hour), minute=Number(v?.minute);
+      if(!Number.isFinite(hour)||!Number.isFinite(minute))return null;
+      return {hour,minute};
+    }catch(_){return null;}
   }
 
   function updateProblemText(){
@@ -179,7 +192,8 @@
     STATE.currentIndex=0;
     STATE.correctCount=0;
     STATE.results=[];
-    STATE.currentTarget=generateRandomTime();
+    STATE.currentTarget=takeEntryForcedTime()||generateRandomTime();
+    STATE.nextForcedTarget=null;
     STATE.answerSnapshot=null;
     STATE.reviewShowing='self';
     setLocked(false);
@@ -192,7 +206,8 @@
   }
 
   function nextQuestion(){
-    STATE.currentTarget=generateRandomTime();
+    STATE.currentTarget=STATE.nextForcedTarget||generateRandomTime();
+    STATE.nextForcedTarget=null;
     STATE.answerSnapshot=null;
     STATE.reviewShowing='self';
     setLocked(false);
@@ -204,12 +219,12 @@
     // 重要：針は「次へ」を押した瞬間の位置をそのまま引き継ぐ。
   }
 
-  function replaceCurrentQuestionForSettings(){
+  function replaceCurrentQuestionForSettings(target=null){
     if(typeof STATE.results[STATE.currentIndex]==='boolean'){
       if(STATE.results[STATE.currentIndex]) STATE.correctCount=Math.max(0,STATE.correctCount-1);
       STATE.results.splice(STATE.currentIndex,1);
     }
-    STATE.currentTarget=generateRandomTime();
+    STATE.currentTarget=target||generateRandomTime();
     STATE.answerSnapshot=null;
     STATE.reviewShowing='self';
     setLocked(false);
@@ -388,6 +403,14 @@
     $('#btnMenuBack')?.addEventListener('click',()=>{closeSettings();onBack();});
     $('#btnMenuSound')?.addEventListener('click',onSoundToggle);
     $('#settingsOverlay')?.addEventListener('click',e=>{if(e.target.id==='settingsOverlay')closeSettings();});
+
+    window.addEventListener('clock:teacher-time-set',e=>{
+      const d=e.detail||{};
+      const target={hour:Number(d.hour),minute:Number(d.minute)};
+      if(!Number.isFinite(target.hour)||!Number.isFinite(target.minute))return;
+      if(d.action==='next') STATE.nextForcedTarget=target;
+      else replaceCurrentQuestionForSettings(target);
+    });
 
     document.querySelectorAll('input[name="minuteStep"]').forEach(r=>r.addEventListener('change',e=>{
       if(!e.target.checked)return;

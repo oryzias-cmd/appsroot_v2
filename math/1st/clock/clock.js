@@ -30,6 +30,7 @@
     correctCount: 0,
     results: [],
     currentTarget: { hour: 3, minute: 30 },
+    nextForcedTarget: null,
 
     // ================================
     // 設定：おたすけ系 ＋ モード系
@@ -245,12 +246,25 @@
     return { hour, minute };
   }
 
+  function takeEntryForcedTime(){
+    try {
+      const raw=sessionStorage.getItem('clockEntry:forcedFirstTime');
+      if(!raw) return null;
+      sessionStorage.removeItem('clockEntry:forcedFirstTime');
+      const v=JSON.parse(raw);
+      const hour=Number(v?.hour), minute=Number(v?.minute);
+      if(!Number.isFinite(hour)||!Number.isFinite(minute)) return null;
+      return {hour,minute};
+    } catch (_) { return null; }
+  }
+
   function startQuiz() {
     STATE.currentIndex = 0;
     STATE.correctCount = 0;
     STATE.results = [];
     STATE.totalQuestions = readEntryQuestionCount();
-    STATE.currentTarget = generateRandomTime();
+    STATE.currentTarget = takeEntryForcedTime() || generateRandomTime();
+    STATE.nextForcedTarget = null;
     setAnswer('', '');
     resetReviewUI();
     resetAssistOverrides(true);
@@ -265,7 +279,8 @@ window.ClockState = window.ClockState || {};
 window.ClockState.minuteStep = STATE.settings.minuteStep;
   
   function nextQuestion() {
-    STATE.currentTarget = generateRandomTime();
+    STATE.currentTarget = STATE.nextForcedTarget || generateRandomTime();
+    STATE.nextForcedTarget = null;
     setAnswer('', '');
     resetReviewUI();
     resetAssistOverrides();
@@ -274,12 +289,12 @@ window.ClockState.minuteStep = STATE.settings.minuteStep;
     updateProgress();
   }
 
-  function replaceCurrentQuestionForSettings(){
+  function replaceCurrentQuestionForSettings(target=null){
     if (typeof STATE.results[STATE.currentIndex] === 'boolean') {
       if (STATE.results[STATE.currentIndex]) STATE.correctCount = Math.max(0, STATE.correctCount - 1);
       STATE.results.splice(STATE.currentIndex, 1);
     }
-    STATE.currentTarget = generateRandomTime();
+    STATE.currentTarget = target || generateRandomTime();
     setAnswer('', '');
     resetReviewUI();
     resetAssistOverrides();
@@ -407,6 +422,14 @@ function bindEvents() {
   });
   $('#btnCheckNext')?.addEventListener('click', onCheckNext);
   $('#settingsOverlay')?.addEventListener('click',(e)=>{ if(e.target.id==='settingsOverlay') closeSettings(); });
+
+  window.addEventListener('clock:teacher-time-set',(e)=>{
+    const d=e.detail||{};
+    const target={hour:Number(d.hour),minute:Number(d.minute)};
+    if(!Number.isFinite(target.hour)||!Number.isFinite(target.minute)) return;
+    if(d.action==='next') STATE.nextForcedTarget=target;
+    else replaceCurrentQuestionForSettings(target);
+  });
   window.addEventListener('clock:wordmode-changed',()=>{ applyAllText(); applyMinuteModeUI(); });
 }
 

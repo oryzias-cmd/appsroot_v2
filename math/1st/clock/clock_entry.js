@@ -89,6 +89,16 @@
     }));
     $('#entryWordMode')?.addEventListener('click',()=>{ window.ClockText?.nextMode?.(); applyText(); });
     window.addEventListener('clock:wordmode-changed',applyText);
+
+    // ENTRYでは、どちらの指定ボタンから開いても「1問目の指定」にする。
+    window.addEventListener('clock:teacher-time-set',(e)=>{
+      const d=e.detail||{};
+      const hour=Number(d.hour), minute=Number(d.minute);
+      if(!Number.isFinite(hour)||!Number.isFinite(minute)) return;
+      try { sessionStorage.setItem('clockEntry:forcedFirstTime',JSON.stringify({hour,minute})); }
+      catch (_) {}
+    });
+
     $('#settingsOverlay')?.addEventListener('click',(e)=>{ if(e.target.id==='settingsOverlay') closeSettings(); });
   });
 })();
