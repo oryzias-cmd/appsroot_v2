@@ -1,0 +1,116 @@
+/* common/shell/actionpanel.full.css
+   ActionPanel (JPN / vertical labels + circle hint)
+*/
+
+.action-panel{
+  width: 180px;
+  padding: 16px 20px;
+  border: 2px solid #B8B8B8;
+  border-radius: 18px;
+  background: transparent;
+
+  /* ★ボタン文字の基本＝ゴシック（Arial落ち防止） */
+  font-family:
+    "BIZ UDGothic",
+    "UD Digi Kyokasho",
+    "UD デジタル 教科書体",
+    "Meiryo",
+    "Yu Gothic UI",
+    "Yu Gothic",
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+
+  display: grid;
+  grid-template-rows: auto auto;
+  gap: 16px;
+  justify-items: center;
+}
+
+/* ===== main（こたえあわせ / つぎへ）===== */
+.btn-action-main{
+  width: 140px;
+  height: 140px;
+  border-radius: 999px;
+  border: 2px solid #B8B8B8;
+  background: #E6E6E6;     /* default: disabled */
+  color: #666;
+
+  /* ★2列：右→左（こたえ／あわせ） */
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+
+  cursor: default;
+  user-select: none;
+  -webkit-appearance: none;
+  appearance: none;
+  font-family: inherit;
+}
+
+.btn-action-main .btn-main-line{
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  white-space: nowrap;
+
+  font-size: 24px;
+  line-height: 1.05;
+  letter-spacing: 0.10em;
+
+  display: block;
+}
+
+/* ===== hint（国語：円）===== */
+.btn-hint{
+  width: 80px;
+  height: 80px;
+  border-radius: 999px;
+  border: 2px solid #B8B8B8;
+  background: #E6E6E6;     /* default: disabled */
+  color: #666;
+
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  white-space: nowrap;
+
+  font-size: 18px;
+  line-height: 1;
+  letter-spacing: 0.08em;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: default;
+  user-select: none;
+  -webkit-appearance: none;
+  appearance: none;
+  font-family: inherit;
+}
+
+/* enabled: orange (main) */
+.btn-action-main.is-orange{
+  background: #F59E0B;
+  border-color: #D97706;
+  color: #111;
+  cursor: pointer;
+}
+
+/* enabled: blue (hint) */
+.btn-hint.is-blue{
+  background: #3B82F6;
+  border-color: #2563EB;
+  color: #fff;
+  cursor: pointer;
+}
+
+/* disabled common */
+.btn-action-main.is-disabled,
+.btn-hint.is-disabled{
+  opacity: 0.55;
+  cursor: default;
+}

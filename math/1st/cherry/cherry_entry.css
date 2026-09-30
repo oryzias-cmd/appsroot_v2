@@ -1,0 +1,9 @@
+/* entry_base.css（テンプレの個別上書き用）
+   通常は空でOK。必要なときだけ、このファイルで例外を上書きする。
+*/
+
+/* 例：このアプリだけ余白を少し詰めたい場合
+#mainArea .setupcard-wrap{
+  padding: 10px 10px 18px;
+}
+*/

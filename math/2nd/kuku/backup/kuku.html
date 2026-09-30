@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>九九れんしゅう</title>
+<link href="https://fonts.cdnfonts.com/css/digital-7-mono" rel="stylesheet">
+<link href="https://fonts.cdnfonts.com/css/ds-digital" rel="stylesheet">
+<link rel="stylesheet" href="../../../common/shell/header.full.css">
+<link rel="stylesheet" href="../../../common/shell/setup.full.css">
+<link rel="stylesheet" href="./kuku.css" />
+</head>
+<body
+  data-appkey="kuku.quiz"
+  data-phase="setup"
+  data-eq-size="m"
+  data-ox-size="m"
+  data-color-mode="color"
+>
+  <!-- ▼ 全体ラッパー -->
+  <div class="app-root">
+
+    <!-- ▼ ヘッダースロット（レゴ化ヘッダー） -->
+    <div id="slot-header" data-slot="header"></div>
+
+    <!-- ▼ メイン -->
+    <main class="app-main">
+
+      <!-- ========== クイズ画面 ========== -->
+      <section id="quizPage" class="page page-quiz" hidden>
+        <!-- カウントダウン用オーバーレイ -->
+        <div id="countdownOverlay" class="countdown-overlay" hidden>
+          <div class="countdown-number" id="countdownNumber">3</div>
+        </div>
+
+        <div class="quiz-inner">
+          <!-- ★ 30びょうコース用のカウントダウン表示 -->
+          <div id="timerBanner" class="timer-banner" hidden></div>
+
+          <!-- 式行＋読み行をまとめる固定幅コンテナ -->
+          <div class="quiz-eq-wrapper">
+            <!-- 式行＋読み行の親パネル（共通幅で3分割をそろえる） -->
+            <div class="eq-panel">
+              <!-- Lv1〜式行：同じ3カラムグリッドの1行目・2行目として配置 -->
+              <div class="quiz-grid">
+                <!-- Lv1 のみ：読み行 -->
+                <div id="readingRow" class="reading-row">
+                  <!-- 左カラム：問題番号用（中身は空でOK） -->
+                  <div class="reading-index reading-col"></div>
+
+                  <!-- 中央カラム：式の読み（ご いち が）など -->
+                  <div class="reading-main reading-col"></div>
+
+                  <!-- 右カラム：答えの読み（ご など） -->
+                  <div class="reading-ans reading-col"></div>
+                </div>
+
+                <!-- 式＋問題番号 -->
+                <div class="equation-row">
+                  <div id="qIndexBadge" class="qindex-badge"></div>
+                  <div id="equationBox" class="equation-box"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ○×ボタン（Lv2／チャレンジ用） -->
+          <div id="judgeRow" class="judge-row">
+            <div class="judge-buttons">
+              <button type="button" id="btnJudgeOK" class="ox-btn ox-ok" aria-label="できた">
+                <!-- ○SVG -->
+                <svg viewBox="0 0 100 100" class="ox-svg">
+                  <circle cx="50" cy="50" r="35" fill="none" stroke-width="10" />
+                </svg>
+              </button>
+              <button type="button" id="btnJudgeNG" class="ox-btn ox-ng" aria-label="まちがえた">
+                <!-- ×SVG -->
+                <svg viewBox="0 0 100 100" class="ox-svg">
+                  <line x1="25" y1="25" x2="75" y2="75" stroke-width="10" />
+                  <line x1="75" y1="25" x2="25" y2="75" stroke-width="10" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========== 結果画面 ========== -->
+      <section id="resultPage" class="page page-result" hidden>
+        <div class="result-inner">
+          <h2 class="result-title" id="resultTitle">よく がんばったね！</h2>
+          <div class="result-main" id="resultMain"></div>
+          <div class="result-comment" id="resultComment"></div>
+
+          <div class="result-buttons">
+            <button type="button" id="btnReplay" class="btn-sub">
+              おなじ コースを もういちど
+            </button>
+            <button type="button" id="btnToSetup" class="btn-main">
+              せってい に もどる
+            </button>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- ▼ 九九用ヘッダー設定（レゴヘッダー＋ギアボタン） -->
+  <script>
+    window.AppShellOptions = window.AppShellOptions || {};
+    // 九九ではヘッダー内の⚙ボタンでページ内設定パネルを開閉するので
+    // settingsHref は指定しない（AppActions.openSettings を使用）
+
+    window.AppShellLayout = {
+      header:{ left:['backlink'], center:['title'], right:['settingsGear'] },
+      pbar:{ left:[], center:[], right:[] },
+      main:{ bottomCenter:[] },
+      footer:{ left:[], center:[], right:[] }
+    };
+  </script>
+
+  <!-- ▼ 共通レゴヘッダー＋ボタン庫 -->
+  <script src="../../../common/shell/kit.full.js"></script>
+  <script src="../../../common/shell/header.full.js"></script>
+  <script src="../../../common/shell/setup.full.js"></script>
+  <script src="../../../common/shell/result.full.js"></script>
+
+  <!-- ▼ 九九専用スクリプト -->
+  <script src="./kuku_readings.js"></script>
+  <script src="./kuku.js"></script>
+</body>
+</html>

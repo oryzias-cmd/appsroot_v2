@@ -1,0 +1,86 @@
+/* ============================================
+   card-menu.css（共通：一枚カード型）
+   教材メニューやランチャー用
+   ============================================ */
+
+.menu, .menu-grid, .cards-grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+  gap:20px;
+  width:90%;
+  max-width:900px;
+  margin:16px auto 40px;
+  box-sizing:border-box;
+  text-align:center;
+  font-family:
+    "BIZ UD教科書体",
+    "UD Digi Kyokasho N-R",
+    "YuKyokasho",
+    "Hiragino Kaku Gothic ProN",
+    "Yu Gothic",
+    "Noto Sans JP",
+    system-ui,
+    sans-serif;
+}
+
+/* カード本体 */
+.card-btn{
+  /* カード自体は固定高さのボックス */
+  min-height:var(--card-height,160px);
+  box-sizing:border-box;
+  border:2px solid #b4b9bf;
+  border-radius:var(--radius,16px);
+  background:#fff;
+  box-shadow:var(--shadow,0 1px 2px rgba(0,0,0,0.05));
+  color:#000;
+  text-decoration:none;
+
+  /* 内側余白 */
+  padding:16px;
+
+  /* 中身レイアウト用に「縦並びのflexコンテナ」にする */
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+
+  /* 行間や折り返し */
+  line-height:1.5;
+  font-size:var(--desc-size,0.95rem);
+  white-space:normal;
+  word-break:break-word;
+}
+
+/* ▼ 上段タイトル（第○弾）
+   - カードのいちばん上に固定配置する感じで扱いたいので、
+     「幅100%で上に置いて、下の本文とは別レイヤー扱い」にする */
+.card-btn .card-head{
+  font-size:var(--title-size,1.4rem);
+  font-weight:600;
+  line-height:1.4;
+  text-align:center;
+
+  /* 上に固定っぽく見せるためマージンだけ */
+  margin-bottom:8px;
+  flex:0 0 auto; /* 高さは内容ぶんだけ、伸びない */
+}
+
+/* ▼ 本文ブロック（説明テキスト）
+   - ここを“残りの領域”として縦センタリングする */
+.card-btn .card-body{
+  flex:1 1 auto;                /* 余った縦スペースをこの中に割り当てる */
+  display:flex;
+  align-items:center;           /* ←この行が「残った範囲で縦センター」 */
+  justify-content:center;
+  text-align:center;
+  font-size:var(--desc-size,0.95rem);
+  line-height:1.5;
+  white-space:normal;
+  word-break:break-word;
+}
+
+/* ホバー時（PC操作時のみ） */
+.card-btn:hover {
+  background:var(--hover-bg,#eef5ff);
+  box-shadow:var(--shadow-hover,0 3px 8px rgba(0,0,0,0.15));
+  transition:box-shadow 0.2s ease, background 0.2s ease;
+}

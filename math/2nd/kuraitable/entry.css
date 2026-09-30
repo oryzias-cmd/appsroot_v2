@@ -1,0 +1,55 @@
+/* entryはSetupCardを出すだけ。余計な装飾は最小に。 */
+html, body{
+  height: 100%;
+}
+:root{
+  /* ★教科書体の見た目中心補正（entry用・将来保険） */
+  --kyo-shift-y: 0.06em;
+}
+
+body{
+  margin: 0;
+  overflow-x: hidden;
+  overflow-y: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ヘッダーは上、mainは残り全部 */
+#slot-header{
+  flex: 0 0 auto;
+  display: block;
+  min-height: 56px;            /* header.full.css が効かなくても最低確保 */
+}
+#mainArea{
+  flex: 1 1 auto;
+  min-height: 0;               /* ★flex内のはみ出し防止（重要） */
+  overflow: hidden;
+}
+
+/* ========================================
+   教材ルール：横画面前提
+   縦向きでは使用不可を明示
+======================================== */
+@media (orientation: portrait){
+  body::before{
+    content: "よこにして つかってね";
+    position: fixed;
+    inset: 0;
+    background: #ffffff;
+    display: grid;
+    place-items: center;
+    font-size: 1.5rem;
+    font-weight: 700;
+    z-index: 9999;
+  }
+}
+/* ========================================
+   最終保険（通常はOFF）
+======================================== */
+@media (max-width: 1024px){
+  .app{
+    /* transform: scale(0.95); */
+    /* transform-origin: top left; */
+  }
+}

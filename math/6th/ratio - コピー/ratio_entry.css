@@ -1,0 +1,84 @@
+/* ratio_entry.css
+   tape_entry.css と同じ構成
+*/
+
+.entry-mount{
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 10px 14px 18px;
+}
+
+@media (max-width: 900px){
+  .entry-mount{ max-width: 980px; }
+}
+
+/* 未選択などのとき：いやいや */
+.setupcard-block.is-shake{
+  animation: entryShake 0.45s ease-in-out 1;
+}
+
+@keyframes entryShake{
+  0%{ transform: translateX(0); }
+  15%{ transform: translateX(-8px); }
+  30%{ transform: translateX(7px); }
+  45%{ transform: translateX(-6px); }
+  60%{ transform: translateX(5px); }
+  75%{ transform: translateX(-3px); }
+  100%{ transform: translateX(0); }
+}
+
+/* ===== ratio entry：右列下に開始ボタンを置く ===== */
+
+.ratio-entry-right-column{
+  display: flex !important;
+  flex-direction: column;
+  height: 100%;
+}
+
+.ratio-entry-action-dock{
+  margin-top: auto;
+  display: grid;
+  grid-template-columns: 1fr;
+  align-items: center;
+  padding-top: 18px;
+}
+
+.ratio-entry-action-dock .ratio-entry-start-btn{
+  width: 100%;
+  min-width: 0;
+  height: 64px;
+  border-radius: 999px;
+  font-size: 26px;
+  font-weight: 900;
+}
+
+/* 元の下部ボタン置き場が空になったとき、余白をできるだけ小さくする */
+.entry-actions:empty,
+.entry-start:empty,
+.entry-footer:empty,
+.setupcard-actions:empty{
+  display: none !important;
+}
+
+/* 学校環境向け：全体の上下余白を少し圧縮 */
+.entry-mount{
+  padding-top: 6px;
+  padding-bottom: 8px;
+}
+
+/* ===== タイムアタック選択時：中央カラムと5問を無効化 ===== */
+
+.ratio-entry-disabled-column{
+  opacity: 0.42;
+  filter: grayscale(0.9);
+}
+
+.ratio-entry-disabled-block{
+  pointer-events: none;
+}
+
+.ratio-entry-disabled-option{
+  opacity: 0.36;
+  filter: grayscale(1);
+  pointer-events: none;
+}

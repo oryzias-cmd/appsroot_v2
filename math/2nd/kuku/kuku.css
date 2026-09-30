@@ -1,0 +1,984 @@
+:root{
+  /* 共通ヘッダー帯の背景色
+算数アプリ：--header-bg: #eaf6ff;（今まで通りの水色）
+理科アプリ： --header-bg: （例えば）#e0f7e0; みたいに緑を指定
+社会アプリ： --header-bg: （例えば）#fff6cc; みたいに黄色を指定） */
+  --header-bg: #eaf6ff;
+
+  /* 九九クイズ用：式行・読み行の3カラム幅 */
+  --kuku-col-num: 4.5rem;                 /* 左カラム（問題番号）の幅（remで安定化） */
+
+    /* 式と答え枠用の基準サイズ */
+  --kuku-eq-font-min: 72px;
+  --kuku-eq-font-max: 140px;
+  --kuku-eq-font: clamp(var(--kuku-eq-font-min), 10vw, var(--kuku-eq-font-max));
+  --kuku-ans-box-scale: 1.8;
+
+    /* 左カラム：問題番号用（画面幅に応じて60〜90px） */
+  --kuku-col-index: clamp(60px, 6vw, 90px);
+
+  /* 答えの赤枠1個ぶんの一辺の長さ（画面幅に応じて） */
+  --kuku-ans-box: clamp(120px, 13vw, 160px);
+
+  /* 右カラム全体の幅＝赤枠の2倍（左右に同じくらい余白） */
+  --kuku-col-ans: calc(var(--kuku-ans-box) * 2);
+
+  /* 式＋読み全体の横幅（青い箱の共通幅：画面に応じて 720〜1100px） */
+  --kuku-eq-width: clamp(720px, 80vw, 1100px);
+
+  /* （この下に元からある --mm-scale などの変数が続いていてOK） */
+  --bg-main: #ffffff;
+  --border-soft: #dddddd;
+
+  /* 段ボタンなど */
+  --btn-dan-bg: #e6f2ff;
+  --btn-dan-border: #3f82d4;
+
+  --btn-level-bg: #fff7d6;
+  --btn-level-border: #d4a63f;
+
+  --btn-course-bg: #e4f8e4;
+  --btn-course-border: #3f9d5a;
+
+  --btn-selected-bg: #3f82d4;
+  --btn-selected-color: #ffffff;
+
+  --btn-danger: #e53935;
+  --btn-danger-text: #ffffff;
+
+  --eq-font: "UD Digi Kyokasho N-R","BIZ UDMincho","Yu Mincho","Hiragino Mincho ProN","serif";
+  --ui-font: "BIZ UDPGothic","Yu Gothic UI","Hiragino Sans","Meiryo","sans-serif";
+
+  --eq-base-size: 4.5rem;
+  --eq-small-size: 0.55em;
+}
+
+/* スケール切替（JSから data-eq-size を変更） */
+body[data-eq-size="s"]{
+  --eq-base-size: 3.4rem;
+}
+body[data-eq-size="l"]{
+  --eq-base-size: 5.4rem;
+}
+
+/* ○×ボタンのスケール */
+body[data-ox-size="m"] .ox-btn{
+  --ox-scale: 1;
+}
+body[data-ox-size="l"] .ox-btn{
+  --ox-scale: 1.3;
+}
+
+/* 色モード切替 */
+body[data-color-mode="color"]{
+  --ans-color: #e53935;
+  --timer-warn: #e53935;
+  --eq-color: #222222;
+}
+body[data-color-mode="mono"]{
+  --ans-color: #000000;
+  --timer-warn: #000000;
+  --eq-color: #111111;
+}
+
+/* 全体 */
+*,
+*::before,
+*::after{
+  box-sizing: border-box;
+}
+
+html,body{
+  margin:0;
+  padding:0;
+  height:100%;
+}
+
+body{
+  background:var(--bg-main);
+  font-family:var(--ui-font);
+  color:#111;
+}
+
+.app-root{
+  height:100vh;          /* ★ 画面ちょうどの高さに固定 */
+  min-height:100vh;      /* 念のため残しておく */
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;       /* ★ 縦横のスクロールを基本的に出さない */
+}
+
+/* 設定パネル */
+.settings-panel{
+  position:fixed;
+  top:44px;
+  right:8px;
+  z-index:20;
+}
+
+.settings-inner{
+  background:#ffffff;
+  border:1px solid #cccccc;
+  border-radius:12px;
+  padding:10px 12px;
+  box-shadow:0 4px 12px rgba(0,0,0,0.15);
+  min-width:210px;
+}
+
+.settings-section + .settings-section{
+  margin-top:8px;
+}
+
+.settings-label{
+  font-size:0.85rem;
+  margin-bottom:4px;
+}
+
+.settings-buttons{
+  display:flex;
+  flex-wrap:wrap;
+  gap:4px;
+}
+
+.settings-buttons button{
+  flex:1 1 auto;
+  font-size:0.8rem;
+  padding:4px 6px;
+  border-radius:999px;
+  border:1px solid #bbbbbb;
+  background:#f7f7f7;
+  cursor:pointer;
+}
+
+.settings-buttons button.is-selected{
+  background:#3f82d4;
+  color:#fff;
+  border-color:#3f82d4;
+}
+
+.settings-close-row{
+  margin-top:8px;
+  text-align:right;
+}
+
+.settings-close-row button{
+  font-size:0.8rem;
+  padding:4px 10px;
+}
+
+/* メイン */
+.app-main{
+  flex: 1 1 auto;
+  display:flex;
+  position: relative;   /* ← 結果ページをこの中で絶対配置するため */
+}
+
+/* 共通：ページ */
+.page{
+  flex:1 1 auto;
+  padding:10px 0 10px 10px;  /* 上 右 下 左（右だけ 0 にする） */
+}
+
+/* セットアップ画面レイアウト */
+.page-setup{
+  display:flex;
+  flex-direction:column;
+  /* ページ全体の上下のスキマを少し広めに */
+  gap:14px;
+}
+
+.setup-layout{
+  display:grid;
+  /* 3つのパネルの横幅をほぼ同じにする */
+  grid-template-columns: 1fr 1fr 1fr;
+  gap:32px;            /* ← 以前の約2倍に広げる */
+  max-width: 980px;    /* 全体の最大幅をしぼる */
+  margin: 0 auto;      /* 画面中央に配置 */
+}
+
+.setup-panel{
+  border:1px solid var(--border-soft);
+  border-radius:12px;
+  padding:8px;
+}
+
+/* パネルのタイトル（だん／コース／レベル） */
+.panel-title{
+  margin:16px 0 32px;  /* 上にも余白を足してバランスを取る */
+  font-size:1.6rem;
+  text-align:center;
+}
+
+/* 段ボタン */
+.dan-grid{
+  display:grid;
+  grid-template-columns: repeat(3, 1fr);
+  /* 横は今のまま、縦のすき間だけ広げる */
+  column-gap:12px;
+  row-gap:24px;
+}
+
+.dan-grid button{
+  /* 正方形：幅に合わせて高さを決める */
+  width:72px;
+  aspect-ratio:1 / 1;
+  margin:0 auto;
+
+  border-radius:8px;
+  border:1px solid var(--btn-dan-border);
+  background:var(--btn-dan-bg);
+  font-size:1.25rem;
+  cursor:pointer;
+
+  /* 他の button の「幅100%」などに引っ張られないように */
+  flex:0 0 auto;
+}
+
+.dan-grid button.is-selected{
+  background:var(--btn-selected-bg);
+  color:var(--btn-selected-color);
+}
+
+/* 「ぜんぶ」「けす」ボタン */
+.dan-tools{
+  margin-top:24px;     /* ← 上の余白をグッと広く（行間と同じくらい） */
+  display:flex;
+  gap:10px;
+  justify-content:center;
+}
+
+.dan-tools button{
+  /* パネルいっぱいに広がらないように幅をしぼる */
+  flex:0 0 auto;
+  min-width:120px;
+  padding:10px 0;
+
+  border-radius:999px;
+  border:1px solid var(--btn-dan-border);
+  background:#ffffff;
+  cursor:pointer;
+  height:56px;
+  font-size:1.1rem;
+}
+
+/* レベル */
+.level-column{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  /* コースと同じように中央寄せにして幅をそろえる */
+  align-items:center;
+}
+
+.level-column button{
+  padding:12px 8px;
+  border-radius:8px;
+  border:1px solid var(--btn-level-border);
+  background:var(--btn-level-bg);
+  font-size:1.2rem;
+  cursor:pointer;
+  text-align:center;
+  height:64px;
+
+  width:100%;
+  max-width:240px;   /* コースボタンと同じ横幅に制限 */
+}
+
+.level-column .level-spacer{
+  height:6px;
+}
+
+.level-column button.is-selected{
+  background:var(--btn-selected-bg);
+  color:var(--btn-selected-color);
+}
+
+/* コース */
+.course-column{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  align-items:center;          /* 中央寄せで横幅をしぼる */
+}
+
+.course-column button{
+  padding:8px 12px;
+  border-radius:8px;
+  border:1px solid var(--btn-course-border);
+  background:var(--btn-course-bg);
+  font-size:1.15rem;
+  cursor:pointer;
+  text-align:center;
+  height:56px;
+  width:100%;
+  max-width:240px;             /* レベルと同じ横幅に制限 */
+}
+
+.course-column button.is-selected{
+  background:var(--btn-selected-bg);
+  color:var(--btn-selected-color);
+}
+
+/* スタート */
+.setup-start-row{
+  display:flex;
+  justify-content:center;
+  margin-top:0;   /* コースパネルとの間隔を広げる */
+}
+
+.btn-start{
+  height:60px;       /* 背を高く固定 */
+  border-radius:999px;
+  border:2px solid var(--btn-danger);
+  background:var(--btn-danger);
+  color:var(--btn-danger-text);
+  cursor:pointer;
+  /* もう2回り大きく：幅・高さ・フォントだけ上書き */
+  min-width: 280px;        /* 横幅アップ */
+  min-height: 70px;        /* 縦を少し高く */
+  padding: 18px 48px;      /* 内側の余白も拡大 */
+
+  font-size: 2rem!important;       /* 文字を約2段階アップ */
+  font-weight: 600;
+}
+.btn-start:disabled{
+  opacity:0.4;
+  cursor:default;
+}
+
+/* =======================
+   九九クイズ：クイズ画面
+   - ページ全体と内側レイアウト
+   ======================= */
+.page-quiz{
+  position:relative;
+  padding-right: 0;   /* ★ 共通 .page の右10pxを打ち消す */
+}
+
+.quiz-inner{
+  height:100%;
+  width:100%;             /* ★ 画面幅いっぱいを使う */
+  display:flex;
+  flex-direction:column;
+  align-items:center;     /* ★ 中身（quiz-grid）を左右中央に */
+  justify-content:center;
+  gap:14px;
+}
+
+/* 式行＋読み行の親パネル：幅を固定して2行とも同じ幅にする */
+.eq-panel{
+  width: var(--kuku-eq-width);   /* ★ 共通の横幅（可変 720〜1100px） */
+  margin: 0 auto;
+  display:flex;
+  flex-direction:column;
+  gap:10px;                      /* 読み行と式行のあいだのスキマ */
+}
+
+/* 式行＋読み行の外側コンテナ：幅を固定して中央に配置 */
+.quiz-eq-wrapper{
+  width: var(--kuku-eq-width);   /* ★ 式・読み全体の共通幅 */
+  margin: 0 auto;
+  display:flex;
+  flex-direction:column;
+  gap:10px;                      /* 読み行と式行の間隔 */
+}
+
+/* 読み行 */
+.reading-row{
+  min-height:1.8em;
+  font-family:var(--eq-font);
+  font-size:1.2rem;
+  text-align:center;
+  cursor:pointer;
+}
+
+.qindex-badge{
+  min-width:50px;
+  text-align:left;
+  padding-left:0.25em;
+  font-size:0.9rem;
+
+  /* ▼ 式の高さに合わせて、今より少し上に */
+  transform: translateY(-0.7em);
+}
+
+/* 答えマス：文字は式と同じ高さ、赤枠だけ少し上に見せる
+   - 通常問題：右カラムの赤枠 (#equationAns .eq-ans)
+   - 穴あき　：式中の赤枠   (#equationBox .eq-hole)
+   を完全に同じサイズ・見た目にそろえる */
+#equationAns .eq-ans,
+#equationBox .eq-hole{
+  position:relative;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+
+  /* 枠のサイズ（式フォントに比例） */
+  width:  var(--kuku-ans-box);
+  height: var(--kuku-ans-box);
+  aspect-ratio: 1 / 1;
+  box-sizing:border-box;
+
+  /* 式とまったく同じフォント・サイズにそろえる */
+  font-family: var(--eq-font);
+  font-size: var(--kuku-eq-font);
+  line-height: 1;
+
+  white-space:nowrap;
+  cursor:pointer;
+
+  /* 赤枠の左右に半分の余白を付ける（通常と穴あき共通） */
+  margin-left: calc(var(--kuku-ans-box) / 2);
+  margin-right: calc(var(--kuku-ans-box) / 2);
+}
+
+/* 赤枠だけを描画して、ほんの少し上にずらす（右枠＆穴あき共通） */
+#equationAns .eq-ans::before,
+#equationBox .eq-hole::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  border:6px solid #e53935;
+  border-radius:22px;
+  box-sizing:border-box;
+  transform: translateY(-0.07em);
+}
+
+/* 答えが出たときの文字色（通常＆穴あき共通） */
+#equationAns .eq-ans.revealed,
+#equationBox .eq-hole.revealed{
+  color:#e53935;
+}
+
+/* 色モード切り替え用（既存ロジックそのまま） */
+.equation-box .eq-ans.revealed{
+  border-color:var(--ans-color);
+  color:var(--ans-color);
+}
+
+.equation-box{
+  font-family:var(--eq-font);
+  font-size:var(--eq-base-size);
+  color:var(--eq-color);
+  display:flex;
+  align-items:baseline;
+
+  /* ★ 式全体を中央寄せに戻す（7×2＝ のブロックをカラム中央へ） */
+  justify-content:center;
+
+  /* ▼ 文字要素どうしのすきま */
+  gap:0;  /* ステージ3：いったん 0 にして完全に詰める */
+}
+
+/* 式の各要素（数字・記号・赤枠と高さをそろえる） */
+.equation-box .eq-part{
+  font-size: var(--kuku-eq-font);
+  line-height:1;
+
+  /* ▼ 縦方向の中央揃えのため flex にする */
+  display:inline-flex;
+  align-items:center;      /* ← これが縦センタリングの核心 */
+  justify-content:center;  /* 記号の位置も安定する */
+
+  margin:0;
+}
+
+/* ○×ボタン列（式パネルと同じ幅で右寄せ） */
+/* 通常コース：○×行は3カラムグリッド（右カラムの下に配置） */
+.judge-row{
+  width: var(--kuku-eq-width);
+  margin: 24px auto 0;
+  display:grid;
+  /* 左：問題番号／中：式／右：答えカラム
+     → 上の .quiz-grid と同じ 2.0 : 2.0 にそろえる */
+  grid-template-columns:
+    var(--kuku-col-index)
+    minmax(0, 2.0fr)
+    minmax(var(--kuku-col-ans), 2.0fr);
+  align-items:center;
+}
+
+/* ○×ボタンは3列目（右カラム）の中で横並び */
+.judge-row .judge-buttons{
+  /* 右カラム（赤枠のカラム）の下に配置 */
+  grid-column: 3 / 4;
+  justify-self:center;
+
+  display:flex;
+  flex-direction:row;
+  justify-content:center;
+  align-items:center;
+  gap:24px;
+
+  /* ★ 光学的な微調整：赤枠の中心にそろうように、少しだけ左へ寄せる */
+  transform: translateX(10px);
+}
+
+/* 穴あきコース専用：○×を式中の赤枠の真下で横並びにする */
+#quizPage[data-kind="hole"] .judge-buttons{
+  display: flex;            /* 念のため flex を強制 */
+  flex-direction: row;      /* ★ 縦並び → 横並び */
+  justify-content: center;  /* ★ 式の中央にそろえる */
+  align-items: center;      /* 縦方向も中央 */
+  gap: 24px;                /* ○×のあいだのすき間（お好みで調整可） */
+}
+
+/* ===========================
+   穴あきコース専用：○×レイアウト
+   - 式の真下で横並び＆中央寄せ
+   - 既存の .judge-row の grid 設定を flex で上書き
+   =========================== */
+
+.ox-btn{
+  /* 完全な円になるようにアスペクト比指定＋固定幅 */
+  width:82px;
+  aspect-ratio:1 / 1;
+  border-radius:50%;
+  border:2px solid #555;
+  background:#f7f7f7;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  cursor:pointer;
+  transform:scale(var(--ox-scale, 1));
+
+  /* flex で横に引き伸ばされないようにする */
+  flex:0 0 auto;
+}
+.ox-btn .ox-svg{
+  width:70%;
+  height:70%;
+  stroke:#333;
+}
+/* ○＝赤，×＝青 */
+.ox-ok .ox-svg circle{
+  stroke:#e53935;
+}
+.ox-ng .ox-svg line{
+  stroke:#1565c0;
+}
+
+/* 結果画面 */
+.page-result{
+  /* ★ ヘッダー＋セットアップ／クイズと同じ流れに乗せる */
+  position: relative;
+  inset: auto;
+
+  display:flex;
+  align-items:center;      /* 上下まんなか */
+  justify-content:center;  /* 左右まんなか */
+  padding:16px;
+}
+
+.result-inner{
+  max-width:420px;
+  width:100%;
+  border-radius:16px;
+  border:1px solid var(--border-soft);
+  padding:16px 16px 20px;
+  text-align:center;
+}
+
+.result-title{
+  margin-top:0;
+  margin-bottom:8px;
+  font-family:var(--eq-font);
+}
+
+.result-main{
+  font-size:1.1rem;
+  margin-bottom:4px;
+}
+
+.result-comment{
+  font-size:0.9rem;
+  color:#555;
+  margin-bottom:14px;
+}
+
+.result-buttons{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+
+/* ▼ 結果ボタン：初期状態はどちらも白（未選択に見せる） */
+.result-buttons .btn-main,
+.result-buttons .btn-sub{
+  width: 100%;
+  height: 64px;                  /* すでに同じ指定があっても OK：こちらが上書き */
+  border-radius: 999px;
+  border: 2px solid #2b78e4;     /* 青い枠 */
+  background: #ffffff;           /* 塗りつぶさない */
+  color: #222222;
+  font-size: 1.2rem;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  transition: background 0.15s ease, color 0.15s ease,
+              box-shadow 0.1s ease, transform 0.1s ease;
+}
+
+/* ホバー・フォーカス時だけ青く光らせる */
+.result-buttons button:hover,
+.result-buttons button:focus-visible{
+  background: #2b78e4;
+  color: #ffffff;
+  box-shadow: 0 0 0 2px rgba(43,120,228,0.18);
+  transform: translateY(1px);
+  outline: none;
+}
+
+
+
+.btn-main,
+.btn-sub{
+  padding:10px 12px;
+  border-radius:999px;
+  border:1px solid #444;
+  cursor:pointer;
+}
+.btn-main{
+  background:#3f82d4;
+  color:#fff;
+  border-color:#3f82d4;
+}
+.btn-sub{
+  background:#f7f7f7;
+}
+
+/* カウントダウンオーバーレイ */
+.countdown-overlay{
+  position:absolute;
+  inset:0;
+  background:rgba(255,255,255,0.8);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:10;
+}
+
+.countdown-number{
+  font-family:var(--eq-font);
+  font-size:5rem;
+}
+
+/* ================================
+   カウントダウン表示のスタイル上書き
+   ================================ */
+#countdownOverlay{
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  background: rgba(255,255,255,0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+/* カウントダウンオーバーレイ内の数字（03,02,01,GO 用） */
+#countdownNumber{
+  font-family: "Digital-7 Mono", "DS-Digital", "Consolas", monospace;
+  font-weight: 700;
+  font-size: clamp(56px, 10.5vw, 110px);
+  letter-spacing: 0.16em;
+  color: #28f0ff;
+
+  /* 真ん中にドンと表示するだけのシンプル版 */
+  text-align: center;
+}
+
+/* ================================
+   クイズ画面：式と読みの見た目調整
+   ================================ */
+
+/* 式本体（5×1＝） */
+#equationBox{
+  display:flex;
+
+  /* ▼ 式の数字・記号・赤枠をすべて縦中央にそろえる */
+  align-items:center;        /* baseline → center に変更 */
+
+  /* ▼ 中央カラム内では左詰め（通常の九九と同じ感覚） */
+  justify-content:flex-start;
+
+  gap:0;
+
+  /* ステージ3：式の実際のサイズは .equation-box .eq-part（--kuku-eq-font）が担当。
+     ここではフォントの種類と色だけを管理し、サイズは 1em ベースに統一する。 */
+  font-family:"UD デジタル 教科書体 N-R","UD Digi Kyokasho N-R","BIZ UDGothic",system-ui,sans-serif;
+  font-size:1em;
+  color:#111;
+}
+
+/* 答え（□／答え）はタップできる見た目に */
+#equationBox .eq-ans{
+  cursor:pointer;
+}
+
+/* 式用・答え用はふんわりした楕円ボックスに（Q2=B） */
+#readingRow .reading-main,
+#readingRow .reading-ans{
+  background:#f7f7f7;
+  border-radius:999px;
+  padding:0.35em 0.9em;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  font-size:1.1em;
+  white-space:nowrap;   /* ★ 「よん じゅう ご」を1行に固定して改行させない */
+
+  /* 読み行と式行の間の縦スペース */
+  margin-bottom: clamp(0.6em, 2vh, 1.2em);
+
+  /* ★ 中身が空でも楕円の高さを一定に保つ（式行とのバランス用） */
+  min-height: calc(1em + 0.8em);  /* 1行分の高さ + 上下パディング相当 */
+}
+
+/* 左カラム（読み行の問題番号用）はボックス無し・パディングも無し */
+#readingRow .reading-index{
+  padding:0;
+  background:none;
+}
+
+/* 読みが不要のときは行ごと隠す（hidden 属性を優先） */
+.reading-row[hidden]{
+  display:none !important;
+}
+
+/* 問題番号バッジと式の間隔：大きい数字1つ分くらい開ける */
+#qIndexBadge{
+  display:inline-block;
+  margin-right:1.6em;   /* さらに広めに（全角数字2文字ぶんくらい） */
+  font-size:0.9rem;
+  color:#666;
+}
+
+/* ================================================
+   九九クイズ：読み行＋式行の3カラムレイアウトまとめ
+   - .quiz-grid   … 左：問題番号／中：式／右：答えカラム
+   - #equationAns … 右カラム内で赤枠を中央配置
+   - .reading-row / .equation-row … 行コンテナ（display:contents）
+   =============================================== */
+
+/* 読み行＋式行の2行をまとめて管理する3カラムグリッド */
+/* 式＋答えの2行レイアウト全体 */
+.quiz-grid{
+  display:grid;
+  /* 左：問題番号／中：式／右：答えカラム */
+  grid-template-columns:
+    var(--kuku-col-index)                 /* 左：問題番号（固定幅） */
+    minmax(0, 2.0fr)                      /* 中央：式（少しだけ狭く） */
+    minmax(var(--kuku-col-ans), 2.0fr);   /* 右：答え（読み7文字ぶんを確保） */
+
+  column-gap: 1.0vw;
+  row-gap: 0.8rem;
+  align-items:center;
+
+  /* 式＋読み全体の青い箱と同じ幅にそろえる（可変 720〜1100px） */
+  width: var(--kuku-eq-width);
+  margin: 0 auto;              /* ★ 画面中央に配置 */
+}
+
+/* 右カラムの中で赤枠を中央寄せ */
+#equationAns{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+/* 各行は「中身だけをグリッドに流し込む」ラッパーにする */
+.reading-row,
+.equation-row{
+  display:contents;
+  font-size: var(--eq-base-size);   /* ★ 式と答えのサイズの“基準” */
+}
+
+/* 読み行 固有の装飾（フォント・余白など） */
+#readingRow{
+  font-family:"UD デジタル 教科書体 N-R","UD Digi Kyokasho N-R","BIZ UDGothic",system-ui,sans-serif;
+  font-size:min(5.6vh, 4.1vw);   /* 式よりひと回り大きく */
+  color:#333;
+}
+
+/* 右カラム（答え）の中身を中央寄せにする */
+.equation-ans,
+.reading-ans{
+  display:flex;
+  align-items:center;
+  justify-content:center;   /* ★ カラム中央に配置（左右均等の余白） */
+  text-align:center;
+  width:100%;
+}
+
+/* クイズ画面ではテキスト選択・キャレット表示を禁止 */
+#quizPage{
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* ================================
+   穴あき九九：赤枠＆○×の最終レイアウト
+   - 赤枠は必ず正方形
+   - ○×は式の真下で横並び＆中央寄せ
+   ================================ */
+
+   /* 穴あき問題だけ：＝の右に半角1文字ぶんのスペースを入れる */
+#equationBox .eq-part.eq-equal{
+  margin-right: 0.5em;
+}
+
+/* 2) 穴あきのときだけ ○× 行を flex に切り替え */
+#quizPage[data-kind="hole"] .judge-row{
+  width: var(--kuku-eq-width);
+  margin: 24px auto 0;
+  display:flex;               /* 穴あきのときは judge-row 全体を flex 行に */
+  flex-direction:row;
+  justify-content:center;     /* 式の真下で中央寄せ */
+  align-items:center;
+  gap:24px;                   /* ○×のあいだのすき間 */
+}
+
+/* 念のため ○× ボタン側も flex にしておく */
+#quizPage[data-kind="hole"] .judge-row .ox-btn{
+  display:flex;
+}
+
+/* ▼ 結果画面の見た目を強調（タイトル・本文・ボタン） ▼ */
+
+/* 結果ページ全体を縦横中央寄せ */
+.page-result{
+  align-items: center;
+  justify-content: center;
+}
+
+/* カード本体の最大幅など */
+.result-inner{
+  max-width: 600px;          /* ← パネルを少しだけ広げる */
+  width: min(100%, 600px);   /* 画面が狭いときは 100% まで */
+}
+
+/* 1) タイトルを大きく（ほぼ2倍イメージ） */
+.result-title{
+  font-size: clamp(32px, 4.6vw, 48px);
+  margin-bottom: 16px;
+  word-break: keep-all;   /* 文節の切れ目（スペースなど）だけで改行 */
+}
+
+/* 3) 本文の行間を広めに・文字も少し大きく */
+.result-main,
+.result-comment{
+  font-size: clamp(18px, 2.4vw, 22px);
+  line-height: 1.8;
+  word-break: keep-all;   /* 「。」と <br> 以外では勝手に折り返させない */
+}
+
+/* 4) 5) ボタンを縦に並べて、間隔＆高さUP */
+.result-buttons{
+  margin-top: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;          /* ボタン同士のすき間を広く */
+}
+
+/* 4) 6) ボタン自体を押しやすく＆文字も大きく */
+.result-buttons .btn-main,
+.result-buttons .btn-sub{
+  min-height: 56px;   /* 高さアップ */
+  padding: 14px 24px;
+  font-size: clamp(18px, 2.4vw, 22px);
+}
+
+/* ================================
+   30びょうコース用 デジタルタイマー表示
+   ヘッダーの少し下・中央に固定配置（大きめ）
+================================ */
+/* ================================
+   30びょうコース用 デジタルタイマー表示
+   ヘッダーの少し下・中央に固定配置（大きめ）
+================================ */
+#timerBanner{
+  position:absolute;
+  top: 80px;                 /* ヘッダーと式のあいだ／やや上寄り */
+  left:50%;
+  transform:translateX(-50%);
+  z-index:15;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  /* 黒いデジタル表示っぽい箱 */
+  padding:10px 28px;
+  min-width: clamp(140px, 26vw, 260px);
+  background:#02070b;
+  border-radius:18px;
+  box-shadow:0 6px 14px rgba(0,0,0,0.45);
+
+  /* 中の数字の基本色（30びょうタイマー用） */
+  color:#28f0ff;
+}
+/* 30びょうタイマーの数字（Digital フォントで表示） */
+#timerBanner .digital-number{
+  font-family: "Digital-7 Mono", "DS-Digital", "Consolas", monospace;
+  font-weight:700;
+  font-size:clamp(32px, 5vw, 64px);
+  letter-spacing:0.16em;
+}
+
+/* 残り少ないときの警告色（JS から .warn が付く前提）
+   ─ 数字そのものの色は .digital-number 共通ルールの color がベースで、
+      .warn 時だけここでまとめて上書きされる想定です。 */
+#timerBanner.warn{
+  color:#ff5252;
+}
+
+/* hidden 属性が付いたときは完全に消す（既にあればそのままでOK） */
+#timerBanner[hidden]{
+  display:none !important;
+}
+
+/* タブレットなど縦長画面での微調整：箱の位置とサイズだけ調整 */
+@media (max-width: 768px){
+  #timerBanner{
+    top: 64px;
+    padding:6px 16px;
+  }
+}
+
+/* ==========================================
+   九九専用：ボタン形状の補正（レゴヘッダー導入後）
+   ========================================== */
+
+/* だんボタン…正方形っぽく */
+#danButtons button{
+  width: 76px;
+  height: 76px;
+  padding: 0;
+  border-radius: 18px;
+}
+
+/* ○×ボタン…まん丸に */
+#judgeRow button{
+  width: 88px;
+  height: 88px;
+  padding: 0;
+  border-radius: 999px;
+}
+
+/* セットアップのスタートボタン…高さ2倍＆上から少し離す */
+#btnStart{
+  min-width: 260px;
+  height: 56px;
+  padding: 0 32px;
+  border-radius: 999px;
+  margin-top: 32px;        /* コースパネルとの間隔をあける */
+  font-size: 1.2rem;
+}

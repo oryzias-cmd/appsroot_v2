@@ -1,0 +1,105 @@
+/* =========================================================
+   shape2draw.full.css
+   作図（draw1/draw2/draw3）共通CSS 1本化
+   - 旧：shape2draw1.css + shape2draw2.css + shape2draw3.css を統合
+   - 方針：HTML側はこの1本だけ読む（積み上げ廃止）
+   ========================================================= */
+
+/* ===== from: shape2draw3.css ===== */
+/* =========================================================
+   盤面（canvas + SVG）の成立条件（重要）
+   - geometry/app.css を外した影響で、盤面が高さ0/ズレになるのを防ぐ
+   - #board が無い（draw1/2/3 のHTML構造）前提で、.board-inner を基準に全面フィットさせる
+   ========================================================= */
+
+/* 盤面の“外枠”を高さ成立させる（旧 .wrap 構造のまま復旧） */
+.wrap{
+  height: 100%;
+  display:flex;
+  flex-direction:column;
+  min-height:0;
+}
+
+main.board{
+  flex:1 1 auto;
+  display:flex;
+  flex-direction:column;
+  min-height:0;
+}
+
+/* board-inner を“座標系の基準”にして、boardStage を全面に貼る */
+.board-inner{
+  flex:1 1 auto;
+  min-height:0;
+  position:relative;
+}
+
+#boardStage{
+  position:absolute;
+  inset:0;
+}
+
+/* canvas / SVG を盤面いっぱいにする（ここが崩れると「点が打てない」が再現する） */
+#gridCanvas,
+#shapeLayer{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  display:block;
+}
+
+/* タップ操作の安定化（スクロール/ズームの誤作動を抑える） */
+#gridCanvas{
+  touch-action:none;
+  pointer-events:auto;
+  z-index:1;
+}
+
+/* SVG は見た目の層。クリックを奪うと「点が打てない」が再現するので必ず無効化 */
+#shapeLayer{
+  touch-action:none;
+  pointer-events:none;
+  z-index:2;
+}
+
+/* 中央点は常に最前面（クリック可能）
+   - geometry/app.css を外した影響で“見た目”が消えるため、ここで最小限を復旧する
+   - JS が small / tiny クラスを付け替えるので、それにも追随する
+*/
+#centerDot,
+.center-dot{
+  position:absolute;
+  z-index:5;
+  pointer-events:auto;
+
+  /* 見た目（これが無いと「出てない」に見える） */
+  width:26px;
+  height:26px;
+  border-radius:999px;
+  background: rgba(255, 235, 59, 0.95);
+  border: 2px solid rgba(0,0,0,0.85);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+}
+
+/* draw1 が付けるサイズクラス */
+#centerDot.small,
+.center-dot.small{
+  width:20px;
+  height:20px;
+  border-width:2px;
+}
+
+#centerDot.tiny,
+.center-dot.tiny{
+  width:16px;
+  height:16px;
+  border-width:2px;
+}
+
+/* =========================================================
+   Lv3（draw3）の白帯（グリッド分割）について：
+   - これは grid.js 側の描画（canvas）で出る想定。
+   - 上の「盤面成立」を直すと復旧する。
+   - もし白帯が復旧しない場合は、旧 draw3.css の分割表現をここへ移植する。
+   ========================================================= */

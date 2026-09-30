@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>比をかんたんにしよう</title>
+
+  <link rel="stylesheet" href="../../../common/shell/header.full.css">
+  <link rel="stylesheet" href="../../../common/shell/setup.full.css">
+  <link rel="stylesheet" href="../../../common/shell/result.full.css">
+  <link rel="stylesheet" href="./ratio.css" />
+</head>
+
+<body data-appkey="ratio.quiz" data-phase="quiz" data-ox-size="m" data-color-mode="color">
+  <div class="portrait-lock" id="portraitLock" hidden>
+    <div class="portrait-lock__card">
+      <div class="portrait-lock__text">タブレットを よこに してね</div>
+    </div>
+  </div>
+
+  <div class="app-root">
+    <div id="slot-header" data-slot="header" data-title="比をかんたんにしよう"></div>
+
+    <main class="app-main">
+      <section id="quizPage" class="page page-quiz">
+        <div class="status-row">
+          <div id="progressText" class="progress-text">1 / 10</div>
+          <div id="timerText" class="timer-text" hidden>0.0秒</div>
+        </div>
+
+        <section class="ratio-area">
+          <div id="problemRatio" class="problem-ratio">9：6</div>
+          <div class="equal-sign">＝</div>
+
+          <div class="answer-wrap">
+            <div id="judgeMark" class="judge-mark" aria-hidden="true"></div>
+            <div id="answerRatio" class="answer-ratio">＿＿：＿＿</div>
+          </div>
+        </section>
+
+        <section id="calcArea" class="calc-area">
+          <div id="calcLine1" class="calc-line">9÷□＝</div>
+          <div id="calcLine2" class="calc-line">6÷□＝</div>
+          <div id="messageLine" class="message-line"></div>
+        </section>
+
+        <section class="button-area">
+          <div id="gcdButtons" class="gcd-buttons"></div>
+        </section>
+
+        <section class="next-area">
+          <button id="nextBtn" class="main-btn" type="button" hidden>つぎへ</button>
+        </section>
+      </section>
+
+      <section id="resultPage" class="page page-result" hidden>
+        <div class="result-card">
+          <div id="resultTitle" class="result-title">10もん おわり</div>
+          <div id="resultMain" class="result-main"></div>
+          <div id="weakNumbers" class="weak-numbers"></div>
+
+          <div class="result-actions">
+            <button id="retryBtn" class="main-btn" type="button">もういちど</button>
+            <button id="setupBtn" class="sub-btn" type="button">もどる</button>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="mainArea"></div>
+
+  <script>
+    window.AppShellOptions = window.AppShellOptions || {};
+    window.AppShellOptions.gearAction = "settings";
+
+    window.AppShellLayout = {
+      header:{ left:['backlink'], center:['title'], right:['settingsGear'] },
+      pbar:{ left:[], center:[], right:[] },
+      main:{ bottomCenter:[] },
+      footer:{ left:[], center:[], right:[] }
+    };
+  </script>
+
+  <script src="../../../common/shell/gear.full.js"></script>
+  <script src="../../../common/shell/kit.full.js"></script>
+  <script src="../../../common/shell/header.full.js"></script>
+  <script src="../../../common/shell/setup.full.js"></script>
+  <script src="../../../common/shell/result.full.js"></script>
+
+  <script src="./ratio.js"></script>
+</body>
+</html>

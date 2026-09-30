@@ -1,0 +1,119 @@
+<!--
+【レゴ設計ルール（固定）】
+
+■ 最終責務
+ヘッダーの内容（左右ボタン・音声・設定等）の最終決定権は
+kit.full.js の L.header / mountArea にある。
+header.full.js は構造（枠）専用とする。
+
+■ 禁止事項
+・アプリ側JSで #slot-header / header.title を直接操作しない。
+・header.full.js 側でボタンを個別注入しない。
+
+■ 例外ルール
+この前提を崩す場合は、実装前に必ず明示的に宣言すること。
+（宣言なき変更はバグ扱いとする）
+-->
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>千より大きい数</title>
+
+  <!-- ▼ レゴ共通CSS（ヘッダー＋セットアップ） -->
+  <link rel="stylesheet" href="../../../common/shell/header.full.css" />
+  <link rel="stylesheet" href="../../../common/shell/setup.full.css" />
+
+  <!-- ▼ kuraitable 専用CSS -->
+  <link rel="stylesheet" href="./kuraitable.css" />
+</head>
+
+<body data-phase="app">
+  <!-- ▼ レゴ：ヘッダー用スロット（titleはdocument.title由来で表示されるが、念のため固定） -->
+  <div id="slot-header" data-slot="header" data-title="千より大きい数"></div>
+
+  <!-- ▼ アプリ本体 -->
+<main id="app" class="app" aria-label="位取り表">
+    <!-- 中：位取り表（5列） -->
+    <section class="table" aria-label="位取り表 5列">
+      <div class="col col-10000" data-col="10000">
+        <div class="source-slot" aria-hidden="true"></div>
+        <div class="dropzone" data-drop="10000" aria-label="一万のくらい に置く"></div>
+        <div class="label">一<span class="place-char">万</span><span class="place-rest">のくらい</span></div>
+        <div class="digit" data-digit="10000">0</div>
+      </div>
+
+      <div class="col col-1000" data-col="1000">
+        <div class="source-slot" aria-label="千のカード（起点）">
+          <div class="sample-card source-card" data-kind="1000" role="button" aria-label="1000のカード">1000</div>
+        </div>
+        <div class="dropzone" data-drop="1000" aria-label="千のくらい に置く"></div>
+        <div class="label"><span class="place-char">千</span><span class="place-rest">のくらい</span></div>
+        <div class="digit" data-digit="1000">0</div>
+      </div>
+
+      <div class="col col-100" data-col="100">
+        <div class="source-slot" aria-label="百のカード（起点）">
+          <div class="sample-card source-card" data-kind="100" role="button" aria-label="100のカード">100</div>
+        </div>
+        <div class="dropzone" data-drop="100" aria-label="百のくらい に置く"></div>
+        <div class="label"><span class="place-char">百</span><span class="place-rest">のくらい</span></div>
+        <div class="digit" data-digit="100">0</div>
+      </div>
+
+      <div class="col col-10" data-col="10">
+        <div class="source-slot" aria-label="十のカード（起点）">
+          <div class="sample-card source-card" data-kind="10" role="button" aria-label="10のカード">10</div>
+        </div>
+        <div class="dropzone" data-drop="10" aria-label="十のくらい に置く"></div>
+        <div class="label"><span class="place-char">十</span><span class="place-rest">のくらい</span></div>
+        <div class="digit" data-digit="10">0</div>
+      </div>
+
+      <div class="col col-1" data-col="1">
+        <div class="source-slot" aria-label="一のカード（起点）">
+          <div class="sample-card source-card" data-kind="1" role="button" aria-label="1のカード">1</div>
+        </div>
+        <div class="dropzone" data-drop="1" aria-label="一のくらい に置く"></div>
+        <div class="label">一のくらい</div>
+        <div class="digit" data-digit="1">0</div>
+      </div>
+    </section>
+
+    <!-- 下：操作レーン（footerは使わない） -->
+    <div class="bottom-lane" aria-label="操作レーン">
+      <button id="btn-reset" class="btn btn-reset" type="button">ぜんぶけす</button>
+
+      <div class="value-display" aria-label="こたえ（クリックで表示）">
+        <button id="toggle-value" class="value-box is-hidden" type="button" aria-label="こたえを ひらく">
+          <span id="current-value">0</span>
+        </button>
+      </div>
+
+      <button id="btn-undo" class="btn btn-undo" type="button">一つもどす</button>
+    </div>
+  </main>
+
+<script>
+  // quiz画面の「←もどる」は entry へ統一
+  // - Entry側が「戻った時だけ復元」できるように RETURN_FLAG を立てる
+  // - EntryFull はこの画面では読まないので、sessionStorage 直書きにする
+  window.AppActions = window.AppActions || {};
+  window.AppActions.back = () => {
+    try {
+      sessionStorage.setItem('kuraitable.entry:return', '1');
+    } catch (e) {}
+    location.href = './entry.html';
+  };
+</script>
+
+  <!-- ▼ レゴ共通JS（ヘッダー＋セットアップだけ） -->
+  <script src="../../../common/shell/kit.full.js"></script>
+  <script src="../../../common/shell/header.full.js"></script>
+  <script src="../../../common/shell/setup.full.js"></script>
+
+  <!-- ▼ kuraitable 本体 -->
+  <script src="./kuraitable.js"></script>
+</body>
+</html>

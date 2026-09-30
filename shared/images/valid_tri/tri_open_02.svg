@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- 右辺に小さな不連続（開き） -->
+  <path d="M 16,86 L 46,20" stroke="#000" stroke-width="3" fill="none"/>
+  <path d="M 46,20 L 80,82" stroke="#000" stroke-width="3" fill="none"/>
+  <path d="M 16,86 L 74,64" stroke="#000" stroke-width="3" fill="none"/>
+</svg>

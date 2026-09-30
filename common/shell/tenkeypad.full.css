@@ -1,0 +1,68 @@
+/* TenKeypad Lego（九九の左パネル風）
+   - 3x3（1〜9）＋ ぜんぶ / けす
+   - 「正方形っぽいキー」「広めの隙間」「ONで青ベタ」を優先
+   - SetupCard内でも崩れない：幅100%で伸縮
+*/
+
+.tenkeypad{
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.tenkeypad-grid{
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;                 /* ← 余白多め（九九寄せ） */
+
+  /* ★中央寄せ（右寄りを止める） */
+  justify-content: center;
+}
+
+.tenkeypad-btn{
+  width: 100%;
+  aspect-ratio: 1 / 1;       /* ← 正方形の核 */
+  min-height: 72px;          /* ← タブレットで小さくなりすぎない保険 */
+
+  border-radius: 10px;       /* ← 九九寄せ（角丸小さめ） */
+  border: 2px solid #3c7cff;
+  background: #eaf1ff;
+
+  font-family: inherit;      /* ← SetupCard側のフォントに合わせる */
+  font-size: clamp(22px, 3.2vw, 28px);
+  font-weight: 700;
+
+  display: grid;
+  place-items: center;
+
+  cursor: pointer;
+}
+
+.tenkeypad-btn.is-on{
+  background: #3c7cff;
+  color: #fff;
+}
+
+.tenkeypad-tools{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;                 /* ← 余白多め（九九寄せ） */
+  margin-top: 18px;
+
+  /* ★中央寄せ（上の3×3と揃える） */
+  justify-content: center;
+}
+
+.tenkeypad-tool{
+  height: 56px;
+  border-radius: 999px;
+
+  border: 2px solid #3c7cff; /* ← 九九寄せ（青枠） */
+  background: #ffffff;
+
+  /* ★下2ボタンは通常ボタン寄せ */
+  font-family: inherit;
+  font-size: 1.2rem;
+  font-weight: 700;
+
+  cursor: pointer;
+}

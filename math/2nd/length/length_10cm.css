@@ -1,0 +1,950 @@
+/* ========================================
+   長さ（10cm）アプリ CSS
+   - レゴCSSはそのまま
+   - ここはアプリ固有だけ
+======================================== */
+
+/* ★外側の余白の原因（ブラウザ標準の body margin）を潰す */
+html,
+body{
+  margin: 0;
+  padding: 0;
+}
+
+:root{
+  --page-max: 980px;
+  --card-radius: 22px;
+  --shadow-soft: 0 10px 24px rgba(0,0,0,0.12);
+
+  /* 10cm表示用：1cm の幅（あとで微調整しやすいように変数化） */
+  --cm-px: 54px; /* 10cmで 540px 程度。10インチでも読める想定 */
+
+  /* ★問題バー下ライン ↔ テープ の距離はここで調整する（統一） */
+  --pbar-gap: 35px; /* まずはテープ高さ相当 */
+
+  /* ★テンキーを“唯一の基準”にする（ここから左カラムも揃える） */
+  --pad-key-w: 64px;   /* テンキー1キーの幅 */
+  --pad-key-h: 54px;   /* テンキー1キーの高さ（★追加） */
+  --pad-gap: 20px;     /* テンキーのgap（★追加） */
+
+  /* ★±ボタン（中央6個）の固定幅：mm基準 */
+  --pm-btn-w: 104px;
+
+  /* ★左右（おたすけ／こたえあわせ）の固定幅：6文字が入る最小 */
+  --side-btn-w: 160px;
+
+  /* ★枠線トーン（左右の中間色に統一） */
+  --ui-border-mid: rgba(0,0,0,0.28);
+
+  /* ★中央パネル列幅：答えが「99m99cm9mm」まで入るように */
+  --io-mid-w: 330px;
+}
+
+/* メインの余白 */
+#mainArea{
+  padding: calc(22px + var(--pbar-gap)) 18px 28px;
+
+  /* ★画面全体の左右余白の原因（中央寄せ＆最大幅）をやめる */
+  max-width: none;
+  margin: 0;
+}
+
+/* クイズ土台カード */
+.len-card{
+  background:#fff;
+  border-radius: var(--card-radius);
+  box-shadow: var(--shadow-soft);
+  padding: 18px 18px 16px;
+}
+
+/* 上：測るもの＋定規エリア */
+.len-stage{
+  position: relative;
+  display: grid;
+  gap: 12px;
+  justify-items: center;
+  padding: 14px 10px 6px;
+}
+/* 物差しブロックと下段パネルの間に余白を作る */
+.len-stage{
+  margin-bottom: 20px;
+}
+
+/* 測るもの（テープ） */
+.tape{
+  /* ★A-1：定規の見た目幅に一致（JSが --ruler-w を入れる） */
+  width: var(--ruler-10cm-w, calc(var(--cm-px) * 10));
+
+  height: 20px;
+  border-radius: 0;                /* ← 両端は丸めない（要望） */
+  background: #ff7a3d;             /* 仮：あとで色調整OK */
+  box-shadow: none;                /* ★影を外す */
+  position: relative;
+
+  /* ★おたすけON/OFFどちらでもスムーズに動かす */
+  transform: translateY(0);
+  transition: transform 240ms ease;
+
+  /* ★左基準で置く */
+  display: block;
+  margin-left: 0;
+  margin-right: auto;
+  align-self: flex-start;
+}
+
+/* =========================
+   おたすけ：点線ガイド（テープ端→定規へ）
+   - JSが測った座標をCSS変数で受け取る
+   - help-on のときだけ「伸びる」
+   ========================= */
+.measure-panel{
+  /* JSがここに入れる */
+  --guide-top: 0px;       /* テープ下端のY（panel内） */
+  --guide-len: 0px;       /* テープ下端→定規上端の距離 */
+  --guide-x-left: 0px;    /* 左端X */
+  --guide-x-right: 0px;   /* 右端X */
+}
+
+.guide-lines{
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 4;             /* helpSvg(=2)より上、必要なら調整 */
+}
+
+/* 共通：点線1本（OFF時＝即消し） */
+.guide-line{
+  position: absolute;
+  top: var(--guide-top);
+  height: var(--guide-len);
+  width: 0;
+  border-left: 2px dashed rgba(0,0,0,0.45);
+
+  transform-origin: top;
+  transform: scaleY(0);
+
+  /* ★OFF時はアニメ無しで即消す */
+  transition-property: transform;
+  transition-duration: 0ms;
+  transition-delay: 0ms;
+}
+
+/* 左右位置（JSがXを入れる） */
+.guide-line.left{  left: var(--guide-x-left); }
+.guide-line.right{ left: var(--guide-x-right); }
+
+/* help-on のときだけ表示（ゆっくり伸びる） */
+.len-stage.help-on .guide-line{
+  transform: scaleY(1);
+
+  /* ★ON時だけアニメを有効化 */
+  transition-duration: 700ms;  /* 伸びる時間 */
+  transition-delay: 260ms;     /* テープ移動完了後に開始 */
+}
+
+/* テープを「おたすけ」で上に逃がす（山スペース確保） */
+.len-stage.help-on .tape{
+  transform: translateY(-44px);  /* ←上へ */
+  transition: transform 240ms ease;
+}
+
+/* =========================
+   物差し表示：幅clamp＋比率固定＋中央寄せ
+   - 物差しだけを中央（テープは触らない）
+   - SVG(720×170)の比率を維持
+   - 2枚のSVGを重ね描画（helpSvgが上）
+   ========================= */
+/* =========================
+   計測パネル：パネルを中央 / 中身は左基準
+   ========================= */
+.measure-panel{
+  width: clamp(420px, 70vw, 720px);
+  margin: 0 auto;
+  position: relative;   /* ★ absolute配置の基準（0cm） */
+  text-align: left;
+}
+
+/* =========================
+   サザエ頭（0cm基準に固定）
+   ========================= */
+.sazae{
+  position: absolute;
+  left: 0;
+  top: 0;               /* 物差し上端に接地 */
+  height: 28px;
+  pointer-events: none;
+}
+
+/* サザエ波の見た目調整（JSは触らない） */
+.sazae svg path{
+  stroke: #e60000;      /* 真っ赤 */
+  stroke-width: 2;      /* 目盛りと同程度 */
+}
+
+/* 物差しはパネル幅いっぱい（パネルが中央なので結果的に中央に見える） */
+.ruler-wrap{
+  width: 100%;
+  aspect-ratio: 720 / 111; /* ★JSのRULER_REF_Hと一致 */
+  max-width: none;
+  position: relative;
+
+  /* ★テープ下端 → 物差し（＆山）までの基本の隙間（①：半分くらいへ） */
+  --gap-tape-to-ruler: 8px;
+
+  /* ★「+5px下げる」をやめて、隙間そのものだけで管理（押し下げを最小化） */
+  margin-top: var(--gap-tape-to-ruler);
+
+  --ruler-mm: calc(100% / 100); /* ★10cm物差し → 1mm幅 */
+}
+
+/* 物差し左：山だけ消す ×（定規に被せない） */
+/* ×：デフォルトは「見えない・押せない」（フェード対応） */
+.ruler-wrap #btnStepClear{
+  position: absolute;
+  left: calc(-12 * var(--ruler-mm));
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 500ms ease, visibility 0s linear 160ms;
+}
+
+/* おたすけONのときだけ「見える・押せる」 */
+.len-stage.help-on .ruler-wrap #btnStepClear{
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition: opacity 1000ms ease, visibility 0s;
+}
+
+/* 物差し左：山だけ消す × */
+.ruler-clear-btn{
+  position: absolute;
+  left: 6px;
+  top: 6px;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border-radius: 999px;
+  font-weight: 900;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 5; /* 定規・SVGより前 */
+
+  background: transparent;   /* ★中のグレーを消す */
+  border: 1.5px solid #333;     /* ★輪郭だけ残す（必要なら薄く） */
+  color: #333;
+}
+
+/* 2枚のSVGを “親にぴったり” */
+#rulerSvg{
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* ========================================
+   赤い山レイヤー（A-1：縮小しない）
+   - 横は定規に追従（100%）
+   - 縦は 720/170 の比率で確保（定規111に巻き込まれない）
+======================================== */
+.help-layer{
+  position: absolute;
+  left: 0;
+  top: -1px;               /* ★ここだけで上下のピタ合わせをする（必要なら±で調整） */
+  width: 100%;
+  aspect-ratio: 720 / 170;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.help-layer #helpSvg{
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* overlay を確実に上に */
+#helpSvg{
+  pointer-events: none;
+  z-index: 2;
+}
+#rulerSvg{
+  z-index: 1;
+}
+
+/* 山・補助線レイヤ（SVGを上に重ねる） */
+.overlay{
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  overflow: visible; /* ★山を枠外（定規の外）へ出せる */
+}
+
+/* 下：操作パネル（いまのスクショUIに寄せて） */
+.len-panel{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+
+  width: fit-content;
+  margin: 0 auto 0;
+
+  padding: 12px 10px;
+  border-radius: 18px;
+  border: 2px solid rgba(0,0,0,0.12); /* ★中央・右に完全一致 */
+  background: #fff;
+
+  height: 100%;
+  box-sizing: border-box;
+}
+
+/* ★配置（HTMLはそのまま） */
+.len-panel #ans{ grid-area: ans; width: 100%; }
+.len-panel #btnHelp{
+  grid-area: help;
+  width: calc(var(--pad-key-w) * 3 + 20px * 2); /* 3列＋gap2本（テンキー基準） */
+  height: 48px;                                  /* 他ボタンと同じ高さ */
+  justify-self: center;                           /* 左カラム内で中央寄せ */
+
+  border-radius: 999px;                           /* ★他ボタンと同じ形 */
+  font-size: 20px;                                /* ★他ボタンと同じサイズ */
+  font-weight: 700;                               /* ★他ボタンと同じ太さに寄せる */
+  padding: 0 18px;
+}
+/* ★おたすけONの状態色
+   - help-on は #stage に付く
+   - ただし構造/生成の都合で #btnHelp が #stage の外側扱いになるケースがあるので
+     #btnHelp 側の is-on でも色が出るようにする
+*/
+#stage.help-on #btnHelp,
+#btnHelp.is-on{
+  background: rgba(203, 182, 230, 0.45); /* ★うっすら紫（セットアップ寄せ） */
+}
+
+.len-panel #btnCheck{
+  grid-area: check;
+  width: var(--side-btn-w);
+  height: 68px;            /* ★細く＋高く＝丸っぽく */
+  justify-self: end;       /* ★右端へ */
+
+  /* ★2行になりやすくする（HTMLは触らない） */
+  white-space: normal;
+  line-height: 1.05;
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+.len-panel #manualPanel{
+  grid-area: pm;
+  justify-self: center;
+}
+
+.len-panel .btn{
+  height: 48px;
+  border-radius: 999px;
+  background: #fff;
+  font-size: 20px;
+  font-weight: 700;
+  font-family:"BIZ UDGothic", system-ui, sans-serif;
+}
+
+.len-panel .btn-primary{
+  border:none;
+  background:#FF7A3D;
+  color:#fff;
+  box-shadow: 0 6px 0 #E35F23, 0 10px 18px rgba(0,0,0,0.22);
+}
+
+/* ★ こたえあわせ：消灯（disabled）時の見た目 */
+.len-panel .btn-primary:disabled{
+  background: #e6e6e6;
+  color: #888;
+  box-shadow: none;
+  transform: none;
+  cursor: not-allowed;
+  opacity: 1; /* うす暗くしすぎない */
+}
+.len-panel .btn-primary:disabled:active{
+  transform: none;
+  box-shadow: none;
+}
+
+.len-panel .btn-primary:active{
+  transform: translateY(3px);
+  box-shadow: 0 3px 0 #E35F23, 0 6px 12px rgba(0,0,0,0.20);
+}
+
+/* 入力欄（中央） */
+.ans{
+  height: 48px;
+  border-radius: 14px;
+  border: 2px solid var(--ui-border-mid);
+  text-align:center;
+  font-size: 22px;
+  font-weight: 800;
+  font-family:"BIZ UDGothic", system-ui, sans-serif;
+}
+
+/* テンキー */
+.pad{
+  margin-top: 0;
+
+  display: grid;
+  grid-template-columns: repeat(4, var(--pad-key-w));
+  gap: 20px;
+
+  width: fit-content;
+  padding: 14px;
+  border-radius: 18px;
+  border: 2px solid rgba(0,0,0,0.12); /* ★完全一致 */
+  background: #fff;
+
+  height: 100%;
+  align-content: start;
+  box-sizing: border-box;
+}
+
+.pad button{
+  width: var(--pad-key-w);
+  height: 54px;
+  border-radius: 12px;
+  background:#fff;
+  font-size: 22px;
+  font-weight: 800;
+  font-family:"BIZ UDGothic", system-ui, sans-serif;
+}
+
+/* ===== 削除キー：⌫ / C（操作キー） ===== */
+.pad button[data-key="⌫"],
+.pad button[data-key="C"],
+.pad button[data-key="Ｃ"]{
+  border-color: rgba(0,0,0,0.35); /* 少し強調 */
+  font-weight: 900;              /* 文字を強く */
+}
+
+/* ===== 単位キー：m / cm / mm（確定キー） ===== */
+.pad button[data-key="m"],
+.pad button[data-key="cm"],
+.pad button[data-key="mm"]{
+  border-color: rgba(0,0,0,0.18); /* 数字より薄く */
+  color: #555;                   /* 文字も一段控えめ */
+  font-weight: 700;
+}
+
+/* ⌫（Backspace）だけ見やすく */
+.pad button[data-key="⌫"]{
+  font-size: 28px;
+}
+
+.pad button:active{
+  transform: translateY(2px);
+}
+
+/* 小さめ画面対策（10インチ想定の安全策） */
+@media (max-width: 760px){
+  :root{
+    --cm-px: 44px;
+    --pad-key-w: 52px; /* ★小さめ画面では少しだけ小さく */
+  }
+  .pad{ grid-template-columns: repeat(4, 1fr); }  /* ★ 4列に統一 */
+}
+
+/* 4×4の空欄（3行目4列目） */
+.pad .pad-spacer{
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  pointer-events: none;
+}
+
+/* =========================
+   ★ 縦が詰まる画面対策（勤務PCで100%表示でも収める）
+   - テンキー/ボタン/余白を圧縮
+   ========================= */
+@media (max-height: 820px){
+  #mainArea{
+    padding: calc(14px + var(--pbar-gap)) 12px 16px;
+  }
+
+  .len-card{
+    padding: 14px 14px 12px; /* 18/18/16 → 圧縮 */
+  }
+
+  /* ★低い画面でも、ステージ自体は押し下げない（余白は #mainArea の --pbar-gap で統一） */
+/* 物差しとテープの間隔を詰める */
+.ruler-wrap{
+  margin-bottom: 8px;   /* ← 今より約半分 */
+}
+
+.tape-wrap{
+  margin-top: 0;
+}
+
+  /* 上段の操作パネルを少し薄く */
+  .len-panel{
+    margin-top: 0;
+    padding: 10px 8px;
+    gap: 18px;               /* 小さめ画面では少し詰める */
+  }
+
+  /* 主要ボタン（おたすけ/こたえあわせ/＋1cm/もどす）を少し低く */
+  .btn{
+    height: 42px;            /* 48 → 圧縮 */
+    font-size: 18px;         /* 20 → 圧縮 */
+  }
+
+  /* テンキーを圧縮（高さが効く） */
+  .pad{
+    margin-top: 0;
+    gap: 16px;               /* 圧縮 */
+  }
+  .pad button{
+    height: 44px;            /* 54 → 圧縮 */
+    font-size: 20px;         /* 22 → 圧縮 */
+      /* ⌫（Backspace）は低画面でも大きく */
+  .pad button[data-key="⌫"]{
+    font-size: 26px;
+  }
+  }
+
+  /* 低い画面では手動ボタンもテンキーに寄せる（任意だが揃う） */
+  .manual-panel .btn{
+    height: 44px;
+    font-size: 20px;
+  }
+}
+
+/* ========================================
+   無効ボタン（mなど）：グレーアウト（常時）
+======================================== */
+.btn:disabled,
+.btn.is-disabled{
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* ========================================
+ 手動操作パネル：m / cm / mm（横3列×縦2行）
+ - ★常にgrid（画面高さ条件に依存しない）
+ - ★mm幅を基準に6個同サイズ
+======================================== */
+.manual-panel{
+  margin-top: 0; /* len-panel内なので0でOK */
+  display: grid;
+
+  /* 2列×2行（左→右：mm / cm、上：＋、下：−） */
+  grid-template-columns: repeat(2, var(--pm-btn-w));
+  grid-auto-rows: auto;
+
+  gap: 12px;
+  justify-content: center;
+  align-items: stretch;
+}
+
+/* 6個とも同サイズ（ピル型は維持） */
+.manual-panel .btn{
+  width: var(--pm-btn-w);
+  height: 48px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+/* =========================
+   テープは“見た目本体”を壊さず、中央寄せだけを抑止
+   ========================= */
+#tape,
+.tape{
+  margin-left: 0;
+  margin-right: auto;   /* ★右はautoで左寄せ維持 */
+  align-self: flex-start; /* ★stretchで幅が壊れないように */
+}
+
+/* =========================
+   2カラム入出力（左：操作／右：テンキー）
+   ========================= */
+.io-grid{
+  display: grid;
+  grid-template-columns: auto var(--io-mid-w) auto; /* ★中央幅を復帰（はみ出し防止） */
+  gap: var(--pad-key-w);                  /* 既存の間隔ルールは維持 */
+  justify-content: center;                /* ★3パネル全体を中央に配置（左だけ離れて見えるのを防ぐ） */
+  align-items: stretch;                   /* ★3パネルを同じ高さに伸ばす（根治） */
+}
+
+/* ★ボタン枠線の正本：下段3パネル共通で一本化 */
+.io-grid button,
+.io-grid .btn{
+  border: 2px solid var(--ui-border-mid);
+}
+
+/* =========================
+   左カラム：テンキー準拠に整える
+   ①ボタンをテンキーと同サイズ
+   ②おたすけを最上段
+   ③おたすけ高さも他ボタンと同じ
+   ④ギャップをテンキー(20px)に合わせる
+   ⑤左カラム内で全体をセンタリング
+========================= */
+.io-left{
+  display: flex;
+  flex-direction: column;
+  align-items: center;     /* ★⑤ 左カラム内でセンタリング */
+}
+
+/* =========================
+   中央カラム（入力＋こたえあわせ）
+   ========================= */
+.io-mid{
+  display: block;
+}
+
+.mid-panel{
+  padding: 12px 10px;
+  border-radius: 18px;
+  border: 2px solid rgba(0,0,0,.12);
+  background: #fff;
+
+  height: 100%;
+  box-sizing: border-box;
+
+  display: grid;                 /* ←元どおり：入力を上に戻す */
+  grid-template-rows: auto 1fr;  /* 上：入力 / 下：余白（ボタンが浮かぶ） */
+  position: relative;            /* ★重ね表示の基準 */
+  overflow: visible;             /* ★大きいマークがはみ出してもOK */
+}
+
+/* ★評価マーク：入力欄の中央に「重ねる」 */
+.mark-box{
+  position: absolute;
+  left: 50%;
+
+  /* 入力欄の中央（padding12 + 入力高72/2=36 → 約48px）が中心になるように */
+  top: 48px;
+
+  transform: translate(-50%, -50%) scale(0.98);
+  transform-origin: center;
+
+  display: grid;
+  place-items: center;
+
+  opacity: 0;
+  transition: opacity 160ms ease, transform 160ms ease;
+
+  pointer-events: none; /* ★操作を邪魔しない */
+  z-index: 5;           /* ★入力の上に重ねる */
+}
+
+.mark-box.is-on{
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.mark-img{
+  width: 216px;         /* 3倍のまま */
+  height: 216px;
+  object-fit: contain;  /* 715×600 でも 600×600 でも崩れない */
+  user-select: none;
+  pointer-events: none;
+}
+
+.mid-panel .ans{
+  width: 100%;
+  margin: 0;
+
+  height: 72px;              /* ★枠を少し大きく（見た目の主役感UP） */
+  font-size: 34px;           /* ★大きいまま、はみ出しにくく */
+  line-height: 1;            /* ★縦の詰まり防止 */
+  padding: 0 10px;           /* ★左右に余白を作って読みやすく */
+  box-sizing: border-box;
+
+  letter-spacing: 0.5px;     /* ★数字が並んでも見やすい */
+  font-variant-numeric: tabular-nums; /* ★数字の幅を揃えて安定 */
+}
+
+/* こたえあわせ：丸っぽく（幅を狭く・高さを高く）＋2行表示 */
+.mid-panel .btn-check{
+  margin-top: 0;
+
+  width: 120px;              /* ★円：固定 */
+  height: 120px;             /* ★円：固定 */
+  border-radius: 50%;        /* ★円 */
+
+  font-weight: 800;
+  font-size: 26px;           /* ★2行でも読める */
+  line-height: 1.05;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  justify-self: center;      /* ★grid内で水平中央 */
+  align-self: center;        /* ★余白(1fr)の垂直中央＝浮かぶ */
+}
+
+/* 無効時（入力完了までグレーアウト） */
+.mid-panel .btn-check:disabled{
+  opacity: .45;
+  cursor: not-allowed;
+}
+
+/* =========================
+   左カラム（A案）：上＝入力だけ／下＝おたすけ大＋±＋こたえあわせ大
+   ========================= */
+
+/* ★最上段：答え入力欄だけ（大きく） */
+.ans-row{
+  margin-top: 0;
+  padding: 12px 10px;
+  border-radius: 18px;
+  border: 1px solid rgba(0,0,0,0.12);
+  background: #fff;
+}
+
+/* 入力欄を大きく（縦横・フォント） */
+.ans-row .ans-big{
+  width: 100%;
+  height: 64px;
+  font-size: 32px;
+  font-weight: 900;
+  border-radius: 16px;
+}
+
+/* ★A案の操作ブロック（3列） */
+.ops-grid{
+  margin-top: 12px;
+
+  display: grid;
+  grid-template-columns: 220px 1fr 220px; /* 左：おたすけ大／中央：±／右：こたえあわせ大 */
+  gap: 16px;
+  align-items: stretch;
+
+  padding: 12px 10px;
+  border-radius: 18px;
+  border: 1px solid rgba(0,0,0,0.12);
+  background: #fff;
+}
+
+/* 左右の大ボタン（2行ぶち抜きっぽく“背を高く”） */
+.ops-grid .btn-help-big,
+.ops-grid .btn-check-big{
+  height: 100%;
+  border-radius: 18px;
+  font-size: 22px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+/* 中央：±6 を“中央寄せ” */
+.ops-grid .manual-panel{
+  align-content: center;
+}
+
+/* 画面が狭い場合は1カラムに戻す（既存維持） */
+@media (max-width: 820px){
+  .io-grid{ grid-template-columns: 1fr; }
+}
+
+/* =========================
+   高さが厳しい環境：入力＆操作を圧縮（A案対応）
+   ========================= */
+@media (max-height: 820px){
+  .ans-row{ padding: 10px 8px; }
+  .ans-row .ans-big{
+    height: 54px;
+    font-size: 26px;
+  }
+
+  .ops-grid{
+    gap: 12px;
+    padding: 10px 8px;
+    grid-template-columns: 200px 1fr 200px;
+  }
+
+  .ops-grid .btn-help-big,
+  .ops-grid .btn-check-big{
+    font-size: 20px;
+  }
+
+  .ops-grid .manual-panel{ gap: 10px; }
+  .ops-grid .manual-panel .btn{ height: 44px; font-size: 18px; }
+}
+
+/* =========================
+   stepPanelB：3段固定（テンキー完全一致）
+   - ①数字(1/5/10) ②単位(mm/cm/m) ③＋／－
+   - 寸法・ギャップは「右テンキー」と同じ基準で揃える
+========================= */
+#stepPanelB{
+  display: flex;
+  flex-direction: column;
+  gap: var(--pad-gap);        /* 段間＝テンキーのgap */
+
+  justify-self: center;
+  align-self: center;
+
+  /* ★右テンキーと同期 */
+  --b-btn-w: var(--pad-key-w);
+  --b-btn-h: var(--pad-key-h);
+  --b-gap:   var(--pad-gap);
+  --pm-w:    var(--pad-key-w);
+
+  width: calc(var(--b-btn-w) * 3 + var(--b-gap) * 2);
+}
+
+/* 行は必ず grid（ズレ防止） */
+#stepPanelB .step-row{
+  display: grid !important;
+  align-items: center;
+  justify-items: center;
+  margin: 0;
+  row-gap: 0;
+}
+
+/* ①数字・②単位：3列固定＋横gap */
+#stepPanelB .step-row.mag,
+#stepPanelB .step-row.unit{
+  grid-template-columns: repeat(3, var(--b-btn-w));
+  column-gap: var(--b-gap);
+}
+
+/* ③すすむ／×／もどる：左右は“中央へ寄せる”配置にする */
+#stepPanelB .step-row.exec{
+  grid-template-columns: 1fr 1fr;      /* ★すすむ／もどる の2列だけ */
+  column-gap: var(--b-gap);            /* ★他行（数字・単位）と完全一致 */
+  align-items: center;
+}
+
+/* ★左右ボタンは「中央に向かって寄せる」＝見た目が自然 */
+#stepPanelB .step-row.exec #btnStepPlus{
+  grid-column: 1;
+  justify-self: center;
+}
+#stepPanelB .step-row.exec #btnStepMinus{
+  grid-column: 2;
+  justify-self: center;
+}
+
+/* ★×は中央固定 */
+#stepPanelB .step-row.exec #btnStepClear{
+  grid-column: 2;
+  justify-self: center;
+}
+
+/* ボタン（数字/単位） */
+#stepPanelB .step-btn{
+  width: var(--b-btn-w);
+  height: var(--b-btn-h);
+  padding: 0;
+  border-radius: 14px; /* 数字・単位は今のまま（角丸長方形） */
+  white-space: nowrap;
+}
+
+/* ===== 選択状態（左panelだけ） ===== */
+/* 数字（倍率）＝淡い黄色 */
+#stepPanelB .step-row.mag .step-btn.is-selected{
+  background: #FFF3B0;              /* ★淡い黄色 */
+  border-color: rgba(0,0,0,.20);
+  box-shadow: 0 2px 0 rgba(0,0,0,.10);
+}
+
+/* 単位（mm/cm/m）＝選択が分かる程度に色づけ */
+#stepPanelB .step-row.unit .step-btn.is-selected{
+  border-color: rgba(0,0,0,.20);
+  box-shadow: 0 2px 0 rgba(0,0,0,.10);
+}
+#stepPanelB .step-row.unit #btnUnitMm.is-selected{ background: #DDF1FF; } /* ㎜：淡い青 */
+#stepPanelB .step-row.unit #btnUnitCm.is-selected{ background: #FFE0E0; } /* ㎝：淡い赤 */
+#stepPanelB .step-row.unit #btnUnitM.is-selected { background: #E6F7E6; } /* ｍ：淡い緑（今は無効だが将来用） */
+
+/* 実行ボタン：高さは固定、2行禁止 */
+#stepPanelB .step-exec{
+  height: var(--b-btn-h);
+  padding: 0 18px;
+
+  /* ★すすむ／もどる＝ピル型（決定ボタン感） */
+  border-radius: 999px;
+
+  font-size: 20px;
+  white-space: nowrap;
+}
+
+/* ★×だけ「縦に詰まっても中央に乗る」ようにする */
+#btnStepClear{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+/* 左右はセルいっぱいに伸ばす */
+#btnStepPlus,
+#btnStepMinus{
+  width: 100%;
+}
+
+/* ×：小さく丸いボタン（誤タップしにくい） */
+#btnStepClear{
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  font-weight: 900;
+  border-radius: 999px;
+  line-height: 1;
+}
+
+/* ★低い画面（テンキーが 64×44 / gap16 のとき）左も同じに落とす */
+@media (max-height: 820px){
+  #stepPanelB{
+    gap: 16px;
+    --b-btn-h: 44px;
+    --b-gap:   16px;
+  }
+  #stepPanelB .step-exec{
+    font-size: 20px;
+  }
+}
+
+/* 単位キーだけ：下線で「種類（単位）」感を出す */
+.pad button[data-key="m"],
+.pad button[data-key="cm"],
+.pad button[data-key="mm"]{
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  text-decoration-thickness: 2px;
+}
+
+/* ===== 削除キー（⌫ / C）：少しだけ角を立てて操作キー感 ===== */
+.pad button[data-key="⌫"],
+.pad button[data-key="C"],
+.pad button[data-key="Ｃ"]{
+  border-radius: 4px;   /* 数字(12px)より少し四角寄り */
+}
+
+/* ========================================
+   状態が分かる色（最小）
+   ① おたすけON：うっすら
+   ② こたえあわせ：押せる時だけオレンジ
+======================================== */
+
+/* ② こたえあわせ（押せない時＝グレー、押せる時＝オレンジ） */
+#btnCheck:disabled{
+  background: #e6e6e6;
+  color: #888;
+  box-shadow: none;
+  opacity: 1;               /* うす暗くしすぎない */
+  cursor: not-allowed;
+}
+
+#btnCheck:not(:disabled){
+  background: #FF7A3D;       /* オレンジで「押していい」 */
+  color: #fff;
+  box-shadow: none;          /* 影は使わない方針 */
+  border: none;              /* 念のため */
+}

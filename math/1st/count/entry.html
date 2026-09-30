@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<!--
+【設計前提（重要）】
+・ヘッダーの左右ボタン等の中身は kit.full.js（L.header）で一元管理。
+・header.full.js は「枠と最低限の表示」のみを担当。
+・アプリ個別JSから #slot-header に直接注入しない。
+・前提を変える提案は、必ず最初に宣言してから行う。
+-->
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>entry（セットアップ）</title>
+
+  <!-- 共通シェル -->
+  <link rel="stylesheet" href="../../../common/shell/header.full.css">
+  <link rel="stylesheet" href="../../../common/shell/setup.full.css">
+  <link rel="stylesheet" href="../../../common/shell/entry.full.css">
+
+  <!-- entry専用（必要なら例外上書き） -->
+  <link rel="stylesheet" href="./entry.css">
+</head>
+<body data-appkey="count.entry">
+
+  <!-- kit が読むスロット -->
+  <div id="slot-header"
+       data-slot="header"
+       data-title="entry"
+       data-back="history"></div>
+
+  <!-- SetupCardのmount先 -->
+  <main id="mainArea"></main>
+
+  <!-- ★重要：kit.full.js が読む前に宣言（左右ボタンが確実に出る） -->
+  <script>
+    window.AppShellLayout = {
+      header: {
+        left:  ['backlink'],
+        center:['title'],
+        right: ['settingsGear']
+      },
+      pbar:   { left:[], center:[], right:[] },
+      main:   { bottomCenter:[] },
+      footer: { left:[], center:[], right:[] }
+    };
+  </script>
+
+  <script src="../../../common/shell/kit.full.js"></script>
+  <script src="../../../common/shell/header.full.js"></script>
+
+  <!-- SetupCard -->
+  <script src="../../../common/shell/setup.full.js"></script>
+  <script src="../../../common/shell/entry.full.js"></script>
+
+  <!-- entryロジック -->
+  <script src="./entry.js"></script>
+</body>
+</html>

@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>とけいドリル・モード①</title>
+
+  <!-- このアプリ固有のスタイル -->
+<link rel="stylesheet" href="./clock_v2.css" />
+</head>
+<body data-phase="setup" data-sound="on">
+
+  <!-- v2：固定ヘッダーは使わず、設定入口だけを画面右上に置く -->
+  <button id="btnSettings" class="floating-gear" type="button" aria-label="せっていをひらく">⚙</button>
+
+  <main class="app-main">
+    <!-- セットアップ画面 -->
+    <section id="setupPage" class="page page-setup" aria-hidden="false">
+      <div class="panel">
+        <h1 class="panel-title">モードと コースを えらぼう</h1>
+
+        <div class="panel-group">
+          <h2 class="panel-subtitle">レベル（モード）</h2>
+          <div class="mode-list">
+            <button class="mode-btn is-selected" data-mode="1" type="button">
+              ① よみとり（いま なんじ？）
+            </button>
+            <button class="mode-btn is-disabled" data-mode="2" type="button" disabled>
+              ② あわせ（じかんに あわせる）
+            </button>
+            <button class="mode-btn is-disabled" data-mode="3" type="button" disabled>
+              ③ さ（２つの とけいの じかん）
+            </button>
+            <button class="mode-btn is-disabled" data-mode="4" type="button" disabled>
+              ④ ○分後（よてい）
+            </button>
+            <button class="mode-btn is-disabled" data-mode="5" type="button" disabled>
+              ⑤ ○分前（ふりかえり）
+            </button>
+          </div>
+          <p class="note-small">※ いまは ①だけ つかえます。</p>
+        </div>
+
+        <div class="panel-group">
+          <h2 class="panel-subtitle">コース</h2>
+          <div class="course-list">
+            <button class="course-btn is-selected" data-course="3" type="button">
+              3もん コース
+            </button>
+            <button class="course-btn is-disabled" data-course="5" type="button" disabled>
+              5もん
+            </button>
+            <button class="course-btn is-disabled" data-course="10" type="button" disabled>
+              10もん
+            </button>
+            <button class="course-btn is-disabled" data-course="30s" type="button" disabled>
+              30びょう
+            </button>
+          </div>
+          <p class="note-small">※ のちほど ほかのコースも つくります。</p>
+        </div>
+
+        <div class="panel-actions">
+          <button class="btn-primary" id="btnStart" type="button">スタート</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- クイズ画面（モード①） -->
+    <section id="quizPage" class="page page-quiz" aria-hidden="true">
+      <!-- v2：問題バーを使わず、教材画面の中に直接表示 -->
+      <div class="quiz-topline" aria-live="polite">
+        <span id="labelMode">レベル①：よみとり</span>
+        <span id="labelProgress"></span>
+      </div>
+
+      <div class="quiz-layout">
+        <div class="quiz-left">
+          <div class="clock-wrap">
+            <div id="clockContainer" class="clock-container" aria-label="とけい"></div>
+          </div>
+
+          <!-- ▼ 子どもが必要に応じて使う「4つのおたすけ」 -->
+          <div id="assistButtons" class="assist-buttons" aria-label="とけいの おたすけ">
+            <button id="btnAssistHelpers" class="assist-btn" type="button" aria-pressed="false">
+              <span class="assist-icon">5</span>
+              <span>ふん・すうじ</span>
+            </button>
+            <button id="btnAssistSectors" class="assist-btn" type="button" aria-pressed="false">
+              <span class="assist-icon">◷</span>
+              <span>12とうぶん</span>
+            </button>
+            <button id="btnAssistHighlight" class="assist-btn" type="button" aria-pressed="false">
+              <span class="assist-icon">▰</span>
+              <span>たんしん・いろ</span>
+            </button>
+            <button id="btnAssistRedMarks" class="assist-btn" type="button" aria-pressed="false">
+              <span class="assist-icon assist-icon-red">●</span>
+              <span>あかい・めもり</span>
+            </button>
+          </div>
+          <!-- ▲ -->
+        </div>
+
+        <!-- 右カラム：こたえカード＋テンキーカード -->
+        <div class="quiz-right">
+          <!-- ① じ・ふん入力専用カード -->
+          <div class="qa-wrap">
+            <!-- 問題文は上の問題バーに表示するのでここでは非表示 -->
+            <div class="answer-row">
+              <label class="answer-field" id="fieldHour">
+                <div class="answer-box">
+                  <input
+                    id="inputHour"
+                    type="text"
+                    inputmode="numeric"
+                    pattern="[0-9]*"
+                    maxlength="2"
+                  />
+                </div>
+                <span class="answer-label">じ</span>
+              </label>
+
+              <label class="answer-field" id="fieldMinute">
+                <div class="answer-box">
+                  <input
+                    id="inputMinute"
+                    type="text"
+                    inputmode="numeric"
+                    pattern="[0-9]*"
+                    maxlength="2"
+                  />
+                  <!-- 30ぷんモード用「はん」表示スロット -->
+                  <span class="half-display" id="halfDisplay"></span>
+                </div>
+                <span class="answer-label" id="minuteLabel">ふん</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- ② テンキー専用カード -->
+          <div class="keypad-wrap" id="keypad">
+            <!-- メッセージ用オーバーレイカード -->
+            <div class="keypad-overlay" id="feedbackArea" aria-live="polite"></div>
+
+            <!-- テンキー本体（数字＋なんじ／なんふん＋消す） -->
+            <div class="keypad-body">
+              <!-- 数字キー：1〜9＋0（7890 の横並び） -->
+              <div class="keypad-row keypad-row-num">
+                <button type="button" data-key="1">1</button>
+                <button type="button" data-key="2">2</button>
+                <button type="button" data-key="3">3</button>
+                <!-- 行の右端を 7・8・9・0 にそろえるための透明ダミー -->
+                <button
+                  type="button"
+                  class="keypad-dummy"
+                  tabindex="-1"
+                  aria-hidden="true"
+                ></button>
+              </div>
+
+              <div class="keypad-row keypad-row-num">
+                <button type="button" data-key="4">4</button>
+                <button type="button" data-key="5">5</button>
+                <button type="button" data-key="6">6</button>
+                <!-- 2行目も同じく透明ダミー -->
+                <button
+                  type="button"
+                  class="keypad-dummy"
+                  tabindex="-1"
+                  aria-hidden="true"
+                ></button>
+              </div>
+
+              <!-- 7・8・9・0 を横4つ -->
+              <div class="keypad-row keypad-row-num keypad-row-wide">
+                <button type="button" data-key="7">7</button>
+                <button type="button" data-key="8">8</button>
+                <button type="button" data-key="9">9</button>
+                <button type="button" data-key="0">0</button>
+              </div>
+
+              <!-- なんじ／なんふん -->
+              <div class="keypad-row keypad-row-mode">
+                <button type="button" class="key-mode" data-target="hour">なんじ</button>
+                <button type="button" class="key-mode" data-target="minute">なんふん</button>
+              </div>
+
+              <!-- 消す系：１つけす（back）／ぜんぶけす（clear） -->
+              <div class="keypad-row keypad-row-edit">
+                <button type="button" class="key-op" data-key="back">１つけす</button>
+                <button type="button" class="key-op" data-key="clear">ぜんぶけす</button>
+              </div>
+            </div>
+
+            <!-- こたえあわせ（ダミー：data-key を付けない） -->
+            <div class="keypad-row keypad-row-main">
+              <button type="button" class="key-main key-wide">
+                こたえあわせ
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+    <!-- リザルト画面 -->
+    <section id="resultPage" class="page page-result" aria-hidden="true">
+      <div class="panel">
+        <h1 class="panel-title">けっか</h1>
+        <p class="result-score" id="resultScore"></p>
+        <p class="result-message" id="resultMessage"></p>
+        <div class="panel-actions">
+          <button class="btn-primary" id="btnRetrySame" type="button">
+            もういちど おなじモード
+          </button>
+          <button class="btn-secondary" id="btnToSetup" type="button">
+            モードを えらびなおす
+          </button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- 設定モーダル -->
+  <div id="settingsOverlay" class="modal hidden" aria-hidden="true">
+    <div class="modal-inner">
+      <h2>せってい</h2>
+
+      <div class="modal-layout modal-layout-v2">
+        <!-- 左：すべての教材で共通にする操作 -->
+        <div class="modal-column modal-column-common">
+          <h3 class="modal-subtitle">きょうつう</h3>
+
+          <div class="common-setting-actions">
+            <button class="btn-secondary common-setting-btn" id="btnMenuBack" type="button">
+              ← もどる
+            </button>
+            <button class="btn-secondary common-setting-btn" id="btnMenuSound" type="button" aria-pressed="false">
+              🔊 おと ON
+            </button>
+          </div>
+        </div>
+
+        <!-- 右：この時計アプリだけの設定 -->
+        <div class="modal-column modal-column-clock">
+          <h3 class="modal-subtitle">この とけいの せってい</h3>
+
+          <div class="clock-settings-grid clock-settings-grid-single">
+            <div>
+              <h4 class="modal-mini-title">じかんの きざみ</h4>
+              <div class="modal-group"><label class="modal-radio"><input type="radio" name="minuteStep" id="optStep30" value="30" /> 30ぷんきざみ</label></div>
+              <div class="modal-group"><label class="modal-radio"><input type="radio" name="minuteStep" id="optStep5" value="5" checked /> ５ふんきざみ</label></div>
+              <div class="modal-group"><label class="modal-radio"><input type="radio" name="minuteStep" id="optStep1" value="1" /> １ぷんきざみ</label></div>
+
+              <h4 class="modal-mini-title is-muted">じかんの ひょうじ（じょうきゅう）</h4>
+              <div class="modal-group is-disabled">
+                <label class="modal-inline"><input type="checkbox" id="chkHour24" disabled /> <span class="modal-label-text">24じかん ひょうじを つかう</span> <span id="hourNotationBadge" class="hour-notation-badge">【12】</span></label>
+              </div>
+              <div class="modal-group is-disabled"><label><input type="checkbox" id="chkShowAmPm" disabled /> ごぜん／ごごラベルを ひょうじ</label></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-primary" id="btnCloseSettings" type="button">とじる</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- このアプリ固有のJS -->
+  <script src="./clock_svg.js" defer></script>
+  <script src="./clock_v2.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>算数テンプレ（cleanQuiz）</title>
+
+  <link rel="stylesheet" href="../../../common/shell/header.full.css">
+  <link rel="stylesheet" href="../../../common/shell/setup.full.css">
+  <link rel="stylesheet" href="./clean.css" />
+</head>
+
+<body
+  data-appkey="clean.quiz"
+  data-phase="quiz"
+  data-eq-size="m"
+  data-ox-size="m"
+  data-color-mode="color"
+>
+  <div class="app-root">
+
+    <!-- ヘッダー -->
+    <div id="slot-header"
+         data-slot="header"
+         data-title="算数(さんすう)テンプレ"
+         data-back="./clean_entry.html"></div>
+
+    <main class="app-main" id="mainArea">
+
+      <!-- =========================
+           quiz棚（完全に空）
+           ========================= -->
+      <section id="quizPage" class="page page-quiz">
+        <div id="quizShelf" class="quiz-shelf" aria-label="quiz shelf"></div>
+      </section>
+
+      <!-- =========================
+           result棚（フォールバックのみ）
+           実運用は ResultCard が使用される
+           ========================= -->
+      <section id="resultPage" class="page page-result" hidden>
+        <div class="result-inner">
+          <h2 class="result-title">けっか</h2>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ヘッダー構成 -->
+  <script>
+    window.AppShellOptions = window.AppShellOptions || {};
+    window.AppShellOptions.gearAction = "settings";
+
+    window.AppShellLayout = {
+      header:{ left:['backlink'], center:['title'], right:['settingsGear'] },
+      pbar:{ left:[], center:[], right:[] },
+      main:{ bottomCenter:[] },
+      footer:{ left:[], center:[], right:[] }
+    };
+  </script>
+
+  <!-- 共通レゴ -->
+  <script src="../../../common/shell/gear.full.js"></script>
+  <script src="../../../common/shell/kit.full.js"></script>
+  <script src="../../../common/shell/header.full.js"></script>
+  <script src="../../../common/shell/setup.full.js"></script>
+  <script src="../../../common/shell/result.full.js"></script>
+
+  <!-- clean本体 -->
+  <script src="./clean.js"></script>
+</body>
+</html>

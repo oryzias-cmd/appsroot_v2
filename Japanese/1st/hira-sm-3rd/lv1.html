@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>ことばれんしゅう（縦書き・中括弧２択/３択）</title>
+  <link rel="stylesheet" href="./lv1.css" />
+  <link rel="stylesheet" href="./quiz.css" />
+  <link rel="stylesheet" href="../../../jpcommon/shell/jpbase.css">
+
+</head>
+<body>
+
+  <main id="paper">
+    <!-- ヘッダー：左=まえへ / 中央=分数（常に中央） / 右=こたえあわせ→つぎへ -->
+    <section id="questionArea" aria-live="polite"></section>
+  </main>
+
+  <!-- ▼ 国語：右端ヘッダー帯（薄赤）＆隣の問題バー：器だけ -->
+<aside class="v-header"><div class="v-header-inner">
+  <div id="jpnHeaderTitle" class="v-title">国語</div>
+</div></aside>
+<aside class="v-problem"><div id="jpnProblemText" class="v-problem-inner"></div></aside>
+
+  <!-- ★新：種類別の問題プール -->
+  <script src="./problems.js"></script>
+  <script src="./lv1.js"></script>
+<script src="../../../jpcommon/shell/kit.js"></script>
+<script src="../../../jpcommon/shell/header.js"></script>
+<script src="../../../jpcommon/shell/problem.js"></script>
+<script src="../../../jpcommon/shell/footer.js"></script>
+<script>
+  // タイトルと問題バーの文言だけ設定（AppActionsの再定義はしない）
+  window.JpnHeader?.setTitle('ちいさい ことば、のばす ことば');
+  window.JpnProblem?.setText('ただしい ひらがなを ていねいに えらぼう。');
+</script>
+
+</body>
+</html>

@@ -1,0 +1,388 @@
+/* ui.final.css — 最終オーバーライド（安全固定） */
+.hidden{ display:none !important; }
+#settingsPanel.hidden{ display:none !important; }
+
+.board-body.hide-grid  .masu-overlay{ display:none !important; }
+.board-body.hide-labels .lane-labels,
+.board-body.hide-labels .rank-labels,
+.board-body.hide-labels .labels,
+.board-body.hide-labels [data-role="labels"]{ display:none !important; }
+
+.input-panel .formula{ display:flex; align-items:center; gap:.5rem; }
+
+.controls-grid{
+  display:grid;
+  grid-auto-flow:column;
+  grid-auto-columns:max-content;
+  align-items:center;
+  justify-content:start;
+  gap:.5rem;
+}
+/* ==== 再生ボタン（児童向け）最終オーバーライド ==== */
+:root{
+  --btn-blue:    #99c8ff;
+  --btn-blue-bg: #e8f3ff;
+  --btn-red:     #ff9999;
+  --btn-red-bg:  #ffeaea;
+}
+
+/* ここで最終固定（!important で当たり負け防止） */
+#pauseBtn,
+button#pauseBtn {
+  -webkit-appearance: none;
+  appearance: none;
+  box-sizing: border-box !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: .4em;
+
+  width: 8em !important;          /* ← 幅固定 */
+  height: 44px !important;        /* ← 高さ“物理”固定（指で押しやすい） */
+  padding: 0 14px !important;     /* ← 上下0、左右だけ余白 */
+  font-size: 18px !important;     /* ← 親のfont-size影響を遮断 */
+  line-height: 1 !important;
+
+  border-radius: .6em !important;
+  border: 1.5px solid var(--btn-blue) !important;
+  background: var(--btn-blue-bg) !important;
+  outline: none !important;
+  box-shadow: none !important;
+
+  transition: background-color .15s ease, border-color .15s ease, box-shadow .15s ease, transform .05s ease;
+  cursor: pointer;
+}
+
+/* 再生中（とまる表示）＝薄赤 */
+#pauseBtn.is-play,
+button#pauseBtn.is-play {
+  border-color: var(--btn-red) !important;
+  background:   var(--btn-red-bg) !important;
+}
+
+/* フォーカスの視認性（黒輪郭を排除） */
+#pauseBtn:focus-visible,
+button#pauseBtn:focus-visible {
+  outline: none !important;
+  box-shadow: 0 0 0 3px rgba(153,200,255,.45) !important;
+}
+
+/* クリック時のわずかな沈み込み */
+#pauseBtn:active,
+button#pauseBtn:active {
+  transform: translateY(1px) !important;
+  box-shadow: none !important;
+}
+
+/* ===== ステップ描画用 ===== */
+
+/* 立たない位（×） */
+.cell.is-x{
+  color: red;
+  font-weight: 700;
+}
+
+/* 商スキャン中の枠 */
+.cell.is-scan{
+  outline: 1px solid orange;
+  border-radius: 4px;
+}
+
+/* 薄赤ハイライト */
+.cell.alert{
+  background-color: rgba(255,128,128,0.35);
+}
+
+/* 引き算の横線 */
+.sub-line{
+  position: absolute;
+  height: 1px;
+  background: #000;
+  left: 0;
+  right: 0;
+  top: 0;
+}
+
+/* 商セル（オーバーレイ）用の最低限の安全色指定（Renderer側でも指定） */
+.quot-overlay .qcell.x { color: red; }
+.quot-overlay .qcell.scan { outline: 1px solid orange; border-radius: 4px; }
+
+/* ===== overlay整列・書体統一（追加） ===== */
+.board-body .cell,
+.board-body .qcell,
+.board-body .pcell,
+.board-body .rcell,
+.board-body .label{
+  font-family: inherit !important;
+  line-height: var(--cell) !important;
+}
+
+/* 被除数は左寄せ（括弧に寄り添う） */
+.dividend .cell{ justify-content: flex-start; }
+
+/* 走査中のオレンジ枠と× */
+.overlay-row .qcell.scan{ outline: 2px solid orange; border-radius: 6px; }
+.overlay-row .qcell .mark-x{ color:#e53935; font-weight:700; }
+
+/* 減算横線＆上横線（太さ2px） */
+.board-body .diff-line,
+.board-body .top-line{ background:#000; height:2px; }
+
+/* ===== 盤面（左パネル）全体の書体を教科書体に固定 ===== */
+.board-body,
+.board-body .slot,
+.board-body .cell,
+.board-body .lbl {
+  font-family:
+    "UD デジタル 教科書体 N-R",
+    "UD Digi Kyokasho N-R",
+    "UD デジタル 教科書体",
+    "BIZ UDゴシック Regular",
+    "BIZ UDGothic",
+    "Yu Gothic",
+    "YuGothic",
+    "Hiragino Kaku Gothic ProN",
+    system-ui,
+    sans-serif !important;
+  line-height: var(--cell) !important;
+}
+
+/* 被除数は「）に寄り添う」＝左寄せ */
+#slot-dividend .cell{
+  display:flex;
+  align-items:center;
+  justify-content:flex-start; /* ← 左寄せ */
+}
+
+/* 行5の“上横線”は slot-dividend 内のダミー要素で引く（px ではなく列スパンで） */
+#slot-dividend .topline{
+  height: 0;                /* 行高さを食べない */
+  border-top: 2px solid #000;
+  justify-self: stretch;    /* 列スパン全体に伸びる */
+  align-self: start;        /* 行の上辺に配置（=「被除数の上」） */
+}
+
+/* ========= 数字のサイズをまとめて調整できるつまみ ========= */
+:root{
+  /* 0.80 なら「セル高さ×80%」…必要なら数値だけ変えて再調整できます */
+  --digit-scale: 0.80;
+}
+
+/* 盤面の数字を全部そろえる（式以外も同サイズに） */
+.board-body .cell,
+.board-body .qcell,
+.board-body .pcell,
+.board-body .rcell,
+.board-body .lbl {
+  font-size: calc(var(--cell) * var(--digit-scale));
+  line-height: var(--cell);
+}
+
+/* ====== 数字の見た目の仕上げ ====== */
+/* 教科書体は視覚的に上寄りに見えるので、+1pxだけ下げる */
+.board-body .cell,
+.board-body .qcell,
+.board-body .pcell,
+.board-body .rcell,
+.board-body .lbl{
+  transform: translateY(1px);
+}
+
+/* 走査中のオレンジ枠を“正方形”でマスにピッタリ合わせる */
+.quot-overlay .qcell{
+  height: var(--cell) !important;
+  box-sizing: border-box;
+}
+.quot-overlay .qcell.scan{
+  outline: 2px solid #ff9800;
+  outline-offset: -1px;       /* はみ出し防止 */
+  border-radius: 6px;
+  color: #e53935;             /* × は赤で表示（商を置くと scan を外すので影響なし） */
+  font-weight: 700;
+}
+
+/* 横線の太さを共通化（上も下も同じ太さになる） */
+:root{ --line-thick: 2.2px; }
+
+.hline{
+  height: var(--line-thick);
+  background: #000;
+  pointer-events: none;
+}
+
+/* ===== 共通：横線の太さ（上も下もこれで統一） ===== */
+:root{ --line-thick: 2.2px; }
+.hline{ height: var(--line-thick); background:#000; pointer-events:none; }
+
+/* ===== 走査枠：正方形でセルぴったり（既存より強い指定） ===== */
+.board-body .quot-overlay .qcell{ position:relative; height:var(--cell) !important; box-sizing:border-box; }
+.board-body .quot-overlay .qcell .scan-box{
+  position: absolute;
+  /* ← qcell が横長でも、枠は常に 1マス四方にする */
+  width: var(--cell);
+  height: var(--cell);
+  left: 50%;
+  top: 0;
+  transform: translateX(-50%);
+  outline: 2px solid #ff9800;
+  outline-offset: -1px;
+  border-radius: 6px;
+  pointer-events: none;
+}
+.board-body .quot-overlay .qcell .mark-x{
+  color:#e53935; font-weight:700; font-size:calc(var(--cell)*0.55); line-height:var(--cell);
+}
+
+/* ====== 最終オーバーライド：横線の太さと走査枠 ====== */
+:root{ --line-thick: 2.2px; }
+
+/* 上下の横線（top-line/diff-line）を同じ太さに固定 */
+.board-body .top-line,
+.board-body .diff-line,
+.board-body .hline{
+  height: var(--line-thick) !important;
+  background: #000 !important;
+}
+
+/* 旧スタイルで付く“縦長の枠”を無効化して、新方式に一本化 */
+.overlay-row .qcell.scan{ outline: none !important; }
+
+/* 正方形の走査枠（セルにぴったり）＋ ×は小さめ赤 */
+.board-body .quot-overlay .qcell{ position: relative; height: var(--cell) !important; box-sizing: border-box; }
+.board-body .quot-overlay .qcell .scan-box{
+  position: absolute; inset: 0;
+  outline: 2px solid #ff9800; outline-offset: -1px; border-radius: 6px;
+  pointer-events: none;
+}
+.board-body .quot-overlay .qcell .mark-x{
+  color: #e53935; font-weight: 700;
+  font-size: calc(var(--cell) * 0.55); line-height: var(--cell);
+}
+
+/* ===== 正方形の走査枠と × のスタイル（最終仕上げ） ===== */
+.board-body .quot-overlay .qcell {
+  position: relative;
+  height: var(--cell) !important;
+  box-sizing: border-box;
+}
+
+/* 正方形の走査枠（はみ出さないよう “border” で描く） */
+.board-body .quot-overlay .qcell .scan-box{
+  position:absolute;
+  /* 90%サイズの正方形をセル中央に */
+  width:  calc(var(--cell) * 0.90);
+  height: calc(var(--cell) * 0.90);
+  left:50%;
+  top:  calc(var(--cell) * 0.05);
+  transform: translateX(-50%);
+
+  border: 3px solid #ff9800;   /* ← 太く・視認性UP（outlineは使わない） */
+  border-radius: 8px;
+  pointer-events:none;
+}
+
+/* 赤い×：少し小さめで中央に */
+.board-body .quot-overlay .qcell .mark-x {
+  color: #e53935;
+  font-weight: 700;
+  font-size: calc(var(--cell) * 0.55);
+  line-height: var(--cell);
+}
+
+/* === 正方形の走査枠：はみ出しゼロ・強制上書き === */
+.board-body .quot-overlay .qcell { position: relative; height: var(--cell) !important; }
+
+.board-body .quot-overlay .qcell .scan-box{
+  position: absolute !important;
+  box-sizing: border-box !important;
+  width:  calc(var(--cell) * 0.90) !important;   /* ← 一回り小さく */
+  height: calc(var(--cell) * 0.90) !important;
+  left: 50% !important;
+  top:  calc(var(--cell) * 0.05) !important;     /* ← 内側に5%下げる */
+  transform: translateX(-50%) !important;
+
+  border: 3px solid #ff9800 !important;          /* ← 太く・視認性UP */
+  border-radius: 8px !important;
+  pointer-events: none !important;
+}
+
+/* 文字の微調整つまみ：X=左右、Y=上下（px単位で小さく） */
+:root{
+  --digit-nudge-x: 0.4px;  /* ← 右へ寄せる量。0.2〜0.6pxくらいで調整 */
+  --digit-nudge-y: 0px;    /* ← 上下は 0px のまま */
+}
+
+.board-body .cell,
+.board-body .qcell,
+.board-body .pcell,
+.board-body .rcell{
+  transform: translate(var(--digit-nudge-x), var(--digit-nudge-y));
+}
+/* 位ラベルは動かさない（線の基準に使うため） */
+.board-body .lbl{ transform: none; }
+
+/* --- 筆算の横線の基準を .board-body に固定 --- */
+.board-body { position: relative; }
+
+/* 横線の見た目（共通） */
+.hline { height: var(--line-thick, 2px); background: #000; }
+
+/* 数字は微調整OK、位ラベルは基準なので動かさない */
+.board-body .cell,
+.board-body .qcell,
+.board-body .pcell,
+.board-body .rcell { 
+  transform: translate(var(--digit-nudge-x,0px), var(--digit-nudge-y,0px));
+}
+.board-body .lbl { transform: none; }
+/* 横線は .board-body を基準に最前面に重ねる */
+.board-body { position: relative; }
+.hline {
+  position: absolute;        /* 念のためここにも指定 */
+  height: var(--line-thick, 2px);
+  background: #000;
+  z-index: 6;                /* グリッドや数字より上に出す */
+  pointer-events: none;
+}
+/* ---- レイヤ順を固定（上に行くほど前面） ---- */
+.board-body { position: relative; z-index: 0; }
+
+/* 括弧・スキャン枠より横線を前面に */
+#bracketImg { position: absolute; z-index: 40; pointer-events: none; }
+.scan-box   { position: absolute; z-index: 80; pointer-events: none; }
+
+/* 横線（上横線/下横線）は最前面に固定 */
+.grid-left, .grid-right { pointer-events: none; }  /* ← これだけでOK */
+/* 横線は常に最前面。マス目より前、括弧よりも前 */
+.board-body{ position: relative; overflow: visible; } /* ← はみ出しで切れないように */
+.hline,
+#toplineAbs,
+.diff-line{
+  position:absolute;
+  z-index:9999 !important;
+  height:var(--line-thick,2px);
+  background:#000;
+  pointer-events:none;
+  opacity:1;
+  display:block;
+}
+#bracketImg{ position:absolute; z-index: 40; pointer-events: none; }
+/* グリッドは素通し（クリック不可） */
+.grid-left,.grid-right{ pointer-events:none; }
+/* マス目オーバーレイの層を下げておく（保険） */
+.masu-overlay,
+.grid-overlay::before,
+.grid-overlay::after,
+.grid-right::before,
+.grid-right::after {
+  z-index: 10 !important;
+}
+/* 横線の太さを一括指定（上・下とも3pxに） */
+.board-body { --line-thick: 2px; }
+
+.hline,
+#toplineAbs,
+#diffLine{
+  height: var(--line-thick, 2px);
+  background: #000;
+}

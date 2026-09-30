@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>一年 国語｜かくしことば</title>
+
+  <link rel="stylesheet" href="../../../jpcommon/jpshell/jpbase.css">
+  <link rel="stylesheet" href="../../../jpcommon/jpshell/jpsetup.full.css">
+  <link rel="stylesheet" href="../../../jpcommon/jpshell/jpactionpanel.full.css">
+  <link rel="stylesheet" href="../../../jpcommon/jpshell/jpentry.full.css">
+  <link rel="stylesheet" href="./nakaniha.css">
+  <link rel="stylesheet" href="../../../jpcommon/jpshell/jpproblem.full.css">
+  <link rel="stylesheet" href="../../../jpcommon/jpshell/jpheader.full.css">
+  <link rel="stylesheet" href="../../../jpcommon/jpshell/jpresult.full.css">
+</head>
+
+<body class="app-vertical-jpn screen-quiz">
+  <div class="v-grid">
+    <aside class="v-side" aria-label="右サイド（国語）">
+      <div class="v-side-top">
+        <a class="backlink" href="./nakaniha_entry.html">もどる</a>
+      </div>
+
+      <div class="v-side-middle">
+        <aside class="v-problem" aria-label="問題（縦バー）">
+          <div id="jpnProblemMount"></div>
+        </aside>
+
+        <aside class="v-header" aria-label="メニュー（縦ヘッダー）">
+          <div id="jpnHeaderMount"></div>
+        </aside>
+      </div>
+
+<div class="v-side-bottom v-side-top">
+  <a id="btnGear" class="backlink" href="#" role="button" aria-label="せってい"></a>
+</div>
+    </aside>
+
+    <main class="v-board" aria-label="メイン（クイズ）">
+      <div id="appRoot">
+        <div class="kakushi-board">
+          <!-- 左：ヒント -->
+          <section class="pane pane-left" aria-label="ヒント">
+            <div id="hintArea" class="hint-area"></div>
+          </section>
+
+          <!-- 中央：本文どーん -->
+          <section class="pane pane-center">
+            <div id="sentenceArea" class="sentence"></div>
+            <div id="judgeLayer" class="judge-layer"></div>
+          </section>
+
+          <!-- 右：ActionPanel（マウント先） -->
+          <section class="pane pane-right">
+            <!-- 進捗（右カラム上） -->
+            <div class="progress-box" id="progressBox" aria-label="もんすう">
+              <span class="progress-current" id="progressCurrent">1</span>
+              <span class="progress-line" aria-hidden="true"></span>
+              <span class="progress-total" id="progressTotal">1</span>
+            </div>
+
+            <div id="actionMount"></div>
+          </section>
+        </div>
+      </div>
+    </main>
+
+    <aside class="v-tool" aria-label="ツール（ボタン）">
+    </aside>
+  </div>
+
+  <!-- data -->
+  <script src="data.js"></script>
+
+  <!-- SetupCard（JS本体） -->
+  <script src="../../../jpcommon/jpshell/jpsetup.full.js"></script>
+
+  <!-- shell -->
+  <script src="../../../jpcommon/jpshell/jpheader.js"></script>
+  <script src="../../../jpcommon/jpshell/jpproblem.js"></script>
+  <script src="../../../jpcommon/jpshell/jpentry.full.js"></script>
+  <script>
+    window.AppShellOptions = window.AppShellOptions || {};
+    window.AppShellOptions.gearAction = "settings";
+  </script>
+
+  <!-- kit -->
+  <script src="../../../common/shell/gear.full.js"></script>
+  <script src="../../../jpcommon/jpshell/jpkit.js"></script>
+  <script src="../../../jpcommon/jpshell/jpactionpanel.full.js"></script>
+
+  <!-- app -->
+  <script src="../../../jpcommon/jpshell/jpresult.full.js"></script>
+  <script src="./nakaniha.js"></script>
+</body>
+</html>

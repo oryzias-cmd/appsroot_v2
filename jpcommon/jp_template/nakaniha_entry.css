@@ -1,0 +1,63 @@
+/* =========================================================
+   entry.css（国語 entry の“舞台装置”）
+   目的：
+   - entry（screen-menu）では SetupCard だけを見せる
+   - SetupCard 本体の見た目・寸法・縦組み配置は「jpsetup.full.css」の責務
+   ここ（entry.css）の責務：
+   - 右帯（縦ヘッダー／縦問題帯）を消す
+   - 背景色を白に統一して、余計な外周グレーを出さない
+   - appshell 側の背景が乗っても見た目が崩れないようにする
+   方針：
+   - 最小差分のみ（例外は増やさない）
+   ========================================================= */
+
+/* =========================================================
+   1) 画面全体：背景は白（算数 entry と同じ規則）
+   ========================================================= */
+
+html, body{
+  background: #ffffff;
+}
+
+/* =========================================================
+   2) entry（screen-menu）：右帯を消して SetupCard だけ見せる
+   - v-header : 右縦ヘッダー
+   - v-problem: 右縦問題帯（problemLines の見え）
+   ========================================================= */
+
+/* entry（screen-menu）でも v-header は使う（＝レゴ header を表示）
+   problem は entry では不要なので非表示のまま */
+/* 通常menu：problem列ごと不要なので消す */
+body.screen-menu:not(.entry-mode) .v-problem{
+  display: none !important;
+}
+
+/* entry-mode：problem列の幅(100px)は残し、中身だけ消す */
+body.entry-mode .v-problem{
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* =========================================================
+   3) 右帯を消した後の下地
+   - v-board : 右帯ぶんを消したあとの“板”
+   - v-grid  : appshell 側が背景色を塗ってくる場合の保険（白固定）
+   ========================================================= */
+
+body.screen-menu .v-board{
+  background: transparent;
+}
+
+body.screen-menu .v-grid{
+  background: #ffffff;
+}
+
+/* ===== 歯車アイコン強化（文字⚙のまま） ===== */
+a.backlink#btnGear {
+  font-family: "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif;
+  font-size: 18px;      /* ← ここで大きさ調整 */
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

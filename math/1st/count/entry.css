@@ -1,0 +1,13 @@
+/* entry.css（count entry 個別上書き）
+   例外が必要なときだけ、ここで entry.full.css を上書きする。
+*/
+
+/* 下切れ対策：余白を少し詰める（必要なら） */
+#mainArea .setupcard-wrap{
+  padding: 6px 10px 16px;
+}
+
+/* 文字サイズを少しだけ詰めたい場合（必要なら）
+#mainArea .setupcard-card .setupcard-title{ font-size: 22px; }
+#mainArea .setupcard-card label{ font-size: 18px; }
+*/

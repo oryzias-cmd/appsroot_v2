@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>割り算の筆算（整数版・完全形）</title>
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/ui.final.css">
+</head>
+<body>
+  <div class="app">
+    <!-- 入力欄とテンキー -->
+    <div class="input-panel">
+<div class="formula">
+<input id="expr" placeholder="例）120 ÷ 105"
+       inputmode="numeric" autocomplete="off" autocapitalize="off"
+       spellcheck="false" />
+<button id="settingsToggle" class="settings-btn" aria-expanded="false" title="設定">⚙️</button>
+<div id="settingsPanel" class="settings-panel hidden">
+  <label class="opt">
+    <input type="checkbox" id="toggleGrid" checked>
+    <span>マス目を表示</span>
+  </label>
+  <label class="opt">
+    <input type="checkbox" id="toggleLabels" checked>
+    <span>位ラベルを表示</span>
+  </label>
+</div>
+</div>
+
+  <!-- ここに「計算の進め方」を後で描画 -->
+</div>
+    </div>
+
+<!-- 上パネル（式入力）の直下を、左右2カラムでそろえる -->
+<div class="main-panels">
+  <div class="board-panel">
+<div class="board-toolbar" id="boardToolbar">
+  <button id="pauseBtn" class="ctrl-btn">▶ すすむ</button>
+  <label class="speed">
+    速度
+    <input id="speedSliderTop" type="range" min="0.25" max="2" step="0.25" value="1">
+    <span id="speedValueTop">1.00×</span>
+  </label>
+  <label class="auto">
+    <input id="autoPlayTop" type="checkbox"> 自動再生
+  </label>
+</div>
+    <!-- （中身そのまま：盤の黒枠＋board-body） -->
+    <div class="board-body" id="board">
+        <!-- 割り算の括弧（固定表示） -->
+  <img id="bracketImg" src="img/bracket.png" alt=")" />
+      <div class="board-grid">
+<div class="grid-left mini-grid"></div>
+        <div class="grid-right"></div>
+        <div class="bracket"></div>
+
+        <!-- 上4行スロット -->
+        <div id="slot-labels" class="slot r1 right4"></div>
+        <div id="slot-qfix2" class="slot r2 right4"></div>
+        <div id="slot-qfix1" class="slot r3 right4"></div>
+        <div id="slot-qfinal" class="slot r4 right4"></div>
+
+        <!-- 5行目：除数/被除数 -->
+        <div id="slot-divisor"  class="slot r5 left3"></div>
+        <div id="slot-dividend" class="slot r5 right4"></div>
+
+        <!-- 6行目：部分積 -->
+        <div id="slot-prod" class="slot r6 right4"></div>
+        <!-- 7行目：差 -->
+        <div id="slot-diff" class="slot r7 right4"></div>
+      </div>
+    </div>
+  <!-- 左パネルの中の操作バー（1行） -->
+<div class="board-controls">
+  <button id="nextExpr">次の式</button>
+  <button id="reset">⟳ やり直し</button>
+  <span class="board-controls-spacer"></span>
+  <button id="prev">◀ 戻る</button>
+  <button id="next">次へ ▶</button>
+</div>
+</div>
+
+  <!-- 右：テンキー（開始前）→ 工程（開始後） -->
+  <div class="right-panel" id="process">
+    <div class="tenkey-panel" id="tenkeyPanel">
+      <div class="tenkey-grid">
+        <!-- 1段目 -->
+        <button data-key="7">7</button>
+        <button data-key="8">8</button>
+        <button data-key="9">9</button>
+        <button data-key="back">⌫</button>
+        <!-- 2段目 -->
+        <button data-key="4">4</button>
+        <button data-key="5">5</button>
+        <button data-key="6">6</button>
+        <button data-key="clear">AC</button>
+        <!-- 3段目 -->
+        <button data-key="1">1</button>
+        <button data-key="2">2</button>
+        <button data-key="3">3</button>
+        <button data-key="÷">÷</button>
+        <!-- 4段目 -->
+        <button data-key="0">0</button>
+        <button data-key=".">.</button>
+        <button class="enter" data-key="enter">＝</button>
+        <div></div>
+      </div>
+    </div>
+
+    <!-- 将来：計算工程の表示をここに -->
+  </div>
+
+<script src="js/engine.js"></script>
+<script src="js/player.js"></script>
+<script src="js/renderer.js"></script>
+<!-- 入力ガードは外部ファイルに一本化 -->
+<script src="js/input_guard.js"></script>
+<script src="js/ui.js"></script>
+
+</body>
+</html>

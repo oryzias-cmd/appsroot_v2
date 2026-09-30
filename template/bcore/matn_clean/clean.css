@@ -1,0 +1,16 @@
+/* clean.css（cleanQuiz最小）
+   目的：既定の余白を消し、ヘッダー周りの隙間を無くす
+*/
+
+html, body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+}
+
+.app-root {
+  min-height: 100%;
+}

@@ -1,0 +1,80 @@
+/* ============================================
+   common/shell/footer.full.css
+   レゴフッター用フル版（footer.full.js 専用）
+   - footer.full.js が作る <footer class="ctrl">
+       <div class="left"></div>
+       <div class="center"></div>
+       <div class="right"></div>
+   - フッター“だけ”を担当（高さ・3分割とボタン位置）
+   ============================================ */
+
+/* デフォルト値（アプリ側で上書きOK） */
+:root{
+  --footer-h: 40px;          /* フッター固定高 */
+  --footer-side-col: 120px;  /* 左右セルの幅 */
+  --footer-gap: 0px;
+
+  /* フッターボタンの基準サイズ */
+  --ctrl-w: 140px;
+  --ctrl-h: 44px;
+  --ctrl-r: 12px;
+  --ctrl-bw: 2px;
+  --ctrl-px: 16px;
+  --ctrl-font: 16px;
+  --ctrl-font-w: 600;
+}
+
+/* フッター本体：左右固定・中央可変の3分割 */
+footer.ctrl{
+  display: grid;
+  grid-template-columns: var(--footer-side-col) 1fr var(--footer-side-col);
+  align-items: center;
+  justify-items: center;
+  gap: var(--footer-gap);
+  flex: 0 0 var(--footer-h);
+  height: var(--footer-h);
+  padding: 0;
+  box-sizing: border-box;
+  background: #fff;
+
+  /* メインとの境目ライン（レゴ標準） */
+  border-top: 1px solid #c8c8c8;
+
+  /* うっすら影も残す */
+  box-shadow: 0 -2px 4px rgba(0,0,0,0.06);
+}
+
+/* 内部の3セル：ボタン列を中央揃え */
+footer.ctrl .left,
+footer.ctrl .center,
+footer.ctrl .right{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 中央だけはボタンを横に並べやすいように少し隙間 */
+footer.ctrl .center{
+  gap: 16px;
+}
+
+/* フッター内のボタン（Parts.primary / Parts.next など） */
+footer.ctrl .btn,
+footer.ctrl button{
+  min-width: var(--ctrl-w);
+  height: var(--ctrl-h);
+  padding: 0 var(--ctrl-px);
+  border-radius: var(--ctrl-r);
+  border-width: var(--ctrl-bw);
+  font-size: var(--ctrl-font);
+  font-weight: var(--ctrl-font-w);
+  box-sizing: border-box;
+
+  /* base.css なしでも文字が崩れないようにする */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  white-space: nowrap;
+  font: inherit;
+}

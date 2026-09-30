@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+
+<link rel="stylesheet" href="../../../common/shell/shape.full.css">
+
+<link rel="stylesheet" href="../../../common/shell/header.full.css">
+<link rel="stylesheet" href="../../../common/shell/pbar.full.css">
+<link rel="stylesheet" href="../../../common/shell/footer.full.css">
+
+  <title>正しい図形を選ぼう</title>
+<style>
+/* app2-choose 固有（版面には触れない） */
+.board { position: relative; padding: 10px; }
+
+.item{
+  position:absolute;
+  width: var(--cell-size, 180px);
+  aspect-ratio: 1 / 1;
+  display:flex; align-items:center; justify-content:center; cursor:pointer;
+  border:2px solid transparent;
+  border-radius:14px;
+  overflow:hidden;               /* 角丸内側だけ表示 */
+  background-clip: padding-box;
+  transition: background-color .08s ease, box-shadow .08s ease;
+}
+.item.selected{
+  background: rgba(0,0,0,.04);
+  box-shadow:
+    0 0 0 2px #000 inset,
+    0 6px 16px rgba(0,0,0,.08);
+}
+.item.locked{ cursor:not-allowed; opacity:.75; }
+
+    /* ○ × マーク（CSSで描画）*/
+:root{
+  --mark-red: #d60000;     /* 赤○ */
+  --mark-x:   #0a66ff;     /* 青× */
+}
+
+/* ○×マークをセル中央に大きく表示（shape.full.css の .mark と衝突しない命名に変更） */
+.cellmark{
+  position:absolute;
+  left:50%; top:50%;
+  width:min(70%,90px); height:min(70%,90px);
+  transform:translate(-50%,-50%);
+  pointer-events:none;
+}
+.cellmark.o::before{
+  content:"";
+  position:absolute; inset:0;
+  border:6px solid var(--mark-red);
+  border-radius:50%;
+}
+.cellmark.x::before, .cellmark.x::after{
+  content:"";
+  position:absolute; left:50%; top:50%;
+  width:6px; height:100%;
+  background:var(--mark-x);
+  transform-origin:center;
+}
+.cellmark.x::before{ transform:translate(-50%,-50%) rotate(45deg); }
+.cellmark.x::after { transform:translate(-50%,-50%) rotate(-45deg); }
+
+/* 1回目正解の赤○を“保持”するための専用クラス */
+.cellmark.keep-o::before{ border-color: var(--mark-red); }
+
+    /* 花丸（中央演出：赤い○を拡大） */
+    .hanamaru{
+      position:absolute; inset:0; display:flex; align-items:center; justify-content:center; pointer-events:none;
+      animation: pop .6s ease-out;
+    }
+    .hanamaru::before{
+      content:""; width:min(38vmin, 420px); height:min(38vmin, 420px);
+      border:10px solid var(--mark-red); border-radius:50%;
+      filter: drop-shadow(0 6px 0 rgba(214,0,0,.12));
+      background: radial-gradient(transparent 68%, rgba(214,0,0,.08) 70% 72%, transparent 73%);
+    }
+    @keyframes pop{
+      0%{ transform: scale(.7); opacity:.0; } 60%{ transform: scale(1.04); opacity:1; } 100%{ transform: scale(1); }
+    }
+
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+  <!-- ▼ ヘッダー（第2弾そのまま） -->
+<header class="title">
+  <a class="backlink" href="./shapes_entry.html">← もどる</a>
+  <h1>
+    <button id="triBtn"  class="mode-btn mode-btn--xl is-active" type="button">三角形</button>
+     と
+    <button id="quadBtn" class="mode-btn mode-btn--xl" type="button">四角形</button>
+     を えらぼう
+  </h1>
+  <div class="header-right">
+    <button id="soundBtn" class="sound-btn" type="button">🔈 OFF</button>
+  </div>
+</header>
+
+<!-- ▼ 問題（共通 .problem-bar 構造） -->
+<section class="problem">
+  <div class="problem-bar">
+    <div class="problem-left">
+    </div>
+    <div class="problem-center">
+      <p id="message"></p>
+    </div>
+    <div class="problem-right">
+      <!-- 右側に将来のボタン（音声/タイマー等）を置く想定 -->
+    </div>
+  </div>
+</section>
+
+    <main class="board" id="board" aria-live="polite"></main>
+
+<!-- ▼ フッター（3分割構成：共通CSSを利用） -->
+<footer class="ctrl">
+  <div class="left"></div>
+
+  <div class="center">
+    <button id="backBtn" class="btn">一つもどる</button>
+    <button id="retryBtn" class="btn">やり直し</button>
+  </div>
+
+  <div class="right">
+    <button id="checkBtn" class="btn main">こたえあわせ</button>
+  </div>
+</footer>
+
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const btn   = document.getElementById("colorToggleBtn"); // 無い可能性あり
+  const saved = localStorage.getItem("shapeColorOn");       // "1" | "0" | null
+
+  const toBool = (v) => v === "1";
+
+  const setUI = (on) => {
+    if (!btn) return; // ← ガード（ボタン未設置でも落とさない）
+    btn.classList.toggle("is-active", !!on);
+    btn.setAttribute("aria-pressed", String(!!on));
+    btn.textContent = on ? "色あり" : "色なし";
+  };
+
+  function recolor(on) {
+    const isOn = !!on;
+    document.querySelectorAll(".shape svg").forEach((svg) => {
+      const fillColor = svg.dataset.color || "#f3f3f3";
+      svg
+        .querySelectorAll("polygon, path, rect, circle, ellipse, polyline")
+        .forEach((el) => {
+          if (!el.getAttribute("stroke")) el.setAttribute("stroke", "#000");
+          el.setAttribute("fill", isOn ? fillColor : "none");
+        });
+    });
+  }
+
+  const initOn = saved == null ? false : toBool(saved);
+  setUI(initOn);   // UI（あれば）
+  recolor(initOn); // 色の実適用（UIの有無に依存しない）
+
+  if (btn) {
+    btn.addEventListener("click", () => {
+      const nowOn = btn.getAttribute("aria-pressed") !== "true";
+      setUI(nowOn);
+      localStorage.setItem("shapeColorOn", nowOn ? "1" : "0");
+      recolor(nowOn);
+    });
+  }
+});
+</script>
+<script>
+/* tri/quad 切替と初期適用（最小差分） */
+document.addEventListener('DOMContentLoaded', () => {
+  const AS = (window.AppState = window.AppState || {});
+  if (!AS.target) AS.target = 'tri'; // 既定は三角形
+
+  const btnTri  = document.getElementById('btnTri');
+  const btnQuad = document.getElementById('btnQuad');
+
+  const applyModeUI = () => {
+    if (btnTri)  btnTri.classList.toggle('is-active',  AS.target === 'tri');
+    if (btnQuad) btnQuad.classList.toggle('is-active', AS.target === 'quad');
+  };
+
+  // 2択クリックで target を更新 → UI & メッセージ適用
+  if (btnTri) {
+    btnTri.addEventListener('click', () => {
+      AS.target = 'tri';
+      applyModeUI();
+      if (window.applyMessage) window.applyMessage();
+    });
+  }
+  if (btnQuad) {
+    btnQuad.addEventListener('click', () => {
+      AS.target = 'quad';
+      applyModeUI();
+      if (window.applyMessage) window.applyMessage();
+    });
+  }
+
+  // 初期表示
+  applyModeUI();
+  if (window.applyMessage) window.applyMessage();
+});
+</script>
+
+<script>
+/* ===== Lv2：問題文の表示（第4弾Lv2の書式を流用：app2用の文言に変更） ===== */
+window.applyMessage = function(){
+  const el = document.getElementById('message');
+  if (!el) return;
+  const AS = window.AppState || {};
+  el.textContent = (AS.target === 'tri')
+    ? '正しい 三角形を ぜんぶ えらんでね。'
+    : '正しい 四角形を ぜんぶ えらんでね。';
+};
+</script>
+
+<!-- ▼ 共通パーツ（controls/kit） -->
+  <script src="../../../common/controls/kit.full.js" defer></script>
+
+  <!-- ▼ シェル枠（レゴ部品） -->
+  <script src="../../../common/shell/header.full.js" defer></script>
+  <script src="../../../common/shell/pbar.full.js" defer></script>
+  <script src="../../../common/shell/footer.full.js" defer></script>
+
+  <script src="../../../common/core.js"></script>
+  <script src="../../../common/marks.js"></script>
+  <script src="../../../common/geometry/controls.js"></script>
+  <script src="../../../common/geometry/grid.js"></script>
+<!-- <script src="../../common/geometry/judge.js"></script>  ← 必要なら解除 -->
+
+<!-- app2 専用 -->
+  <script src="./shape2pickData.js"></script>
+  <script src="./shape2pick.js"></script>
+
+</body>
+</html>
+

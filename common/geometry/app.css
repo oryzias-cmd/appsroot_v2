@@ -1,0 +1,218 @@
+/* 中央小丸（カラータイマー） */
+.center-dot{
+  position:absolute; width:40px; height:40px; border-radius:999px;
+  background:#ffd; border:2px solid #fc0; box-shadow: 0 0 0 2px rgba(255,200,0,.15) inset;
+  pointer-events:auto; display:none;
+}
+.center-dot.small{ width:28px; height:28px; }
+.center-dot.tiny { width:22px; height:22px; }
+
+/* 頂点・線 */
+.point{ fill:#000; stroke:#000; stroke-width:1.5; }
+
+/* 課題ボタン群（Lv4時。ヘッダーと同じ大きめ） */
+.task-switch{ display:flex; gap:10px; align-items:center; }
+
+/* 無効時 */
+.btn[disabled]{
+  opacity:.45;
+  pointer-events:none;
+}
+
+/* トースト（共通） */
+.toast{
+  position: fixed;
+  left: 50%;
+  bottom: 20px;
+  transform: translateX(-50%);
+  background: rgba(32,32,32,.92);
+  color: #fff;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-weight: 600;
+  z-index: 9999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .18s ease;
+}
+.toast.show{ opacity: 1; }
+
+/* === Judge mark (visual only) === */
+#judgeLayer{
+  position:absolute; inset:0;
+  pointer-events:none;              /* 盤面操作を邪魔しない */
+  display:grid; place-items:center; /* ど真ん中に出す */
+}
+
+.judge-mark{
+  width: 140px; height: 140px;
+  border-radius: 50%;
+  display:grid; place-items:center;
+  font: 700 64px/1 "BIZ UDGothic", system-ui, sans-serif;
+  opacity: 0; transform: scale(0.9);
+  transition: opacity .25s, transform .25s;
+}
+.judge-mark.show{ opacity:1; transform: scale(1); }
+
+.judge-mark.ok{
+  color:#0a7; border:6px solid rgba(0,170,119,.6);
+  background: rgba(0,170,119,.10);
+}
+.judge-mark.ng{
+  color:#d33; border:6px solid rgba(221,51,51,.6);
+  background: rgba(221,51,51,.10);
+}
+
+/* 盤面のマーク類（○/×/トーストなど）を切り取らない＆最前面へ */
+#boardStage{
+  position: relative;
+  overflow: visible;        /* ← はみ出しを描画する */
+  z-index: 5;               /* ← ヘッダー/問題バーより上に出す */
+}
+
+/* マーク系を最前面に（既に似た指定があれば強める） */
+#boardStage .toast,
+#boardStage .mark,
+#boardStage .judge-mark{
+  position: absolute;
+  z-index: 2000;            /* ← ヘッダー/フッター上に重ねる */
+  pointer-events: none;     /* ← ヘッダー等のクリックを邪魔しない */
+}
+
+/* 中央小丸（カラータイマー） */
+.center-dot{
+  position:absolute; width:40px; height:40px; border-radius:999px;
+  background:#ffd; border:2px solid #fc0; box-shadow: 0 0 0 2px rgba(255,200,0,.15) inset;
+  pointer-events:auto; display:none;
+}
+.center-dot.small{ width:28px; height:28px; }
+.center-dot.tiny { width:22px; height:22px; }
+
+/* 頂点・線 */
+.point{ fill:#000; stroke:#000; stroke-width:1.5; }
+
+/* 課題ボタン群（Lv4時。ヘッダーと同じ大きめ） */
+.task-switch{ display:flex; gap:10px; align-items:center; }
+
+/* 無効時 */
+.btn[disabled]{
+  opacity:.45;
+  pointer-events:none;
+}
+
+/* トースト（共通） */
+.toast{
+  position: fixed;
+  left: 50%;
+  bottom: 20px;
+  transform: translateX(-50%);
+  background: rgba(32,32,32,.92);
+  color: #fff;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-weight: 600;
+  z-index: 9999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .18s ease;
+}
+.toast.show{ opacity: 1; }
+
+/* === Judge mark (visual only) === */
+#judgeLayer{
+  position:absolute; inset:0;
+  pointer-events:none;              /* 盤面操作を邪魔しない */
+  display:grid; place-items:center; /* ど真ん中に出す */
+}
+
+.judge-mark{
+  width: 140px; height: 140px;
+  border-radius: 50%;
+  display:grid; place-items:center;
+  font: 700 64px/1 "BIZ UDGothic", system-ui, sans-serif;
+  opacity: 0; transform: scale(0.9);
+  transition: opacity .25s, transform .25s;
+}
+.judge-mark.show{ opacity:1; transform: scale(1); }
+
+.judge-mark.ok{
+  color:#0a7; border:6px solid rgba(0,170,119,.6);
+  background: rgba(0,170,119,.10);
+}
+.judge-mark.ng{
+  color:#d33; border:6px solid rgba(221,51,51,.6);
+  background: rgba(221,51,51,.10);
+}
+
+/* 盤面のマーク類（○/×/トーストなど）を切り取らない＆最前面へ */
+#boardStage{
+  position: relative;
+  overflow: visible;        /* ← はみ出しを描画する */
+  z-index: 5;               /* ← ヘッダー/問題バーより上に出す */
+}
+
+/* ===== 盤面スタック（base から移設） ===== */
+/* キャンバスとオーバーレイは #boardStage 基準に張り付ける */
+#gridCanvas,
+#shapeLayer{
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+.mode-btn.is-active{ background:#000; color:#fff; }
+
+/* ===== MainAction（中央ボタン）共通（base から移設） ===== */
+#board { position: relative; } /* 既にあってもOK */
+
+#answerControlSlot {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  height: 22vh;
+  margin: 0 auto;
+  padding-bottom: 12px;
+  background: transparent;
+  z-index: 20;
+}
+
+#answerControlSlot .main-action-btn {
+  font-size: 1.1rem;
+  padding: 6px 14px;
+  min-width: 8.2em;
+  border-radius: 12px;
+  border: 2px solid var(--color-fg, #000);
+  background: #fff;
+  line-height: 1.3;
+}
+
+/* マーク系を最前面に（既に似た指定があれば強める） */
+#boardStage .toast,
+#boardStage .mark,
+#boardStage .judge-mark{
+  position: absolute;
+  z-index: 2000;
+  pointer-events: none;
+}
+
+/* =====（互換）問題バー：base から移設（今後 “削除” 対象）===== */
+.problem-bar{
+  display: grid;
+  grid-template-columns: var(--side-col) 1fr var(--side-col);
+  align-items: center;
+  gap: var(--gap);
+  padding: var(--problem-bar-py) var(--problem-bar-px);
+  box-sizing: border-box;
+}
+.problem-left, .problem-center, .problem-right{
+  display:flex; align-items:center;
+}
+.problem-left{  justify-content:center; }
+.problem-center{justify-content:center; text-align:center;}
+.problem-center p{ margin:0; }
+.problem-center #message{
+  font-size: 30px;
+  line-height: 1.6;
+}
+.problem-right{ justify-content:center; }

@@ -1,0 +1,56 @@
+/* lv1.css：第3弾の問題/選択肢エリア（中央のみ） */
+
+:root{
+  --page-w: min(980px, 92vw);
+  --q-font: clamp(20px, 2.6vh, 28px);
+  --choice-minw: 6em;
+}
+
+.app-main{ width: var(--page-w); margin: 0 auto; }
+
+.q-board{
+  border:3px solid #000; border-radius:0; box-sizing:border-box;
+  display:flex; align-items:center; justify-content:flex-start;
+  padding: clamp(10px, 2.2vh, 20px) clamp(12px, 2.4vh, 24px);
+  min-height: 36vh; /* 行増対策：縦スク抑制の余白 */
+}
+.q-text{
+  margin:0; width:100%; text-align:left; white-space:pre-wrap;
+  font-size:var(--q-font); line-height:1.45; cursor:pointer;
+}
+
+/* （　）→穴 */
+.hole{ display:inline-block; vertical-align:baseline; min-width:6em; height:1em; text-align:center; margin:0 .1em; }
+.hole .fill{ display:inline-block; min-width:100%; line-height:1; color:#d00; }
+
+/* 選択肢 */
+.c-board{ display:flex; align-items:flex-start; justify-content:center; }
+.choices{
+  width:100%; display:flex; gap:24px; flex-wrap:wrap; justify-content:center;
+  margin-top: clamp(10px, 2vh, 24px);
+}
+.choices.stack{ flex-direction:column; gap:16px; align-items:center; }
+.choice{
+  position:relative; display:flex; align-items:center; justify-content:center;
+  min-width:var(--choice-minw);
+  padding: clamp(10px, 1.8vh, 14px) clamp(14px, 2.2vh, 18px);
+  font-size:var(--q-font); line-height:1.2;
+  border:3px solid #999; border-radius:12px; background:#fff; cursor:pointer;
+  transition:background-color .12s ease;
+  box-sizing:border-box; white-space:nowrap;
+}
+.choice:hover{ background:#f5f5f5; }
+.choice.selected{ background:#e6e6e6; color:#000; border-color:#666; }
+.choice .xmark, .choice .omark{
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  font-size:var(--q-font); pointer-events:none;
+}
+.choice .xmark{ color:#06f; }
+.choice .omark{ color:#d00; }
+
+/* 画面が低い端末のセーフティ */
+@media (max-height: 720px){
+  .q-board{ padding: 10px 14px; }
+  .choices{ gap: 16px; }
+  .choice{ padding: 10px 14px; }
+}

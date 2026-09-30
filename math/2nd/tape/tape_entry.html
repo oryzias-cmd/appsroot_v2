@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>テープ図（せってい）</title>
+
+  <!-- 共通シェル -->
+  <link rel="stylesheet" href="../../../common/shell/header.full.css">
+  <link rel="stylesheet" href="../../../common/shell/setup.full.css">
+  <link rel="stylesheet" href="../../../common/shell/entry.full.css">
+
+  <!-- アプリ固有 -->
+  <link rel="stylesheet" href="./tape_entry.css" />
+</head>
+
+<body data-appkey="tape.entry" data-phase="entry" style="padding-top:0;">
+
+  <!-- kit が読むスロット -->
+  <div id="slot-header"
+       data-slot="header"
+       data-title="テープ図の せってい"
+       data-back="history"></div>
+
+  <main id="mainArea"></main>
+
+  <!-- ★重要：kit.full.js が読む前に宣言（entryは⚙表示のみ） -->
+  <script>
+    window.AppShellOptions = window.AppShellOptions || {};
+    window.AppShellOptions.gearAction = "disabled";
+
+    window.AppShellLayout = {
+      header:{ left:['backlink'], center:['title'], right:['settingsGear'] },
+      pbar:{ left:[], center:[], right:[] },
+      main:{ bottomCenter:[] },
+      footer:{ left:[], center:[], right:[] }
+    };
+  </script>
+
+  <script src="../../../common/shell/gear.full.js"></script>
+  <script src="../../../common/shell/kit.full.js"></script>
+  <script src="../../../common/shell/header.full.js"></script>
+  <script src="../../../common/shell/setup.full.js"></script>
+  <script src="../../../common/shell/entry.full.js"></script>
+
+  <script src="./tape_entry.js"></script>
+</body>
+</html>

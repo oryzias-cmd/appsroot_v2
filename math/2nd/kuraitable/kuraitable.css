@@ -1,0 +1,645 @@
+:root{
+  --font-kyokasho:
+    "UD デジタル 教科書体 N-R",
+    "UD デジタル 教科書体 N-B",
+    "BIZ UDゴシック",
+    "YuGothic",
+    system-ui,
+    sans-serif;
+
+  --line: #2b2b2b;
+  /* 教科書体は上ずれして見えるので、少し下へ寄せる */
+  --kyo-shift-y: 0.06em;
+
+  --bg-10000: #ffe4e4;
+  --bg-1000:  #ffffff;
+  --bg-100:   #dff2ff;
+  --bg-10:    #fff8cf;
+  --bg-1:     #ffe4e4;
+
+  --btn-h: 56px;
+
+  --card-w: 96px;
+  --card-h: 44px;
+  --card-gap-x: 14px;
+  --card-gap-y: 12px;
+
+  /* ドット表示用 */
+  --dot-red: #E74C3C;
+  --dot-size: 32px;
+  --dot-born-size: 54px;
+  --dot-stroke: #ff0000;
+  --dot-stroke-w: 1px;
+  --dot-trigger-scale: 1.38;
+}
+
+html, body{
+  height:100%;
+  margin:0;
+}
+
+body{
+  font-family: var(--font-kyokasho);
+  background:#fff;
+  overflow:hidden;
+
+  display:flex;
+  flex-direction:column;
+  height:100vh;
+
+  /* タブレット：長押しのメニュー/選択カーソル/青い範囲選択を抑止 */
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  caret-color: transparent;
+}
+
+#slot-header{
+  flex: 0 0 auto;
+}
+
+.app{
+  flex: 1 1 auto;
+  min-height: 0;
+  display:flex;
+  flex-direction:column;
+
+  padding: 0 12px;   /* ← A2：左右12px */
+  box-sizing: border-box;
+}
+
+/* 位取り表（5列）：下レーン分だけ高さを残す */
+.table{
+  flex: 1 1 auto;
+
+  position: relative;
+  display:grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+
+  height: 100%;
+  min-height: 0;
+  box-sizing: border-box;
+
+  margin: 0;                 /* ← 余白の二重取りをやめる */
+}
+
+/* 見本カード帯 */
+.samples{
+  position: relative;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:10px 12px;
+  border-bottom: 2px solid var(--line);
+}
+
+.sample-card{
+  width: 100px;
+  height: 44px;
+  border: 2px solid var(--line);
+  border-radius: 4px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight: 800;
+  font-size: 20px;            /* ← 文字を大きく（10000が収まる範囲） */
+  background:#fff;
+  user-select:none;
+  touch-action:none;
+}
+
+.table::before{
+  content:"";
+  position:absolute;
+  inset: 72px 0 0 0;         /* top=72px / 左右下=0 */
+
+  /* 上下は既存の横線と重なるので、左右だけ描く */
+  border-left: 2px solid var(--line);
+  border-right: 2px solid var(--line);
+
+  pointer-events:none;
+  box-sizing: border-box;
+  z-index: 1;                /* ← 外枠を「下のレイヤー」に固定 */
+}
+
+.col{
+  position: relative;
+  border-left: none;          /* ← 縦線は col の border で描かない */
+  display:grid;
+
+  /* 上：起点カード / 中：カード置き場 / 下：ラベル / 数字 */
+  grid-template-rows: 72px minmax(0px, 1fr) 50px 72px;
+
+  min-width: 0;
+}
+
+/* 列の区切り縦線（本体部分だけ）：上段（72px）には出さない */
+.col:not(:last-child)::after{
+  content:"";
+  position:absolute;
+  top: 72px;                 /* 本体開始（上段を除外） */
+  bottom: 0;                 /* 本体終わり */
+  right: -1px;               /* 2px線を中心寄せ */
+  width: 2px;
+  background: var(--line);
+  pointer-events:none;
+  box-sizing: border-box;
+  z-index: 5;
+}
+
+.col-10000{ background: var(--bg-10000); }
+.col-1000{  background: var(--bg-1000);  }
+.col-100{   background: var(--bg-100);   }
+.col-10{    background: var(--bg-10);    }
+.col-1{     background: var(--bg-1);     }
+
+/* 起点カード置き場（列の最上段） */
+.source-slot{
+  border-bottom: 2px solid var(--line);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding: 10px 8px;
+  box-sizing: border-box;
+
+  /* ここは「位の色」を塗らない：カード置き場は常に白（空でも白） */
+  background: #ffffff;
+
+  /* .col の縦線（border-left）が上段にも出るので、ここで隠す */
+  position: relative;
+}
+
+/* 上段だけ「縦線を見えなくする」マスク（列境界線ぶん） */
+.source-slot::before{
+  content:"";
+  position:absolute;
+  top:0;
+  bottom:0;
+  left:-2px;
+  width: 2px;
+  background:#ffffff;
+}
+
+.source-card{
+  width: 100px;
+  height: 44px;
+  border: 2px solid var(--line);
+  border-radius: 8px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight: 800;
+  background:#ffffff;
+  user-select:none;
+  touch-action:none;
+
+  box-shadow: 0 2px 0 rgba(0,0,0,0.18);
+  transform: translateY(0);
+}
+
+.source-card:active{
+  transform: translateY(1px);
+  box-shadow: 0 1px 0 rgba(0,0,0,0.18);
+}
+
+/* 上段（カード置き場） */
+.dropzone{
+  position: relative;
+  border-bottom: 2px solid var(--line);
+  padding: 14px 14px;
+  overflow: hidden;
+}
+
+/* ラベル行（センタリング） */
+.label{
+  border-bottom: 2px solid var(--line);
+  padding: 0px 6px;           /* ← 縦を -3px */
+  font-size: 21px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-align: center;
+
+  display: flex;              /* 縦センタリング */
+  align-items: center;
+  justify-content: center;
+
+  /* 長押し操作のため（見た目は変えない） */
+  touch-action: manipulation;
+
+  /* 教科書体の上ずれ補正 */
+  transform: translateY(var(--kyo-shift-y));
+}
+
+/* 数字行 */
+.digit{
+  padding: 0px 6px;           /* ← 縦を -4px × 上下 = -8px */
+  font-size: 50px;
+  font-weight: 800;
+  text-align: center;
+  line-height: 1;
+
+  /* 0-9 を「全角グリフ寄せ」(CSSだけで可能な範囲) */
+  font-variant-east-asian: full-width;
+  font-feature-settings: "fwid" 1;
+  text-transform: full-width;
+
+  display: flex;              /* 縦センタリング */
+  align-items: center;
+  justify-content: center;
+
+  /* 教科書体の上ずれ補正 */
+  transform: translateY(var(--kyo-shift-y));
+}
+
+/* 不正状態の数字（10） */
+.digit.invalid{
+  color: #d40000;
+}
+
+/* JSが shake クラスを付けた瞬間だけ揺れる */
+.digit.invalid.shake{
+  animation: digitShake 220ms ease-in-out 1;
+}
+
+@keyframes digitShake{
+  0%{ transform: translateX(0); }
+  25%{ transform: translateX(-2px); }
+  50%{ transform: translateX(2px); }
+  75%{ transform: translateX(-1px); }
+  100%{ transform: translateX(0); }
+}
+
+/* 下左右固定ボタン */
+/* 下レーン（footer風・ただし footer タグは使わない） */
+.bottom-lane{
+  flex: 0 0 64px;
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  border-top: 2px solid var(--line);
+  background:#fff;
+  box-sizing:border-box;
+}
+
+/* 中央の数値表示（仕切りなし） */
+.value-display{
+  flex: 1 1 auto;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size: 34px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+
+  /* 教科書体の上ずれ補正 */
+  transform: translateY(var(--kyo-shift-y));
+}
+
+/* 漢字モード：字間を詰めて折り返しを防ぐ */
+body[data-kanji="on"] .value-display{
+  letter-spacing: 0;
+  font-size: 34px; /* ← 数字モードと同じサイズに固定 */
+}
+
+body[data-kanji="on"] #current-value{
+  white-space: nowrap;
+}
+
+/* こたえ表示：白枠 → クリックで数字 */
+.value-box{
+  height: 44px;
+
+  /* 通常（数字）：常に固定幅（空でも4桁でも5桁でも動かない） */
+  width: 220px;
+
+  padding: 0 14px;
+  border-radius: 12px;
+  border: 2px solid var(--line);
+  background:#fff;
+  font: inherit;
+  color: inherit;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  transition: none;
+}
+
+/* 漢数字モード：最大9文字（九万九千九百九十九） */
+body[data-kanji="on"] .value-box{
+  width: 360px; /* 9文字（例：一万九千九百九十一）を想定して固定 */
+}
+
+/* 答え欄：位（万・千・百・十）は「色だけ残して」通常サイズに戻す */
+body[data-kanji="on"] #current-value .k-place{
+  color: #1B4F9C;     /* 青は残す */
+  font-weight: 900;   /* 太さも残す（見落とし防止） */
+  font-size: 1em;     /* サイズだけ戻す */
+  line-height: 1;
+}
+
+/* 答え欄（数字モードのみ）：0-9 を「全角グリフ寄せ」 */
+body[data-kanji="off"] #current-value{
+  font-variant-east-asian: full-width;
+  font-feature-settings: "fwid" 1;
+  text-transform: full-width;
+}
+
+.value-box.is-hidden #current-value{
+  visibility: hidden;
+}
+
+.btn{
+  pointer-events: auto;
+  height: 44px;
+  min-width: 118px;
+  padding: 0 12px;
+  border-radius: 12px;
+  border: 2px solid var(--line);
+  font-size: 17px;
+  font-weight: 800;
+  background:#fff;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.btn:active{
+  transform: translateY(1px);
+}
+
+.btn-reset,
+.btn-undo{
+  opacity: 0.95;
+}
+
+/* =========================
+   cards
+   ========================= */
+
+/* 確定カード */
+.placed-card{
+  position: absolute;
+  width: var(--card-w);
+  height: var(--card-h);
+  border: 2px solid var(--line);
+  border-radius: 4px;
+  background: #fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight: 800;
+  font-size: 20px;            /* ← 文字を大きく（10000が収まる範囲） */
+  user-select:none;
+  touch-action:none;
+  box-sizing: border-box;
+
+  transition: transform 120ms ease;
+}
+
+/* ドラッグ中（指に追従） */
+.dragging-card{
+  position: fixed;
+  width: var(--card-w);
+  height: var(--card-h);
+  border: 2px solid var(--line);
+  border-radius: 4px;
+  background: #fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight: 800;
+  font-size: 20px;            /* ← 文字を大きく（10000が収まる範囲） */
+  user-select:none;
+  touch-action:none;
+  box-sizing: border-box;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+/* トリガーカード（10枚目） */
+.trigger-card{
+  position: absolute;
+  width: var(--card-w);
+  height: var(--card-h);
+  border: 2px solid var(--line);
+  border-radius: 4px;
+  background: #fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight: 800;
+  font-size: 20px;   /* ← ★これを追加 */
+  user-select:none;
+  touch-action: none;
+  box-sizing: border-box;
+
+  animation: triggerPulse 900ms ease-in-out infinite;
+}
+
+@keyframes triggerPulse{
+  0%{ transform: scale(1); }
+  50%{ transform: scale(1.06); }
+  100%{ transform: scale(1); }
+}
+
+/* まとめ時：トリガーがぎゅっ */
+.trigger-card.squeeze{
+  animation: triggerSqueeze 220ms ease-in-out 1;
+}
+
+@keyframes triggerSqueeze{
+  0%{ transform: scale(1); }
+  60%{ transform: scale(0.75); }
+  100%{ transform: scale(1); }
+}
+
+/* 誕生カード（手動で左へ運ぶ） */
+.born-card{
+  position: absolute;
+  width: var(--card-w);
+  height: var(--card-h);
+  border: 2px solid var(--line);
+  border-radius: 4px;
+  background: #fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight: 800;
+  font-size: 20px;            /* ← ★これを追加 */
+  user-select:none;
+  touch-action: none;
+  box-sizing: border-box;
+
+  animation: bornShake 1000ms ease-in-out infinite;
+}
+
+@keyframes bornShake{
+  0%{ transform: translateX(0); }
+  10%{ transform: translateX(-2px); }
+  20%{ transform: translateX(2px); }
+  30%{ transform: translateX(-1px); }
+  40%{ transform: translateX(1px); }
+  50%{ transform: translateX(0); }
+  100%{ transform: translateX(0); }
+}
+
+/* 誕生時：ポン */
+.born-card.pop{
+  animation: bornPop 220ms ease-out 1, bornShake 1000ms ease-in-out infinite;
+}
+
+@keyframes bornPop{
+  0%{ transform: scale(0.7); }
+  100%{ transform: scale(1); }
+}
+
+/* 左矢印（bornカードの横にふわっと） */
+.born-arrow{
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-top: 10px solid transparent;
+  border-bottom: 10px solid transparent;
+  border-right: 16px solid #111;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.born-arrow.show{
+  animation: arrowFloat 650ms ease-in-out 1;
+}
+
+@keyframes arrowFloat{
+  0%{ opacity:0; transform: translateX(6px); }
+  30%{ opacity:1; transform: translateX(0px); }
+  70%{ opacity:1; transform: translateX(0px); }
+  100%{ opacity:0; transform: translateX(-6px); }
+}
+
+/* =========================
+   view mode: card <-> dot
+   ========================= */
+
+/* 本体の表示モード：body[data-view="dot"] のときドット表示 */
+body[data-view="dot"] .placed-card,
+body[data-view="dot"] .dragging-card,
+body[data-view="dot"] .trigger-card,
+body[data-view="dot"] .born-card{
+  /* 要素サイズはカードのまま（座標計算流用のため） */
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+
+  /* 文字を隠す（レイアウトは保持） */
+  color: transparent;
+  text-shadow: none;
+}
+
+/* 中心にドットを描く（カード中心位置） */
+body[data-view="dot"] .placed-card::before,
+body[data-view="dot"] .dragging-card::before,
+body[data-view="dot"] .trigger-card::before,
+body[data-view="dot"] .born-card::before{
+  content:"";
+  position:absolute;
+  left: 50%;
+  top: 50%;
+  width: var(--dot-size);
+  height: var(--dot-size);
+  transform: translate(-50%, -50%);
+  border-radius: 999px;
+
+  background: var(--dot-red);
+
+  /* 色付き背景でもぼけないように、真っ赤で細縁（最細） */
+  border: var(--dot-stroke-w) solid var(--dot-stroke);
+  box-sizing: border-box;
+}
+
+/* 誕生時のみ大きなドット（生成直後だけ付けるクラス） */
+body[data-view="dot"] .born-card.born-big::before{
+  width: var(--dot-born-size);
+  height: var(--dot-born-size);
+  transform: translate(-50%, -50%);
+}
+
+/* 合体を促す点滅（trigger）：
+   - 小さい時＝通常ドット（= scale 1）
+   - 大きい時＝通常より拡大（< 誕生） */
+body[data-view="dot"] .trigger-card{
+  /* 重要：カード用pulse/squeezeの transform が残ると、ドットがズレて見える */
+  animation: none !important;
+  transform: none !important;
+}
+
+/* squeeze中も完全に無効化 */
+body[data-view="dot"] .trigger-card.squeeze{
+  animation: none !important;
+  transform: none !important;
+}
+
+body[data-view="dot"] .trigger-card::before{
+  animation: triggerPulseDot 900ms ease-in-out infinite;
+}
+
+@keyframes triggerPulseDot{
+  0%{ transform: translate(-50%, -50%) scale(1); }
+  50%{ transform: translate(-50%, -50%) scale(var(--dot-trigger-scale)); }
+  100%{ transform: translate(-50%, -50%) scale(1); }
+}
+
+/* =========================
+   kanji mode
+   ========================= */
+
+/* dropzone左上：一〜九の1文字だけ（位はラベルを読ませる） */
+.kanji-badge{
+  position: absolute;
+  left: 12px;
+  top: 8px;
+
+  font-size: 44px;     /* 大きめ */
+  font-weight: 800;
+  line-height: 1;
+
+  color: #111;
+  opacity: 0;
+
+  pointer-events: none;
+  user-select: none;
+
+  /* 教科書体の上ずれ補正（既存変数を流用） */
+  transform: translateY(var(--kyo-shift-y));
+}
+
+.kanji-badge.is-gray{
+  color: #C8C8C8; /* 千/百/十の「1」だけグレー（さらに薄く） */
+}
+
+/* 漢数字モードONのときだけ表示 */
+body[data-kanji="on"] .kanji-badge{
+  opacity: 1;
+}
+
+/* 位ラベル：1文字（万・千・百・十）だけ強調（ギリギリまで大きく） */
+body[data-kanji="on"] .label{
+  height: 50px;             /* ラベル行の高さ（colの50pxに合わせて明示） */
+}
+
+body[data-kanji="on"] .label .place-char{
+  color: #1B4F9C;
+  font-size: 34px;          /* ← まずは強め（大きすぎたら 32 / 30 / 28 へ） */
+  font-weight: 800;
+  line-height: 1;
+  display: inline-block;
+}
+
+body[data-kanji="on"] .label .place-rest{
+  color: inherit;
+  font-size: 21px;          /* 元のラベルサイズに固定（「のくらい」は変えない） */
+  font-weight: 700;
+}

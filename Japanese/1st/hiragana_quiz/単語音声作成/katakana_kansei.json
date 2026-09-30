@@ -1,0 +1,259 @@
+{
+  "ア": {
+  "words": [ { "word": "アザラシ", "romaji": "azarasi" },
+    { "word": "アスパラガス", "romaji": "asuparagasu" },
+    { "word": "アイス", "romaji": "aisu" },
+    { "word": "アイロン", "romaji": "airon" } ]
+},
+  "イ": {
+  "words": [ { "word": "イルカ", "romaji": "iruka" },
+    { "word": "インク", "romaji": "inku" },
+    { "word": "イヤリング", "romaji": "iyaringu" } ]
+},
+  "ウ": {
+  "words": [ { "word": "ウクレレ", "romaji": "ukurere" },
+    { "word": "ウインナー", "romaji": "uinna" },
+    { "word": "ウエハース", "romaji": "uehasu" } ]
+},
+  "エ": {
+  "words": [ { "word": "エミュー", "romaji": "emyu" },
+    { "word": "エレベーター", "romaji": "erebeta" },
+    { "word": "エプロン", "romaji": "epuron" },
+    { "word": "エアコン", "romaji": "eakon" } ]
+},
+  "オ": {
+  "words": [ { "word": "オランウータン", "romaji": "oranutan" },
+    { "word": "オレンジ", "romaji": "orenzi" },
+    { "word": "オクラ", "romaji": "okura" },
+    { "word": "オムライス", "romaji": "omuraisu" } ]
+},
+  "カ": {
+  "words": [ { "word": "カンガルー", "romaji": "kangaru" },
+    { "word": "カメラ", "romaji": "kamera" },
+    { "word": "カスタネット", "romaji": "kasutanetto" },
+    { "word": "カレーライス", "romaji": "kareraisu" } ]
+},
+  "キ": {
+  "words": [ { "word": "キウイフルーツ", "romaji": "kiuihurutu" },
+    { "word": "キーボード", "romaji": "kibodo" },
+    { "word": "キャベツ", "romaji": "kyabetu" },
+    { "word": "キーホルダー", "romaji": "kihoruda" } ]
+},
+  "ク": {
+  "words": [ { "word": "クローバー", "romaji": "kuroba" },
+    { "word": "クリップ", "romaji": "kurippu" },
+    { "word": "クレヨン", "romaji": "kureyon" },
+    { "word": "クッキー", "romaji": "kukki" },
+    { "word": "クリスマス", "romaji": "kurisumasu" } ]
+},
+  "ケ": {
+  "words": [ { "word": "ケーキ", "romaji": "keki" },
+    { "word": "ケチャップ", "romaji": "ketyappu" } ]
+},
+  "コ": {
+  "words": [ { "word": "コスモス", "romaji": "kosumosu" },
+    { "word": "コップ", "romaji": "koppu" },
+    { "word": "コロッケ", "romaji": "korokke" },
+    { "word": "コアラ", "romaji": "koara" } ]
+},
+  "サ": {
+  "words": [ { "word": "サクランボ", "romaji": "sakuranbo" },
+    { "word": "サンダル", "romaji": "sandaru" },
+    { "word": "サンドイッチ", "romaji": "sandoitti" },
+    { "word": "サンタクロース", "romaji": "santakurosu" } ]
+},
+  "シ": {
+  "words": [ { "word": "シマウマ", "romaji": "simauma" },
+    { "word": "シャベル", "romaji": "syaberu" },
+    { "word": "シーソー", "romaji": "siso" },
+    { "word": "シンバル", "romaji": "sinbaru" } ]
+},
+  "ス": {
+  "words": [ { "word": "スリッパ", "romaji": "surippa" },
+    { "word": "ストロー", "romaji": "sutoro" },
+    { "word": "スプーン", "romaji": "supun" },
+    { "word": "スケート", "romaji": "suketo" } ]
+},
+  "セ": {
+  "words": [ { "word": "セーター", "romaji": "seta" },
+    { "word": "セロリ", "romaji": "serori" },
+    { "word": "セロハンテープ", "romaji": "serohantepu" } ]
+},
+  "ソ": {
+  "words": [ { "word": "ソース", "romaji": "sosu" },
+    { "word": "ソフトクリーム", "romaji": "sohutokurimu" },
+    { "word": "ソーセージ", "romaji": "sosezi" },
+    { "word": "ソーダ", "romaji": "soda" } ]
+},
+  "タ": {
+  "words": [ { "word": "タンポポ", "romaji": "tanpopo" },
+    { "word": "タイヤ", "romaji": "taiya" },
+    { "word": "タイヤ", "romaji": "taiya" },
+    { "word": "タンバリン", "romaji": "tanbarin" } ]
+},
+  "チ": {
+  "words": [ { "word": "チンパンジー", "romaji": "tinpanzi" },
+    { "word": "チンゲンサイ", "romaji": "tingensai" },
+    { "word": "チューリップ", "romaji": "tyurippu" },
+    { "word": "チョコレート", "romaji": "tyokoreto" } ]
+},
+  "ツ": {
+  "words": [ { "word": "ツノメドリ", "romaji": "tunomedori" },
+    { "word": "ツキノワグマ", "romaji": "tukinowaguma" },
+    { "word": "ツナ", "romaji": "tuna" } ]
+},
+  "テ": {
+  "words": [ { "word": "テレビ", "romaji": "terebi" },
+    { "word": "テスト", "romaji": "tesuto" },
+    { "word": "テント", "romaji": "tento" },
+    { "word": "テーブル", "romaji": "teburu" } ]
+},
+  "ト": {
+  "words": [ { "word": "トナカイ", "romaji": "tonakai" },
+    { "word": "トマト", "romaji": "tomato" },
+    { "word": "トイレ", "romaji": "toire" },
+    { "word": "トランプ", "romaji": "toranpu" },
+    { "word": "トライアングル", "romaji": "toraianguru" } ]
+},
+  "ナ": {
+  "words": [ { "word": "ナメクジ", "romaji": "namekuzi" },
+    { "word": "ナイフ", "romaji": "naihu" },
+    { "word": "ナッツ", "romaji": "nattu" } ]
+},
+  "ニ": {
+  "words": [ { "word": "ニワトリ", "romaji": "niwatori" },
+    { "word": "ニホンザル", "romaji": "nihonzaru" },
+    { "word": "ニシキヘビ", "romaji": "nisikihebi" },
+    { "word": "ニンジン", "romaji": "ninzin" } ]
+},
+  "ヌ": {
+  "words": [ { "word": "ヌー", "romaji": "nu" },
+    { "word": "ヌートリア", "romaji": "nutoria" },
+    { "word": "ヌードル", "romaji": "nudoru" } ]
+},
+  "ネ": {
+  "words": [ { "word": "ネコ", "romaji": "neko" },
+    { "word": "ネズミ", "romaji": "nezumi" },
+    { "word": "ネクタイ", "romaji": "nekutai" },
+    { "word": "ネジ", "romaji": "nezi" } ]
+},
+  "ノ": {
+  "words": [ { "word": "ノート", "romaji": "noto" },
+    { "word": "ノースフェイス", "romaji": "nosuhuisu" } ]
+},
+  "ハ": {
+  "words": [ { "word": "ハンカチ", "romaji": "hankati" },
+    { "word": "ハンバーガー", "romaji": "hanbaga" },
+    { "word": "ハンガー", "romaji": "hanga" },
+    { "word": "ハンバーグ", "romaji": "hanbagu" },
+    { "word": "ハムスター", "romaji": "hamusuta" } ]
+},
+  "ヒ": {
+  "words": [ { "word": "ヒグマ", "romaji": "higuma" },
+    { "word": "ヒヨコ", "romaji": "hiyoko" },
+    { "word": "ヒラメ", "romaji": "hirame" },
+    { "word": "ヒイラギ", "romaji": "hiiragi" } ]
+},
+  "フ": {
+  "words": [ { "word": "フラミンゴ", "romaji": "huramingo" },
+    { "word": "フクロモモンガ", "romaji": "hukuromomonga" },
+    { "word": "フライパン", "romaji": "huraipan" },
+    { "word": "フォーク", "romaji": "huku" } ]
+},
+  "ヘ": {
+  "words": [ { "word": "ヘビ", "romaji": "hebi" },
+    { "word": "ヘチマ", "romaji": "hetima" },
+    { "word": "ヘルメット", "romaji": "herumetto" },
+    { "word": "ヘリコプター", "romaji": "herikoputa" } ]
+},
+  "ホ": {
+  "words": [ { "word": "ホオズキ", "romaji": "hoozuki" },
+    { "word": "ホットケーキ", "romaji": "hottokeki" },
+    { "word": "ホチキス", "romaji": "hotikisu" },
+    { "word": "ホース", "romaji": "hosu" } ]
+},
+  "マ": {
+  "words": [ { "word": "マンボウ", "romaji": "manbou" },
+    { "word": "マンドリル", "romaji": "mandoriru" },
+    { "word": "マット", "romaji": "matto" },
+    { "word": "マラカス", "romaji": "marakasu" } ]
+},
+  "ミ": {
+  "words": [ { "word": "ミミズ", "romaji": "mimizu" },
+    { "word": "ミツバチ", "romaji": "mitubati" },
+    { "word": "ミミズク", "romaji": "mimizuku" },
+    { "word": "ミケネコ", "romaji": "mikeneko" },
+    { "word": "ミズドリ", "romaji": "mizudori" },
+    { "word": "ミカン", "romaji": "mikan" },
+    { "word": "ミシン", "romaji": "misin" },
+    { "word": "ミルク", "romaji": "miruku" } ]
+},
+  "ム": {
+  "words": [ { "word": "ムカデ", "romaji": "mukade" },
+    { "word": "ムササビ", "romaji": "musasabi" },
+    { "word": "ムース", "romaji": "musu" },
+    { "word": "ムチ", "romaji": "muti" } ]
+},
+  "メ": {
+  "words": [ { "word": "メダカ", "romaji": "medaka" },
+    { "word": "メロン", "romaji": "meron" },
+    { "word": "メダル", "romaji": "medaru" },
+    { "word": "メリーゴーラウンド", "romaji": "merigoraundo" } ]
+},
+  "モ": {
+  "words": [ { "word": "モンシロチョウ", "romaji": "monsirotyou" },
+    { "word": "モモンガ", "romaji": "momonga" },
+    { "word": "モップ", "romaji": "moppu" },
+    { "word": "モルモット", "romaji": "morumotto" } ]
+},
+  "ヤ": {
+  "words": [ { "word": "ヤギ", "romaji": "yagi" },
+    { "word": "ヤドカリ", "romaji": "yadokari" },
+    { "word": "ヤツデ", "romaji": "yatude" } ]
+},
+  "ユ": {
+  "words": [ { "word": "ユリカモメ", "romaji": "yurikamome" },
+    { "word": "ユニフォーム", "romaji": "yunihumu" },
+    { "word": "ユーフォー", "romaji": "yuhu" } ]
+},
+  "ヨ": {
+  "words": [ { "word": "ヨーヨー", "romaji": "yoyo" },
+    { "word": "ヨット", "romaji": "yotto" },
+    { "word": "ヨーグルト", "romaji": "yoguruto" } ]
+},
+  "ラ": {
+  "words": [ { "word": "ライオン", "romaji": "raion" },
+    { "word": "ラッパ", "romaji": "rappa" },
+    { "word": "ランドセル", "romaji": "randoseru" },
+    { "word": "ラジオ", "romaji": "razio" } ]
+},
+  "リ": {
+  "words": [ { "word": "リボン", "romaji": "ribon" },
+    { "word": "リコーダー", "romaji": "rikoda" },
+    { "word": "リモコン", "romaji": "rimokon" },
+    { "word": "リュックサック", "romaji": "ryukkusakku" } ]
+},
+  "ル": {
+  "words": [ { "word": "ルーペ", "romaji": "rupe" },
+    { "word": "ルーレット", "romaji": "ruretto" },
+    { "word": "ルビー", "romaji": "rubi" } ]
+},
+  "レ": {
+  "words": [ { "word": "レッサーパンダ", "romaji": "ressapanda" },
+    { "word": "レタス", "romaji": "retasu" },
+    { "word": "レモン", "romaji": "remon" },
+    { "word": "レール", "romaji": "reru" } ]
+},
+  "ロ": {
+  "words": [ { "word": "ロバ", "romaji": "roba" },
+    { "word": "ロケット", "romaji": "roketto" },
+    { "word": "ロープ", "romaji": "ropu" },
+    { "word": "ロボット", "romaji": "robotto" } ]
+},
+  "ワ": {
+  "words": [ { "word": "ワラビー", "romaji": "warabi" },
+    { "word": "ワゴン", "romaji": "wagon" },
+    { "word": "ワンピース", "romaji": "wanpisu" },
+    { "word": "ワイン", "romaji": "wain" } ]
+}
+}

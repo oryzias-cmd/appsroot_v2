@@ -1,0 +1,949 @@
+/* 盤面（筆算） */
+.board-panel{
+  overflow:hidden;
+  width: max-content;
+  /* すべて教科書体に統一 */
+  font-family: var(--font-edu) !important;
+}
+
+.board-head{
+  display:grid;
+  grid-template-columns: 1fr;
+  gap:0;
+  padding:0 8px 0; /* ← 上余白を0にしてグリッド原点と一致 */
+}
+
+.lane-labels{
+  display:grid;
+  justify-content:end;
+  gap: var(--cell-gap);
+}
+
+.quotient{
+  display:grid;
+  justify-content:end;
+  gap: var(--cell-gap);
+  min-height: var(--cell);
+}
+
+/* 本体 */
+.board-body{
+  position: relative;
+  margin: 0 8px 8px;
+  padding-top: 0;  /* ← グリッドのY原点と一致 */
+  border-top: 0;
+}
+
+/* ── 除数エリア（左側） ───────────────────────── */
+.divisor{
+  position:absolute;
+  left: 0;
+  top: 0;
+  width: calc(var(--cell) * var(--div-digits, 2));
+  height: var(--cell);
+  display:flex; align-items:center; justify-content:center;
+  padding-right: 0;
+}
+
+/* 割り算のカッコを「縦棒」で描く（画像や文字を使わない） */
+.bracket{
+  position:absolute;
+  top:0;
+  left: calc(var(--split-x) - var(--bracket-w)); /* ← 半マス帯の左端 */
+  height: var(--cell);
+  width: var(--bracket-w);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  pointer-events:none;
+  border: 0; /* 古い縦線を無効化 */
+}
+.bracket::before{
+  content: ")";
+  font-family: var(--font-edu);
+  font-size: calc(var(--cell) * .58);
+  line-height:1;
+  display:flex; align-items:center; justify-content:center; height:100%;
+}
+
+/* ── 被除数・作業エリア（右側） ─────────────────── */
+.dividend{
+margin-left: var(--split-x);
+  position:relative;
+  border-top: 2px solid #000;   /* ← 最初の横線は“上” */
+  padding-top: 2px;
+}
+
+.work{
+margin-left: var(--split-x);
+  margin-top: 0;                /* ← 直下から開始して縦ズレを止める */
+  position: relative;
+  min-height: calc(var(--cell) * 6);
+}
+
+/* 矢印（下ろす） */
+.arrows{ position:absolute; inset:0; pointer-events:none; }
+.arrow{ position:absolute; width:2px; background:var(--fg); transition: transform .25s ease; }
+
+/* === 各セルが枠線を持つ：表計算方式 === */
+.board-panel .cell,
+.board-panel .qcell{ position: relative; }
+
+.board-panel .cell::after,
+.board-panel .qcell::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-right: 1px solid var(--grid-line);
+  border-bottom: 1px solid var(--grid-line);
+  pointer-events:none;
+}
+/* 左端・最上段の外枠（必要に応じて） */
+.board-panel .cell-row.has-left > .qcell:first-child::before{
+  content:"";
+  position:absolute; left:0; top:0; bottom:0; width:0;
+  border-left:1px solid var(--grid-line);
+}
+.board-panel .cell-row:first-of-type .cell::before,
+.board-panel .cell-row:first-of-type .qcell::before{
+  content:"";
+  position:absolute; left:0; right:0; top:0; height:0;
+  border-top:1px solid var(--grid-line);
+}
+
+/* 位ラベル・数字セル（教科書体で数式全体を統一） */
+/* 行＝横方向グリッド（1列=半マス=クォンタ） */
+.cell-row{
+  display:grid;
+  grid-auto-flow: column;
+  grid-auto-columns: var(--qcell);
+  justify-content: end;
+  gap: var(--cell-gap);
+}
+
+/* 1マス＝2クォンタ（既定） */
+.cell{
+  /* Grid の列幅でサイズが決まるので width は不要 */
+  height: var(--cell);
+  display:flex; align-items:center; justify-content:center;
+  /* 1マスぶんの span（=2クォンタ）を既定に */
+  grid-column: span 2;
+
+  font-size: calc(var(--cell) * .58);
+  line-height:1;
+  font-variant-numeric: tabular-nums;
+position: relative; /* 取消し印（＼）の擬似要素配置用 */
+}
+
+/* 半マス（1クォンタ：小数点・括弧用） */
+.qcell{
+  height: var(--cell);
+  display:flex; align-items:center; justify-content:center;
+  grid-column: span 1;
+  font-size: calc(var(--cell) * .45);
+  line-height:1;
+}
+
+/* 一番左端/最上段に外枠を足す（必要なら）*/
+.board-panel .cell-row.has-left > .qcell:first-child::before{
+  content:"";
+  position:absolute;
+  left:0; top:0; bottom:0; width:0;
+  border-left:1px solid var(--grid-line);
+}
+.board-panel .cell-row:first-of-type .cell::before,
+.board-panel .cell-row:first-of-type .qcell::before{
+  content:"";
+  position:absolute;
+  left:0; right:0; top:0; height:0;
+  border-top:1px solid var(--grid-line);
+}
+
+/* 小数点は少し大きく（視認性） */
+.qcell.decimal{ font-size: calc(var(--cell) * .7); }
+.cell-row.mono .cell{ font-family: var(--font-edu) !important; } /* ← 等幅指定を打ち消し */
+/* 半マス用セル 
+.qcell{
+  width: var(--qcell);
+  height: var(--cell);
+  font-size: calc(var(--cell) * 0.45);
+  line-height: 1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  position:relative;
+}
+
+/* 小数点専用クラス（視認性強調） 
+.qcell.decimal{
+  font-size: calc(var(--cell) * 0.7);
+}*/
+
+.cell.small{ font-size: calc(var(--cell) * .4); color: var(--muted); }
+.cell.xmark{ color: var(--danger); font-weight: 800; }
+.cell.hl{ outline: 2px solid var(--highlight); outline-offset: -2px; border-radius: 4px; background: #fff8e1; }
+
+.divisor .cell-row .cell{ font-weight:700; }
+.quotient .cell{ font-weight:700; }
+
+/* 作業行：cell-row の半マスグリッドを壊さない（高さだけ与える） */
+.work-line{
+  position: relative;
+  height: var(--cell);   /* 1行=1マスの縦ピッチ */
+  /* display / grid-* は書かない。cell-row の設定を生かす */
+}
+
+/* 仕切り線（横線）はマス目の線に揃う：次の行の直前に描く */
+.sep-line{
+  height: 0; border-top: 2px solid #000;
+  margin: 0;
+}
+
+/* 説明 */
+.explain{ font-size: 16px; }
+
+/* ×できない／比較NGのときのハイライト */
+.cell.bad {
+  background: rgba(255, 0, 0, .14);
+  border-radius: 6px;
+}
+@keyframes pulse-bad {
+  0%   { box-shadow: 0 0 0 0 rgba(255,0,0,.32); }
+  100% { box-shadow: 0 0 0 14px rgba(255,0,0,0); }
+}
+.cell.flash-bad {
+  animation: pulse-bad 720ms ease-out 1;
+}
+/* ▼除数と余りをピッタリ塗るオーバーレイ方式 */
+.cell { position: relative; }  /* cellに相対位置を付与 */
+.cell .badmark {
+  position: absolute;
+  inset: 1px;                 /* ← 0～2pxで微調整可。1pxは線にかぶらない */
+  background: rgba(255,0,0,.14);
+  border-radius: 2px;
+  pointer-events: none;
+}
+
+/* マスの数字は等幅寄せ（既存 .cell の指定を補強） */
+.board-panel .cell {
+  font-variant-numeric: tabular-nums;
+}
+
+/* 赤×（U+00D7）を同一書体・サイズで統一 */
+.board-panel .cell.xmark {
+  font-family: var(--font-edu) !important;
+  font-weight: 800;
+  font-size: calc(var(--cell) * .64);
+  line-height: 1;
+}
+/* === 盤面フォントを強制統一（教科書体→なければゴシック）／赤×も同一書体・サイズ === */
+
+/* 盤面配下のすべてに同一フォントを適用（!important で上書き） */
+.board-panel,
+.board-panel * ,
+.board-panel .lane-labels,
+.board-panel .quotient,
+.board-panel .divisor,
+.board-panel .dividend,
+.board-panel .work,
+.board-panel .work-line,
+.board-panel .cell-row,
+.board-panel .cell {
+  font-family: var(--font-edu) !important;
+  font-variant-numeric: tabular-nums;
+}
+
+/* .mono 指定の打ち消し（安全のため再度明示） */
+.board-panel .mono,
+.board-panel .mono .cell {
+  font-family: var(--font-edu) !important;
+}
+
+/* 赤×（U+00D7）の見た目を統一 */
+.board-panel .cell.xmark {
+  font-family: var(--font-edu) !important;
+  font-weight: 800;
+  font-size: calc(var(--cell) * .64);
+  line-height: 1;
+}
+/* 除数と商のフォントを盤面と完全統一（調整商の行も含む） */
+.board-panel .divisor .cell,
+.board-panel .quotient .cell {
+  font-family: var(--font-edu) !important;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+}
+/* 除数・商の太字指定を解除（赤×は除外） */
+.board-panel .divisor .cell,
+.board-panel .quotient .cell:not(.xmark) {
+  font-weight: normal !important;
+}
+/* 商エリア（quotient）を常に3行分の高さにし、下詰めして表示 */
+.board-panel .quotient {
+  min-height: calc(var(--cell) * 3);      /* 調整行2 + 基準行1 */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;               /* 基準行を下（横棒の直上）に固定 */
+}
+
+/* 行の高さをセルサイズに揃える（空行でもスペースを確保） */
+.board-panel .quotient .cell-row {
+  height: var(--cell);
+}
+/* ── 盤面全面の背景マス（ON/OFFは .on で制御） ── */
+.grid-overlay{
+  position:absolute;
+  left:0; right:0; bottom:0;
+  top: 0;                         /* 盤面上端から敷く */
+  pointer-events:none;
+  z-index:0;
+}
+/* 左側（除数＋括弧の手前まで） */
+.grid-overlay.on::before{
+  content:"";
+  position:absolute; top:0; bottom:0; left:0;
+  width: var(--split-x);
+  background-image:
+    repeating-linear-gradient(to right, var(--grid-line), var(--grid-line) 1px, transparent 1px, transparent var(--cell)),
+    repeating-linear-gradient(to bottom, var(--grid-line), var(--grid-line) 1px, transparent 1px, transparent var(--cell));
+  background-size: var(--cell) var(--cell);
+  background-position: 0 0;
+}
+/* 右側（被除数・作業エリア） */
+.grid-overlay.on::after{
+  content:"";
+  position:absolute; top:0; bottom:0;
+  left: var(--split-x); right:0;
+  background-image:
+    repeating-linear-gradient(to right, var(--grid-line), var(--grid-line) 1px, transparent 1px, transparent var(--cell)),
+    repeating-linear-gradient(to bottom, var(--grid-line), var(--grid-line) 1px, transparent 1px, transparent var(--cell));
+  background-size: var(--cell) var(--cell);
+  background-position: 0 0;
+}
+
+/* 念のため：盤面コンテナは相対配置に */
+.board-panel{ position: relative; }
+/* グリッドOFFのときはセル枠線を消す */
+body.grid-off .board-panel .cell::after,
+body.grid-off .board-panel .qcell::after{ border:0; }
+body.grid-off .board-panel .cell-row.has-left > .qcell:first-child::before,
+body.grid-off .board-panel .cell-row:first-of-type .cell::before,
+body.grid-off .board-panel .cell-row:first-of-type .qcell::before{ border:0; }
+/* ── 盤面全面の背景マス（ON/OFFは .on で制御） ── */
+.grid-overlay{
+  position:absolute;
+  left:0; right:0; bottom:0; top:0;
+  pointer-events:none; z-index:0;
+}
+/* 左側（除数＋括弧の手前まで） */
+.grid-overlay.on::before{
+  content:"";
+  position:absolute; top:0; bottom:0; left:0;
+  width: var(--split-x) + var(--bracket-w, 18px);
+  background-image:
+    repeating-linear-gradient(to right, var(--grid-line), var(--grid-line) 1px, transparent 1px, transparent var(--cell)),
+    repeating-linear-gradient(to bottom, var(--grid-line), var(--grid-line) 1px, transparent 1px, transparent var(--cell));
+  background-size: var(--cell) var(--cell);
+  background-position: 0 0;
+}
+/* 右側（被除数・作業エリア） */
+.grid-overlay.on::after{
+  content:"";
+  position:absolute; top:0; bottom:0;
+  left: var(--split-x); right:0;  
+  background-image:
+    repeating-linear-gradient(to right, var(--grid-line), var(--grid-line) 1px, transparent 1px, transparent var(--cell)),
+    repeating-linear-gradient(to bottom, var(--grid-line), var(--grid-line) 1px, transparent 1px, transparent var(--cell));
+  background-size: var(--cell) var(--cell);
+  background-position: 0 0;
+}
+/* 背景グリッドを使うため、セルが自前で枠線を描くのは止める（二重防止） */
+.board-panel .cell::after,
+.board-panel .qcell::after,
+.board-panel .cell-row.has-left > .qcell:first-child::before,
+.board-panel .cell-row:first-of-type .cell::before,
+.board-panel .cell-row:first-of-type .qcell::before{
+  border: 0 !important;
+}
+/* === 盤面全面の背景マス（ON/OFFは .on で切替）=== */
+.grid-overlay{
+  position:absolute;
+  left:0; right:0; top:0; bottom:0;
+  pointer-events:none; z-index:0;
+}
+/* 左（除数＋括弧の手前まで） */
+.grid-overlay.on::before{
+  content:"";
+  position:absolute; top:0; bottom:0; left:0;
+  width: var(--split-x) + var(--bracket-w, 18px);
+  background-image:
+    repeating-linear-gradient(to right, var(--grid-line), var(--grid-line) 1px, transparent 1px, transparent var(--cell)),
+    repeating-linear-gradient(to bottom, var(--grid-line), var(--grid-line) 1px, transparent 1px, transparent var(--cell));
+  background-size: var(--cell) var(--cell);
+  background-position: 0 0;
+}
+/* 右（被除数・作業エリア） */
+.grid-overlay.on::after{
+  content:"";
+  position:absolute; top:0; bottom:0;
+left: calc((var(--cell) * var(--div-digits, 2)) + var(--bracket-w, 18px)); right:0;
+  background-image:
+    repeating-linear-gradient(to right, var(--grid-line), var(--grid-line) 1px, transparent 1px, transparent var(--cell)),
+    repeating-linear-gradient(to bottom, var(--grid-line), var(--grid-line) 1px, transparent 1px, transparent var(--cell));
+  background-size: var(--cell) var(--cell);
+  background-position: 0 0;
+}
+/* 本体 */
+.board-body{
+  position: relative;
+  margin: 0 8px 8px;
+  padding-top: 0;  /* ← グリッドのY原点と一致 */
+  border-top: 0;
+}
+
+/* オーバーレイは board-body 全体を覆う（上端から） */
+.grid-overlay{
+  position:absolute;
+  left:0; right:0; top:0; bottom:0;
+  pointer-events:none; z-index:0;
+}
+
+/* 方眼の原点は (0,0) に固定（古い 0 8px を打ち消す） */
+.grid-overlay.on::before,
+.grid-overlay.on::after{
+  background-position: 0 0 !important;
+  background-image:
+    repeating-linear-gradient(to right, var(--grid-line), var(--grid-line) 1px, transparent 1px, transparent var(--cell)),
+    repeating-linear-gradient(to bottom, var(--grid-line), var(--grid-line) 1px, transparent 1px, transparent var(--cell)) !important;
+}
+/* 左右の分割位置（除数2桁＋括弧の幅）も改めて統一 */
+.grid-overlay.on::before{
+  left:0; right:auto;
+  width: var(--split-x) + var(--bracket-w, 18px);
+}
+.grid-overlay.on::after{
+  left: calc((var(--cell) * var(--div-digits, 2)) + var(--bracket-w, 18px)); right:0;
+}
+/* ======== 最終オーバーライド：曲線の「)」を半マスで重ね表示（余白を作らない） ======== */
+.bracket{
+  position:absolute;
+  top:0;
+  left: calc(var(--split-x) - var(--bracket-w));
+  height: var(--cell);
+  width: var(--bracket-w);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  pointer-events:none;
+}
+.bracket::before{
+  content: ")";
+  font-family: var(--font-edu);
+  font-size: calc(var(--cell) * .58);
+  line-height:1;
+  display:flex; align-items:center; justify-content:center; height:100%;
+}
+
+/* 被除数／作業は“括弧ぶんの余白を増やさない”（すでに設定済みだが念のため上書き） */
+.dividend{ margin-left: var(--split-x) !important; }
+.work    { margin-left: var(--split-x) !important; }
+/* === ヘッダ（位ラベル～商）にも全面マス目を敷く === */
+.board-head{ position: relative; }  /* 絶対配置の基準にする */
+
+.board-head .grid-overlay{
+  position:absolute; inset:0;       /* left:0; top:0; right:0; bottom:0 と同じ */
+  pointer-events:none; z-index:0;
+}
+/* 左（除数＋括弧の手前まで） */
+.board-head .grid-overlay.on::before{
+  content:"";
+  position:absolute; top:0; bottom:0; left:0;
+  width: calc((var(--cell) * var(--div-digits)) + var(--bracket-w, 18px));
+  background-image:
+    repeating-linear-gradient(to right, var(--grid-line), var(--grid-line) 1px, transparent 1px, transparent var(--cell)),
+    repeating-linear-gradient(to bottom, var(--grid-line), var(--grid-line) 1px, transparent 1px, transparent var(--cell));
+  background-size: var(--cell) var(--cell);
+  background-position: 0 0;
+}
+/* 右（被除数・作業エリア） */
+.board-head .grid-overlay.on::after{
+  content:"";
+  position:absolute; top:0; bottom:0;
+  left: calc((var(--cell) * var(--div-digits)) + var(--bracket-w, 18px)); right:0;
+  background-image:
+    repeating-linear-gradient(to right, var(--grid-line), var(--grid-line) 1px, transparent 1px, transparent var(--cell)),
+    repeating-linear-gradient(to bottom, var(--grid-line), var(--grid-line) 1px, transparent 1px, transparent var(--cell));
+  background-size: var(--cell) var(--cell);
+  background-position: 0 0;
+}
+/* ===== ヘッダ（位ラベル～商の4行）にもマス目を敷く：最終オーバーライド ===== */
+.board-head{ position: relative; min-height: calc(var(--cell) * 4); }
+
+.board-head .grid-overlay{
+  position:absolute;
+  inset:0;                  /* left:0; top:0; right:0; bottom:0 */
+  pointer-events:none;
+  z-index: 9;               /* 数字の上に格子を描く（見えることを最優先） */
+}
+
+/* 本体側の格子も念のため一段上に */
+.board-body .grid-overlay{ z-index: 9; }
+
+/* 方眼の描画（左：除数＋括弧の手前／右：被除数・作業） */
+.board-head .grid-overlay.on::before,
+.board-head .grid-overlay.on::after,
+.board-body .grid-overlay.on::before,
+.board-body .grid-overlay.on::after{
+  background-image:
+    repeating-linear-gradient(to right, var(--grid-line), var(--grid-line) 1px, transparent 1px, transparent var(--cell)),
+    repeating-linear-gradient(to bottom, var(--grid-line), var(--grid-line) 1px, transparent 1px, transparent var(--cell));
+  background-size: var(--cell) var(--cell);
+  background-position: 0 0; /* 原点は常に0,0 */
+}
+
+/* 左エリア（除数2桁ぶん＋括弧の幅） */
+.board-head .grid-overlay.on::before,
+.board-body .grid-overlay.on::before{
+  content:"";
+  position:absolute; top:0; bottom:0; left:0;
+  width: calc( (var(--cell) * var(--div-digits)) + var(--bracket-w, 18px) );
+}
+
+/* 右エリア（被除数・作業） */
+.board-head .grid-overlay.on::after,
+.board-body .grid-overlay.on::after{
+  content:"";
+  position:absolute; top:0; bottom:0;
+  left: calc( (var(--cell) * var(--div-digits)) + var(--bracket-w, 18px) ); right:0;
+}
+.board-head .grid-overlay{ z-index: 9 !important; }
+/* =========================
+   ヘッダ（位ラベル～商の4行）にも方眼を敷く：最終オーバーライド
+   ========================= */
+.board-head{ position: relative; min-height: calc(var(--cell) * 4); }
+
+/* ヘッダのオーバーレイを“必ず表示”し、前面に出す */
+.board-head .grid-overlay{
+  position:absolute; inset:0;
+  display:block !important;
+  pointer-events:none;
+  z-index: 99 !important;        /* 数字より前面に */
+}
+
+/* 方眼（左：除数＋括弧の手前／右：被除数側） */
+.board-head .grid-overlay.on::before{
+  content:"";
+  position:absolute; top:0; bottom:0; left:0;
+  width: calc( (var(--cell) * var(--div-digits)) + var(--bracket-w, 18px) );
+  background-image:
+    repeating-linear-gradient(to right, var(--grid-line), var(--grid-line) 1px, transparent 1px, transparent var(--cell)),
+    repeating-linear-gradient(to bottom, var(--grid-line), var(--grid-line) 1px, transparent 1px, transparent var(--cell));
+  background-size: var(--cell) var(--cell);
+  background-position: 0 0;
+}
+.board-head .grid-overlay.on::after{
+  content:"";
+  position:absolute; top:0; bottom:0;
+  left: calc( (var(--cell) * var(--div-digits)) + var(--bracket-w, 18px) ); right:0;
+  background-image:
+    repeating-linear-gradient(to right, var(--grid-line), var(--grid-line) 1px, transparent 1px, transparent var(--cell)),
+    repeating-linear-gradient(to bottom, var(--grid-line), var(--grid-line) 1px, transparent 1px, transparent var(--cell));
+  background-size: var(--cell) var(--cell);
+  background-position: 0 0;
+}
+
+/* 念のため：本体側も常に表示状態を保証（競合対策） */
+.board-body .grid-overlay{ display:block !important; }
+/* ヘッダ用グリッドの計算にフォールバック(,2)を明示して安全に */
+.board-head .grid-overlay.on::before{ width: calc((var(--cell) * var(--div-digits, 2)) + var(--bracket-w, 18px)) !important; }
+.board-head .grid-overlay.on::after { left:  calc((var(--cell) * var(--div-digits, 2)) + var(--bracket-w, 18px)) !important; }
+/* ==== 盤面ぜんぶを覆う1枚グリッド（gridAll） ==== */
+.board-panel{ position: relative; }                /* 絶対配置の基準に */
+.board-panel > .grid-overlay{
+  position:absolute; inset:0;
+  pointer-events:none; z-index:0;
+}
+/* ヘッダ/本体の従来グリッドは隠す（競合防止） */
+.board-head  .grid-overlay,
+.board-body  .grid-overlay{ display:none !important; }
+
+/* 左（除数 + 括弧の手前まで） */
+.board-panel > .grid-overlay.on::before{
+  content:"";
+  position:absolute; top:0; bottom:0; left:0;
+  width: calc((var(--cell) * var(--div-digits, 2)) + var(--bracket-w, 18px));
+  background-image:
+    repeating-linear-gradient(to right, var(--grid-line), var(--grid-line) 1px, transparent 1px, transparent var(--cell)),
+    repeating-linear-gradient(to bottom, var(--grid-line), var(--grid-line) 1px, transparent 1px, transparent var(--cell));
+  background-size: var(--cell) var(--cell);
+  background-position: 0 0;
+}
+/* 右（被除数・作業エリア） */
+.board-panel > .grid-overlay.on::after{
+  content:"";
+  position:absolute; top:0; bottom:0;
+  left: calc((var(--cell) * var(--div-digits, 2)) + var(--bracket-w, 18px)); right:0;
+  background-image:
+    repeating-linear-gradient(to right, var(--grid-line), var(--grid-line) 1px, transparent 1px, transparent var(--cell)),
+    repeating-linear-gradient(to bottom, var(--grid-line), var(--grid-line) 1px, transparent 1px, transparent var(--cell));
+  background-size: var(--cell) var(--cell);
+  background-position: 0 0;
+}
+
+/* 4行＋9行＝計13行を確実に確保（境目のスキマ対策） */
+.board-head{  position: relative; min-height: calc(var(--cell) * 4);  padding-bottom: 0; }
+.board-body{  position: relative; min-height: calc(var(--cell) * 9);  margin-top: 0; }
+
+/* ==== センタリング統一（③） ==== */
+/* 各セルの中身は上下左右ど真ん中 */
+.cell, .qcell{ display:flex; align-items:center; justify-content:center; text-align:center; }
+/* 除数の行コンテナ側は右寄せしない（セル内センターに任せる） */
+.divisor{ display:grid; justify-content:end; align-items:center; }  /* 数字列自体は右に寄せつつセル内は中央 */
+.divisor .cell, .quotient .cell, .lane-labels .cell{ justify-content:center; align-items:center; }
+/* 括弧「)」も中央に */
+.bracket::before{ display:flex; align-items:center; justify-content:center; padding:0; }
+/* 境目の余白ゼロを強制（重ね指定の最終オーバーライド） */
+.board-head{  padding-bottom: 0 !important; margin-bottom: 0 !important; }
+.board-body{  padding-top:    0 !important; margin-top:    0 !important; border-top: 0 !important; }
+/* すべてのセルを上下左右中央へ（small / qcell も含めて強制） */
+.cell, .qcell, .cell.small{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  text-align:center !important;
+  line-height:1 !important;
+}
+
+/* 位ラベル・商・除数の行でも中央寄せになるよう念のため */
+.lane-labels .cell,
+.quotient    .cell,
+.divisor     .cell{ justify-content:center !important; align-items:center !important; }
+
+/* 括弧「)」の箱も中央に（右半マス内で中央寄せ） */
+.bracket::before{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  padding:0 !important;
+}
+/* === 分割位置を 〈除数の右端 = var(--cell) * var(--div-digits,2)〉 に固定 === */
+.board-panel{ --split-x: calc((var(--cell) * var(--div-digits, 2)) + var(--bracket-w)); }
+
+/* 左エリアの幅を --split-x に、右エリアの開始を --split-x に強制 */
+.board-head .grid-overlay.on::before,
+.board-body .grid-overlay.on::before,
+.grid-overlay.on::before{ width: var(--split-x) !important; }
+
+.board-head .grid-overlay.on::after,
+.board-body .grid-overlay.on::after,
+.grid-overlay.on::after{ left: var(--split-x) !important; }
+/* 行の境目まわりをゼロに固定（念のための最終指定） */
+.board-head{ padding-bottom:0 !important; margin-bottom:0 !important; }
+.board-body{ padding-top:0 !important;    margin-top:0 !important;    border-top:0 !important; }
+/* すべてのセル中身を上下左右中央に統一（small / qcell 含む） */
+.board-panel .cell,
+.board-panel .qcell,
+.board-panel .cell.small{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  text-align:center !important;
+  line-height:1 !important;
+}
+
+/* 行ごとのクセを打ち消し（右寄せ・上寄せにならないように） */
+.lane-labels .cell,
+.quotient    .cell,
+.divisor     .cell{ align-items:center !important; justify-content:center !important; }
+
+/* 括弧「)」の箱も中央に */
+.bracket::before{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  padding:0 !important;
+}
+.divisor .cell {  padding-right: 2px; }
+.dividend .cell{  padding-left:  1px; }
+/* ===== 最終オーバーライド：分割位置と括弧を split-x に一本化 ===== */
+.grid-overlay.on::before{ width: var(--split-x) !important; }
+.grid-overlay.on::after { left:  var(--split-x) !important; }
+
+/* 括弧は split-x から半マスぶんの帯に載せる（左端 = split-x） */
+.bracket{
+  position:absolute;
+  top:0;
+  left: calc(var(--split-x) - var(--bracket-w)); /* ← 半マス帯の左端 */
+  height: var(--cell);
+  width: var(--bracket-w);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  pointer-events:none;
+  border: 0; /* 古い縦線を無効化 */
+}
+.bracket::before{
+  content: ")";
+  font-family: var(--font-edu);
+  font-size: calc(var(--cell) * .58);
+  line-height:1;
+  display:flex; align-items:center; justify-content:center; height:100%;
+}
+/* ===== 最終オーバーライド：分割位置を「除数の桁×1マス ＋ 半マス(括弧)」に固定 ===== */
+.board-panel{
+  --split-x: calc((var(--cell) * var(--div-digits, 2)) + var(--bracket-w));
+}
+
+/* 背景グリッドの左右分割を split-x に統一 */
+.grid-overlay.on::before{ width: var(--split-x) !important; }
+.grid-overlay.on::after { left:  var(--split-x) !important; }
+
+/* 被除数＆作業列の開始も split-x に統一 */
+.dividend{ margin-left: var(--split-x) !important; }
+.work    { margin-left: var(--split-x) !important; }
+
+/* 括弧 “)” は「split-x の直前＝半マス帯」に置く（=『全マス×3 → 半マス』を保証） */
+.bracket{
+  left: calc(var(--split-x) - var(--bracket-w)) !important;
+  width: var(--bracket-w) !important;
+  border: 0 !important;     /* 古い縦線描画を無効化（重なり防止） */
+}
+/* ===== 最終オーバーライド：split-x を「桁×1マス + 半マス(括弧)」で統一 ===== */
+.board-panel{
+  --split-x: calc((var(--cell) * var(--div-digits, 2)) + var(--bracket-w));
+}
+
+/* グリッド分割を split-x 基準へ */
+.grid-overlay.on::before{ width: var(--split-x); }
+.grid-overlay.on::after { left:  var(--split-x); }
+
+/* 開始位置も split-x に統一 */
+.dividend{ margin-left: var(--split-x) !important; }
+.work    { margin-left: var(--split-x) !important; }
+
+/* 括弧 “)” は split-x の直前＝半マス帯に置く */
+.bracket{
+  left: calc(var(--split-x) - var(--bracket-w)) !important;
+  width: var(--bracket-w) !important;
+}
+/* ===== 最終オーバーライド：分割位置を統一 ===== */
+/* 除数の右端 = 「除数の桁×1マス」＋「括弧の半マス」 */
+.board-panel{
+  --split-x: calc((var(--cell) * var(--div-digits, 2)) + var(--bracket-w)) !important;
+}
+
+/* 背景グリッドの左右境界は split-x 基準に一本化 */
+.grid-overlay.on::before{
+  width: calc(var(--cell) * var(--div-digits, 2)) !important;
+}
+.grid-overlay.on::after { left:  var(--split-x) !important; }
+
+/* 被除数・作業域の開始位置も split-x に統一 */
+.dividend{ margin-left: var(--split-x) !important; }
+.work    { margin-left: var(--split-x) !important; }
+
+/* 括弧 “)” は split-x の直前（半マス帯）に重ねる */
+.bracket{
+  left: calc(var(--split-x) - var(--bracket-w)) !important;
+  width: var(--bracket-w) !important;
+  border: 0 !important; /* 古い縦線描画があれば無効化 */
+}
+/* ===== 最終オーバーライド②：除数位置を split-x に揃える ===== */
+.divisor{
+  position: absolute !important;
+  left: 0 !important;
+  top: 0;
+  width: calc(var(--cell) * var(--div-digits, 2)) !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-right: 0;
+}
+/* ===== 最終オーバーライド：除数行の左余白を完全にゼロにする ===== */
+/* コンテナの中央寄せをやめ、内側グリッドを左詰めで開始 */
+.divisor{
+  display: block !important;          /* flex中央寄せを無効化 */
+}
+
+.divisor .cell-row{
+  justify-content: start !important;  /* 左端から配置（半マスを作らない） */
+}
+
+/* 念のため、子要素の余白もゼロに固定 */
+.divisor .cell,
+.divisor .qcell{
+  margin: 0 !important;
+}
+/* ===== 最終オーバーライド：除数行は 1マス単位のグリッドにする ===== */
+.divisor .cell-row{
+  grid-auto-columns: var(--cell) !important; /* 半マスではなく1マス単位 */
+  justify-content: start !important;         /* 左端から詰めて配置 */
+}
+.divisor .cell{ 
+  grid-column: span 1 !important;            /* 1セル=1マスとして使う */
+}
+
+/* 念のため：除数行の最初に qcell が来ても幅ゼロ扱いにして影響を消す */
+.divisor .qcell:first-child{ 
+  display: none !important;
+}
+/* ===== 最終オーバーライド（暫定）：除数行の左の空き半マスを消す ===== */
+.board-body .divisor > .cell-row{
+  transform: translateX(calc(-1 * var(--qcell))) !important;
+}
+/* ===== 除数の左半マスだけ消し、transformハックは解除 ===== */
+/* 以前入れた「左へ半マスずらす」を無効化 */
+.board-body .divisor > .cell-row{
+  transform: none !important;
+}
+/* 除数行の“先頭に紛れ込む”半マスを隠す（右側の括弧位置は動かさない） */
+.divisor .cell-row > .qcell:first-child{
+  display: none !important;
+}
+/* 最終A：除数先頭の半マスを常に消す（has-left対策の決め打ち） */
+.divisor .cell-row.has-left > .qcell:first-child{ display:none !important; }
+/* ===== 最終B：括弧は除数の直後に置く（123のすぐ右） ===== */
+.board-body .bracket{
+  /* 除数の桁数 × 1マス分だけ左から確保し、その直後に括弧を置く */
+  left: calc(var(--cell) * var(--div-digits, 2)) !important;
+  width: var(--bracket-w) !important;
+}
+/* =======================================================
+   最終オーバーライド（E-1：左右分割グリッド＋括弧スロット）
+   - 左：除数グリッド（右寄せ）
+   - 中：半マス幅の括弧スロット
+   - 右：被除数・作業グリッド（左寄せ）
+   - セルごとの枠線は無効化し、背景オーバーレイのみでマス目を描く
+   ======================================================= */
+
+/* 1) 背景グリッド：左面（除数側） */
+.grid-overlay.on::before{
+  content:"";
+  position:absolute; top:0; bottom:0; left:0;
+  width: calc(var(--cell) * var(--div-digits, 2)) !important;
+  background-image:
+    repeating-linear-gradient(to right, var(--grid-line), var(--grid-line) 1px, transparent 1px, transparent var(--cell)),
+    repeating-linear-gradient(to bottom, var(--grid-line), var(--grid-line) 1px, transparent 1px, transparent var(--cell));
+  background-size: var(--cell) var(--cell);
+  background-position: 0 0;
+  pointer-events:none;
+}
+
+/* 2) 背景グリッド：右面（被除数・作業側） */
+.grid-overlay.on::after{
+  content:"";
+  position:absolute; top:0; bottom:0;
+  left: var(--split-x) !important; right:0 !important;
+  background-image:
+    repeating-linear-gradient(to right, var(--grid-line), var(--grid-line) 1px, transparent 1px, transparent var(--cell)),
+    repeating-linear-gradient(to bottom, var(--grid-line), var(--grid-line) 1px, transparent 1px, transparent var(--cell));
+  background-size: var(--cell) var(--cell);
+  background-position: 0 0;
+  pointer-events:none;
+}
+
+/* 3) 括弧スロット（常に半マス帯に固定） */
+.bracket{
+  position:absolute;
+  top:0; height: var(--cell);
+  left: calc(var(--split-x) - var(--bracket-w)) !important;
+  width: var(--bracket-w) !important;
+  display:flex; align-items:center; justify-content:center;
+  border: 0 !important; /* 古い縦線描画があれば無効化 */
+}
+
+/* 4) 右面の論理左端を split-x に固定（左寄せの基準を一致） */
+.board-body .dividend,
+.board-body .work{
+  margin-left: var(--split-x) !important;
+}
+
+/* 5) 左面の幅＝除数桁数×セル幅（右寄せの基準を一致） */
+.board-body .divisor{
+  width: calc(var(--cell) * var(--div-digits, 2)) !important;
+}
+
+/* 6) “二重マス目”の原因：セル個別の枠線（qcell系）を全て止める */
+.board-panel .qcell::after,
+.board-panel .qcell::before,
+.board-panel .cell-row:first-of-type .qcell::before{
+  border: 0 !important;
+}
+
+/* 7) 旧来の左半マス調整などは無効化（衝突回避） */
+.board-body .divisor > .cell-row{ transform: none !important; }
+.divisor .cell-row > .qcell:first-child{ display:none !important; }
+/* 下ろした0（部分被除数の先頭桁）の可視化：グレー */
+:root{
+  --zero-leading: #9aa0a6; /* お好みで #999 などに調整可 */
+}
+.work .cell.zero-leading{
+  color: var(--zero-leading);
+}
+/* 商セルの“注目位”ハイライト（オレンジの箱） */
+.cell.probe{
+  outline: 3px solid #f6a500;
+  outline-offset: -3px;
+  border-radius: 6px;
+}
+/* === 最終オーバーライド：商セルのオレンジ枠を最前面に、方眼は背面に === */
+
+/* 商セルの“注目位”（オレンジ枠）は確実に最前面へ */
+.quotient .cell { position: relative; z-index: 2; }
+.cell.probe     { position: relative; z-index: 200; } /* 枠が格子に負けないように */
+
+/* 方眼（オーバーレイ）は背面へ固定（!important で競合勝ち） */
+.board-head .grid-overlay,
+.board-body .grid-overlay,
+.board-panel > .grid-overlay { z-index: 0 !important; }
+.lane-head{
+  display: inline-block;
+  padding: 2px 8px;
+  margin: 4px 0 2px;
+  border: 2px solid #999;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  background: #f8f8f8;
+}
+
+/* 取消し商：グレーの「＼」＝帯で描く（文字の＼は完全に封じる） */
+.board-panel .cell.muted.struck{
+  position: relative;
+  color: #777;
+  text-decoration: line-through; /* 横棒は残す（不要なら消す） */
+}
+.board-panel .cell.muted.struck::after{
+  content: "" !important;                                  /* ← 文字の＼を上書き無効化 */
+  position: absolute !important;
+  left: 50% !important;
+  top: 50% !important;
+  width: 70% !important;                                  /* 長さ（短め）。ここを変えれば即反映 */
+  height: 2px !important;                                  /* 太さ。2〜3pxで調整 */
+  background: currentColor !important;                     /* グレーに追従 */
+  transform: translate(-50%, -50%) rotate(55deg) !important; /* 「＼」方向固定 */
+  transform-origin: center !important;
+  z-index: 5 !important;
+  pointer-events: none !important;
+  opacity: .95 !important;
+}
+/* 枠だけを使う方針なので、塗り(hl)は無効化 */
+.cell.hl { background: transparent !important; }
+/* 商が立たない位の印（赤×）— 枠の中央に表示 */
+.board-panel .quotient .cell.noq{
+  position: relative;
+}
+.board-panel .quotient .cell.noq::after{
+  content: "×";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -58%);
+  font-size: 1.05em;
+  line-height: 1;
+  color: #d33;
+  pointer-events: none;
+  opacity: .95;
+  z-index: 4;
+}
+/* オーバーレイ半マス（レイアウトに影響しない左半分の表示） */
+.ovl-half { position:absolute; left:0; top:0; transform:translateX(-50%); pointer-events:none; }

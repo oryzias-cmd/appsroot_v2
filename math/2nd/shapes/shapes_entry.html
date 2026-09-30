@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<!-- shapes_entry.html（Entry Lego運用：EntryFull.register を使う） -->
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>かたち（entry）</title>
+
+  <!-- 共通シェル（Entry Lego） -->
+  <link rel="stylesheet" href="../../../common/shell/header.css">
+  <link rel="stylesheet" href="../../../common/shell/setup.full.css">
+  <link rel="stylesheet" href="../../../common/shell/entry.full.css">
+
+  <!-- shapes entry 専用（必要なら上書き） -->
+  <link rel="stylesheet" href="./shapes_entry.css">
+</head>
+
+<body data-appkey="shapes.entry">
+  <!-- kit が読むスロット -->
+  <div id="slot-header"
+       data-slot="header"
+       data-title="かたち"
+       data-back="../../../catalog/math-2nd.html#upper"></div>
+
+  <!-- SetupCard の mount 先 -->
+  <main id="mainArea"></main>
+
+  <!-- ★重要：kit.full.js が読む前に宣言 -->
+  <script>
+    window.AppShellLayout = {
+      header:{ left:['backlink'], center:['title'], right:[] },
+      pbar:{ left:[], center:[], right:[] },
+      main:{ bottomCenter:[] },
+      footer:{ left:[], center:[], right:[] }
+    };
+  </script>
+
+  <!-- 共通レゴ -->
+  <script src="../../../common/shell/kit.full.js"></script>
+  <script src="../../../common/shell/header.full.js"></script>
+  <script src="../../../common/shell/setup.full.js"></script>
+  <script src="../../../common/shell/entry.full.js"></script>
+
+  <!-- アプリ個別（EntryFull.register） -->
+  <script src="./shapes_entry.js"></script>
+</body>
+</html>

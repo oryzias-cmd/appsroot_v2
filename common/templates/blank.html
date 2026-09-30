@@ -1,0 +1,70 @@
+<!--
+【レゴ設計ルール（固定）】
+
+■ 最終責務
+ヘッダーの内容（左右ボタン・音声・設定等）の最終決定権は
+kit.full.js の L.header / mountArea にある。
+header.full.js は構造（枠）専用とする。
+
+■ 禁止事項
+・アプリ側JSで #slot-header / header.title を直接操作しない。
+・header.full.js 側でボタンを個別注入しない。
+
+■ 例外ルール
+この前提を崩す場合は、実装前に必ず明示的に宣言すること。
+（宣言なき変更はバグ扱いとする）
+-->
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>blank</title>
+
+<!-- ▼ レゴ共通CSS -->
+<link rel="stylesheet" href="../../../common/shell/header.css" />
+<link rel="stylesheet" href="../../../common/shell/pbar.full.css" />
+<link rel="stylesheet" href="../../../common/shell/footer.full.css" />
+<link rel="stylesheet" href="../../../common/shell/setup.full.css" />
+
+<!-- ▼ blank テンプレ専用（ごく薄く） -->
+<link rel="stylesheet" href="./blank.css" />
+</head>
+<body data-phase="app">
+  <!-- ▼ レゴ：ヘッダー用スロット -->
+  <div id="slot-header" data-slot="header"></div>
+
+  <!-- ▼ レゴ：問題バー用スロット -->
+  <div id="slot-pbar" data-slot="pbar"></div>
+
+  <!-- ▼ メインエリア（完全に空：各アプリが自由に使う） -->
+  <main id="mainArea"></main>
+
+  <!-- ▼ レゴ：フッター用スロット -->
+  <div id="slot-footer" data-slot="footer"></div>
+
+  <!-- ▼ レゴレイアウト宣言：blank の基本形 -->
+  <script>
+    window.AppShellLayout = {
+      header: {
+        left:   ['backlink'],     // ← 左：もどる
+        center: ['title'],        // ← 中央：タイトル（header:set-titleで更新）
+        right:  ['settingsGear']  // ← 右：設定（歯車）
+      }
+      // pbar と footer は、各アプリの JS（blank.js をコピーした先）で
+      // 自前で DOM を組む想定なので、ここでは宣言しません。
+    };
+  </script>
+
+  <!-- ▼ レゴ共通JS -->
+  <script src="../../../common/shell/kit.full.js"></script>
+  <script src="../../../common/shell/header.full.js"></script>
+  <script src="../../../common/shell/pbar.full.js"></script>
+  <script src="../../../common/shell/footer.full.js"></script>
+  <script src="../../../common/shell/result.full.js"></script>
+  <script src="../../../common/shell/setup.full.js"></script>
+
+  <!-- ▼ blank 専用 JS（見本実装） -->
+  <script src="./blank.js"></script>
+</body>
+</html>

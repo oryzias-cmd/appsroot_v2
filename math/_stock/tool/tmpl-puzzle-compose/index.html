@@ -1,0 +1,27 @@
+<!doctype html><html lang="ja"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>テンプレ：構成パズル</title>
+<link rel="stylesheet" href="../../shared/css/base.css">
+<link rel="stylesheet" href="./css/app.css">
+<script src="../../shared/js/shapes.js" defer></script>
+<script src="../../shared/js/colors_shapes10.js" defer></script>
+<script src="./js/app.js" defer></script>
+</head><body>
+<header class="app-header">
+  <button class="btn btn-back" onclick="history.back()">{ もどる }</button>
+  <h1 class="title">形を作ろう</h1>
+  <button class="btn btn-help" onclick="alert('ピースを動かして目標の形にぴったり合わせよう')">？</button>
+</header>
+
+<main class="puzzle">
+  <div id="goal" class="goal" aria-label="目標形"></div>
+  <div id="tray" class="tray" aria-label="ピース置き場"></div>
+</main>
+
+<footer class="app-footer">
+  <div class="main-controls">
+    <button class="btn" id="btnRetry">{ やり直し }</button>
+    <button class="btn" id="btnCheck">{ できた！ }</button>
+  </div>
+</footer>
+</body></html>

@@ -1,0 +1,511 @@
+/* sakura.css（今回の修正点だけ）
+  - 3回不正解はJS側で「ヒント○自動表示」へ（答えを見せない）
+  - 入力マスの黒□：小さい四角ではなく「そのマス全体の黒枠」に変更
+  - ヒント○の余計な模様：is-editable の outline を消す
+  - テンキー：正方形に固定
+  - 10の左（pad-empty）：枠を消して透明化
+*/
+
+html, body { height: 100%; }
+body { margin: 0; padding: 0; }
+.app-root { min-height: 100%; }
+
+.quiz-shelf{ height: 100%; }
+
+.sakura-quiz{
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  max-width: 1160px;
+  margin: 0 auto;
+  gap: 32px;
+  height: 100%;
+  padding: 14px 6px;
+  box-sizing: border-box;
+}
+
+.sakura-left{
+  display: grid;
+  grid-template-rows: auto auto auto;
+  gap: 10px;
+  min-width: 0;
+  align-content: start;
+}
+
+.sakura-title{ display: none }
+
+/* ===== 3×3 方眼 ===== */
+.sakura-grid{
+  position: relative;
+  --num-shift: 4%;
+  --grid-blue: #8fc4ee;
+  --grid-line: 4px; /* ★太くする（現状2px→4px） */
+
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+
+  width: min(60vh, 100%);
+  aspect-ratio: 1 / 1;
+  margin: 0 auto;
+
+  /* ★外枠borderをやめる：マスの線だけで外枠を作り、マスにピッタリ重ねる */
+  border: none;
+  border-radius: 0;
+
+  /* ★破線・背景由来を強制ゼロ（縦横0本） */
+  background: transparent;
+  background-image: none;
+}
+
+.gcell{
+  position: relative;
+
+  /* ★Grid中身（10など）が列幅を押し広げないようにする */
+  min-width: 0;
+  min-height: 0;
+
+  /* ★線は全部同じ太さ（外枠も内枠も差を付けない） */
+  border-right: var(--grid-line) solid var(--grid-blue);
+  border-bottom: var(--grid-line) solid var(--grid-blue);
+
+  /* 外枠（上・左）を追加して“マスの線だけ”で外枠を構成 */
+  display: grid;
+  place-items: center;
+
+  /* ★破線・背景由来を強制ゼロ（縦横0本） */
+  background: transparent;
+  background-image: none;
+}
+
+/* 1行目：上線 */
+.gcell:nth-child(-n+3){ border-top: var(--grid-line) solid var(--grid-blue); }
+
+/* 1列目：左線 */
+.gcell:nth-child(3n+1){ border-left: var(--grid-line) solid var(--grid-blue); }
+
+/* 3列目：右線も必要（外枠の右端） */
+.gcell:nth-child(3n){
+  border-right: var(--grid-line) solid var(--grid-blue);
+}
+
+/* 最下段：下線も必要（外枠の下端） */
+.gcell[data-cell="bl"],
+.gcell[data-cell="bc"],
+.gcell[data-cell="br"]{
+  border-bottom: var(--grid-line) solid var(--grid-blue);
+}
+
+.gcell-target,
+.gcell-part{ background: transparent !important; }
+
+/* 破線用の疑似要素がどこかから来ても確実に消す */
+.gcell::before,
+.gcell::after{
+  content: none !important;
+  background: none !important;
+  border: none !important;
+}
+
+.slot{
+  width: 92%;
+  height: 92%;
+  display: grid;
+  place-items: center;
+  box-sizing: border-box;
+  position: relative;
+}
+
+/* ★入力マス：小さい□は廃止。マス全体を黒枠で指示する */
+.slot.is-blank::before{
+  content: none;
+}
+
+/* ★黒□は「そのマス」とピッタリ重ねる（青枠と同じ太さ） */
+.slot.is-blank{
+  width: 100%;
+  height: 100%;
+
+  outline: var(--grid-line, 4px) solid rgba(0,0,0,0.85);
+  outline-offset: calc(-1 * var(--grid-line, 4px));
+
+  border-radius: 0;
+}
+
+/* 数字：教科書体＋下へ4%補正 */
+.num{
+  font-size: 120px;
+  line-height: 1;
+  font-weight: 500;
+  font-family:
+    "UD Digi Kyokasho NK-B",
+    "UD デジタル 教科書体 NK-B",
+    "UD デジタル教科書体NK-B",
+    "UD Digi Kyokasho NK",
+    "UD デジタル 教科書体 NK",
+    "Hiragino Sans",
+    "Yu Gothic",
+    "Meiryo",
+    sans-serif;
+
+  /* 変形を確実に効かせる（inline spanのままだと環境差が出るので固定） */
+  display: inline-block;
+
+  /* ★10のときだけ「箱の基準幅」を作る（DevToolsの青ハイライトも安定させる） */
+  inline-size: var(--num-w, auto);
+  text-align: center;
+  white-space: nowrap;
+
+  /* ★変形の基準点を中央に固定 */
+  transform-origin: 50% 50%;
+
+  /* ★Xはmarginで動かす（選択ハイライトも箱ごと動く） */
+  margin-left: var(--num-ml, 0px);
+
+  /* ★transformは「Y移動＋横縮小」だけに限定 */
+  transform:
+    translateY(var(--num-ty, var(--num-shift, 4%)))
+    scaleX(var(--num-sx, 1));
+}
+
+.gcell-target .num{ font-size: 120px; }
+
+/* ===== 枝 ===== */
+.gcell-branch{ overflow: visible; }
+
+.branch{
+  stroke: rgba(0,0,0,0.92);
+  stroke-width: 2.2;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.branch-overlay{
+  position: absolute;
+  top: 2px;
+  left: 0;
+  right: 0;
+  bottom: 10px;
+  width: 100%;
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* ===== ヒント（○） ===== */
+.hint-row-wrap{
+  display: grid;
+  width: 100%;
+  margin: 0 auto;
+  grid-template-rows: auto auto auto;
+  justify-items: center;
+  gap: 12px;
+  padding: 44px 0 0;
+}
+
+.hint-row{
+  width: 100%;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  box-sizing:border-box;
+  padding:0;
+}
+
+.hint-dots{
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: nowrap;
+  width: max-content;
+  margin: 0 auto;
+}
+
+.hint-dot{
+  width: 60px;
+  height: 60px;
+  border-radius: 999px;
+  border: 2px solid #b7b7b7;
+  box-sizing: border-box;
+  background: #ffffff;
+}
+
+.hint-dot.is-empty{
+  border-color: #b7b7b7;
+  background: #ffffff;
+}
+
+.hint-dot.is-left{
+  border-color: rgba(0,0,0,0.75);
+  background: #ff4b4b;
+}
+
+.hint-dot.is-right{
+  border-color: rgba(0,0,0,0.75);
+  background: #4b74ff;
+}
+
+.hint-dot.is-editable{
+  outline: none;
+  outline-offset: 0;
+}
+
+/* ===== 右カラム ===== */
+.sakura-right{
+  display: grid;
+  grid-template-rows: auto auto auto;
+  gap: 44px;
+  align-content: start;
+}
+
+.pad{
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+.hint-btn-wrap{
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.hint-btn-wrap .hint-btn{
+  grid-column: 2;
+  justify-self: center;
+  width: 80px;
+  height: 80px;
+  border-radius: 999px;
+  font-size: 22px;
+  line-height: 1;
+  font-weight: 700;
+  border: 2px solid rgba(0,0,0,0.35);
+  background: #2f6dff;
+  color: #ffffff;
+  padding: 0;
+}
+
+.hint-btn-wrap .hint-btn.is-on{
+  box-shadow: 0 0 0 6px rgba(47,109,255,0.10);
+}
+
+.hint-btn-wrap .hint-btn:disabled{
+  opacity: 1;
+  cursor: default;
+}
+
+/* ★テンキー：正方形固定 */
+.pad-key{
+  width: 74px;
+  height: 74px;
+
+  font-size: 34px;
+  font-weight: 500;
+  font-family:
+    "BIZ UDPGothic",
+    "BIZ UDGothic",
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    sans-serif;
+
+  border-radius: 14px;
+  border: 2px solid rgba(0,0,0,0.28);
+  background: #ffffff;
+  cursor: pointer;
+  padding: 0;
+}
+
+.pad-key:active{ transform: translateY(1px); }
+.pad-key:disabled{ opacity: 0.4; cursor: default; }
+
+/* ★空白キー：枠を消す（10の左上など） */
+.pad-key.pad-empty{
+  border: none;
+  background: transparent;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* 「つぎへ」 */
+.next-wrap{ display: grid; justify-items: center; }
+
+.next-btn{
+  width: 220px;
+  height: 72px;
+  border-radius: 16px;
+  font-size: 30px;
+  font-weight: 700;
+  border: 2px solid rgba(0,0,0,0.25);
+  background: #ffffff;
+  cursor: pointer;
+}
+
+.next-btn:disabled{ opacity: 0.35; cursor: default; }
+
+/* ○×（判定マーク） */
+.ox-mark{
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 78%;
+  height: 78%;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+/* =========================
+   sakura HUD（問題数円＋タイマー）
+   グリッドのサイズ・配置は変えず、左上に絶対配置で出す
+   ========================= */
+.board-wrap{
+  position:relative;
+  display:inline-block;
+}
+
+.sakura-hud{
+  position:absolute;
+  top:0;
+  left:0;
+
+  /* グリッドの左側に“はみ出して”置く（グリッド本体は動かさない） */
+  --hud-width: 110px;   /* nakaniha と同じ */
+  --hud-gap: 18px;
+  transform: none;
+  width: var(--hud-width);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:10px;
+  z-index: 5;
+
+  /* 盤面操作の邪魔をしない */
+  pointer-events:none;
+}
+
+#hudCircle{
+  width: var(--hud-width);
+  height: var(--hud-width);
+
+  /* nakaniha：薄いグレーの2px枠・円 */
+  border: 2px solid #d0d0d0;
+  border-radius: 50%;
+
+  /* nakaniha：背景指定なし（透明） */
+  background: transparent;
+
+  box-sizing: border-box;
+
+  /* nakaniha：フォント（HUD内はこのフォントに統一） */
+  font-family:
+    "UD Digi Kyokasho N-R",
+    "UD Digi Kyokasho NK-R",
+    "UDデジタル教科書体N-R",
+    "UDデジタル教科書体NK-R",
+    system-ui,
+    sans-serif;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+#hudCircle .hud-circle-inner{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+
+  /* nakaniha：内部の上下間隔は margin で作るので gap は0 */
+  gap:0;
+}
+
+#hudCur{
+  font-size: 34px;
+  font-weight: 800;
+  line-height: 1;
+
+  margin: 0;
+
+  width: 100%;
+  text-align: center;
+
+  /* nakaniha：現在番号だけピンク */
+  color: #FF3366;
+
+  /* nakaniha：うるさくない程度にくっきり */
+  text-shadow: 0 0 0.5px rgba(0,0,0,0.25);
+}
+
+/* nakaniha：分数風の横棒 */
+#hudBar{
+  width: 32px;
+  height: 2px;
+  background: #333;
+  border-radius: 999px;
+
+  margin: 8px 0;
+}
+
+#hudTotal{
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+#hudTimer{
+  width: var(--hud-width);
+  padding:6px 10px;
+  background:#02070b;
+  border-radius:12px;
+  box-shadow:0 4px 10px rgba(0,0,0,0.35);
+  color:#28f0ff;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+#hudTimer .digital-number{
+  font-family: "Digital-7 Mono", "DS-Digital", "Consolas", monospace;
+  font-weight:700;
+  font-size:28px;
+  letter-spacing:0.12em;
+}
+
+#hudTimer.warn10{
+  color:#ffd54f;
+}
+
+#hudTimer.warn5{
+  color:#ff5252;
+}
+
+#hudTimer[hidden]{
+  display:none !important;
+}
+
+.hint-start{
+  cursor: grab;
+  font-size:28px;
+  user-select:none;
+  color:#000000;
+  opacity:1;
+  transition: opacity 0.15s ease;
+}
+
+.hint-start.is-locked{
+  cursor: default;
+  color:#9a9a9a;
+  opacity:0.45;
+}
+
+.hint-start:active{
+  cursor: grabbing;
+}
+
+.hint-start.is-locked:active{
+  cursor: default;
+}

@@ -1,0 +1,7 @@
+.adjust-main{padding:16px 12px}
+.bar{height:20px;background:#eee;border-top:3px solid #333;border-bottom:3px solid #333}
+#barFill{height:100%;width:30%;background:#b9d8ff}
+.target,.now{margin:8px 0}
+.judge{min-height:28px;font-weight:bold}
+.judge.ok{color:#0a7}
+.judge.ng{color:#c33}

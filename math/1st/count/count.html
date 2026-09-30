@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>かずを かぞえる（1〜10）</title>
+
+  <link rel="stylesheet" href="../../../common/shell/header.css">
+  <link rel="stylesheet" href="./count.css">
+</head>
+<body>
+
+  <div id="slot-header" data-slot="header" data-title="かずを かぞえる" data-back="./entry.html"></div>
+
+  <main id="mainArea">
+    <section class="count-wrap" aria-label="かずを かぞえる">
+      <div class="count-left" id="playArea" aria-label="もんだい"></div>
+
+<aside class="count-right" aria-label="こたえ">
+        <div class="ans-box" id="ansBox" role="group" aria-label="こたえ">
+          <div class="ans-text" id="ansText"></div>
+          <button type="button" class="ans-wrong" id="ansWrong" aria-label="まちがいを けす" hidden>×</button>
+        </div>
+
+        <div class="keypad" id="keypad" aria-label="テンキー">
+          <button type="button" class="key key-num" data-key="7">7</button>
+          <button type="button" class="key key-num" data-key="8">8</button>
+          <button type="button" class="key key-num" data-key="9">9</button>
+
+          <button type="button" class="key key-num" data-key="4">4</button>
+          <button type="button" class="key key-num" data-key="5">5</button>
+          <button type="button" class="key key-num" data-key="6">6</button>
+
+          <button type="button" class="key key-num" data-key="1">1</button>
+          <button type="button" class="key key-num" data-key="2">2</button>
+          <button type="button" class="key key-num" data-key="3">3</button>
+
+          <button type="button" class="key key-10" data-key="10">10</button>
+          <div class="key-gap" aria-hidden="true"></div>
+          <button type="button" class="key key-clear" id="keyClear" aria-label="けす">×</button>
+        </div>
+
+        <!-- ⑤：こたえあわせ(2列) + いっしょに(1列)（3列維持） -->
+        <div class="action-row5" aria-label="こたえあわせ と おたすけ">
+          <button type="button" class="check-btn" id="btnCheck" disabled>こたえあわせ</button>
+          <button type="button" class="teach-btn" id="btnTeach"><span>いっしょに<br>かぞえる</span></button>
+
+        <!-- ⑥：やりなおし / もどる（2列） -->
+        <div class="action-row6" aria-label="やりなおし と もどる">
+          <button type="button" class="danger-btn" id="btnReset" aria-disabled="true">やりなおし</button>
+          <button type="button" class="danger-btn" id="btnUndo" aria-disabled="true">もどる</button>
+        </div>
+
+        </div>
+      </aside>
+
+    </section>
+
+<div class="overlay" id="overlay" hidden>
+  <img class="overlay-mark" id="overlayMark" alt="">
+  <button type="button" class="next-btn" id="btnNext">つぎへ</button>
+</div>
+
+  <!-- ===== 設定モーダル（歯車で開く） ===== -->
+  <div class="modal" id="settingsModal" hidden>
+    <div class="modal-backdrop" id="settingsBackdrop" aria-hidden="true"></div>
+
+    <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+      <div class="modal-head">
+        <div class="modal-title" id="settingsTitle">せってい</div>
+        <button type="button" class="modal-close" id="settingsClose" aria-label="とじる">×</button>
+      </div>
+
+      <div class="modal-body">
+
+        <div class="set-block">
+          <div class="set-label">おたすけ レベル</div>
+
+          <div class="set-slider">
+            <input type="range" id="setHelpLv" min="0" max="4" step="1" value="0" aria-label="おたすけ レベル">
+
+            <div class="set-lv" aria-label="レベル へんこう">
+              <button type="button" class="lv-btn lv-up" id="setHelpUp" aria-label="レベルを あげる">▲</button>
+              <div class="lv-num" id="setHelpLvText">0</div>
+              <button type="button" class="lv-btn lv-down" id="setHelpDown" aria-label="レベルを さげる">▼</button>
+            </div>
+          </div>
+
+          <div class="set-help">
+            0:なし / 1:✓ / 2:すうじ / 3:すうじ+よみ / 4:すうじ+よみあげ
+          </div>
+        </div>
+
+        <label class="set-row">
+          <input type="checkbox" id="setTeachBtn">
+          いっしょに かぞえる
+        </label>
+
+        <label class="set-row">
+          <input type="checkbox" id="setResetBtn">
+          やりなおし
+        </label>
+
+        <label class="set-row">
+          <input type="checkbox" id="setUndoBtn">
+          もどる
+        </label>
+
+      </div>
+
+      <div class="modal-foot">
+        <div class="modal-foot-note">※ あたらしい もんだいに なります</div>
+        <button type="button" class="modal-apply" id="settingsApply">けってい</button>
+      </div>
+    </div>
+  </div>
+  </main>
+
+  <script>
+    window.AppShellLayout = {
+      header: { left:['backlink'], center:['title'], right:['settingsGear'] },
+      pbar:   { left:[], center:[], right:[] },
+      main:   { bottomCenter:[] },
+      footer: { left:[], center:[], right:[] }
+    };
+  </script>
+
+  <script src="../../../common/shell/kit.full.js"></script>
+  <script src="../../../common/shell/header.full.js"></script>
+
+  <!-- ★file://対応：画像一覧はfetchではなくscriptで読む -->
+  <script src="../../../common/assets/items/items.list.js"></script>
+
+  <script src="./count.js"></script>
+</body>
+</html>

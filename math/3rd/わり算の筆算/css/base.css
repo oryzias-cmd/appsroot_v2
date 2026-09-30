@@ -1,0 +1,156 @@
+:root{
+  --mm-scale: 3.78;        /* 1mm ≒ 3.78px */
+  --cell-mm: 10;           /* マスの一辺(mm) */
+  --cell: calc(var(--cell-mm) * 1px * var(--mm-scale));
+  /* ===== 筆算（左右分割グリッド）用の基本パラメータ ===== */
+  --div-digits: 2;                                   /* 除数の桁（初期値は仮。JSで上書き） */
+  --quot-digits: 7;                                  /* 右グリッドの既定桁数（7→将来9まで拡張） */
+  --bracket-w: calc(var(--cell) * 0.5);              /* 括弧スロット＝半マス幅 */
+  --split-x: calc((var(--cell) * var(--div-digits, 2)) + var(--bracket-w)); /* 左グリッド幅＋スロット */
+
+  --cell-gap: 0px;
+
+  --font-main: system-ui, "Yu Gothic UI", "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
+  --font-mono: ui-monospace, "Cascadia Mono", "IBM Plex Mono", "Source Code Pro", monospace;
+--font-edu: "UD Digi Kyokasho N-R", "UD Digi Kyokasho NP-R", "BIZ UDPGothic", "BIZ UDGothic", "Yu Gothic UI", "Yu Gothic", "Hiragino Kaku Gothic ProN", "Hiragino Kaku Gothic Pro", "Meiryo", "Noto Sans JP", "Source Han Sans", "Source Han Sans JP", "IPAexGothic", "MS PGothic", "MS Gothic", sans-serif;
+
+  --fg: #1d1f23;
+  --muted: #6b7280;
+  --primary: #2563eb;
+  --danger: #dc2626;
+  --ok: #059669;
+  --paper: #ffffff;
+  --board: #f8fafc;
+  --line: rgba(0,0,0,.15);
+  --grid-line: rgba(0,0,0,.08);
+  --highlight: #f59e0b;
+  /* 半マス（クォンタ）＝ 1/2セル */
+  --qcell: calc(var(--cell) / 2);
+
+  /* 括弧画像の幅：半マスに合わせる（既定18pxを上書き） */
+  --bracket-w: var(--qcell);
+}
+
+*{ box-sizing: border-box; }
+html,body{ height:100%; }
+body{
+  margin:0; color:var(--fg); background:#fff;
+  font-family: var(--font-main);
+}
+
+/* ヘッダ */
+.app-header{
+  padding: 12px 16px; background: var(--board);
+  display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+}
+.app-header h1{ margin:0; font-size: clamp(18px, 2.8vw, 26px); }
+.mode-switch label{ margin-right:12px; }
+
+/* ===== 2カラム配置（入力は全幅、板書と工程は左右） ===== */
+.app-main{
+  max-width: 1100px; margin: 0 auto; padding: 12px;
+  display: grid;
+  grid-template-columns: 1fr 420px; /* 左：筆算／右：工程メモ */
+  grid-auto-rows: auto;
+  gap: 12px;
+}
+.input-panel{ grid-column: 1 / -1; }
+.board-panel{ grid-column: 1; }
+.control-panel{ grid-column: 2; position: sticky; top: 8px; max-height: calc(100vh - 140px); overflow:auto; }
+
+.panel{ background: #fff; border:1px solid var(--line); border-radius: 10px; padding: 12px; margin-bottom: 12px; }
+
+.input-panel .row{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.input-panel #expr{ min-width: 240px; font-size: 18px; padding: 8px 10px; }
+.options label{ margin-right: 14px; }
+.samples .btn{ margin-right:6px; }
+
+.btn{
+  padding:8px 12px; border:1px solid var(--line); background:#fff; cursor:pointer;
+  border-radius:10px; font-weight:600;
+}
+.btn.primary{ background: var(--primary); color:#fff; border-color: var(--primary); }
+.btn:disabled{ opacity:.5; cursor:not-allowed; }
+
+.control-panel .controls{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+.control-panel .explain{ margin-top:8px; color:#333; min-height: 2lh; }
+
+.app-footer{ text-align:center; padding: 12px; color: var(--muted); border-top:1px solid var(--line); }
+
+.mono{ font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.kyo{ font-family: var(--font-edu); }
+
+.hide{ display:none !important; }
+.muted{ opacity:.5; }
+.struck{ text-decoration: line-through; text-decoration-thickness: 2px; text-decoration-color: #444; }
+.ok{ color: var(--ok); }
+.ng{ color: var(--danger); }
+.note{ color: var(--muted); font-size: .95em; }
+/* --- tenkey --- */
+.tenkey{
+  margin: 8px 0 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(56px, 1fr));
+  gap: 8px;
+  max-width: 360px;
+  user-select: none;
+}
+.tenkey button{
+  font: inherit;
+  font-size: 1.3rem;
+  padding: 14px 0;
+  border: 1px solid #cfd3d7;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 1px 0 rgba(0,0,0,.04);
+}
+.tenkey button:active{ transform: translateY(1px); }
+.tenkey .primary{ background: #1976d2; color: #fff; }
+.tenkey .span-3{ grid-column: span 3; }   /* 0 を横に長く */
+.tenkey .spacer{ visibility: hidden; }
+/* 歯車ボタン（右上に固定） */
+.gear-fab {
+  position: fixed;
+  top: 12px; right: 12px; z-index: 1001;
+  width: 40px; height: 40px; border-radius: 50%;
+  border: 1px solid #cfd3d7; background:#fff;
+  font-size: 20px; line-height: 40px; text-align:center;
+  box-shadow: 0 2px 8px rgba(0,0,0,.12);
+}
+
+/* 設定モーダル */
+.ld-modal[hidden]{ display:none !important; }
+.ld-modal { position: fixed; inset: 0; z-index: 1000; }
+.ld-modal__backdrop { position:absolute; inset:0; background: rgba(0,0,0,.28); }
+.ld-modal__panel {
+  position:absolute; right:16px; top:72px;
+  width:min(760px, 92vw); max-height:70vh; overflow:auto;
+  background:#fff; border-radius:12px;
+  box-shadow:0 10px 24px rgba(0,0,0,.18); padding:12px 16px 16px;
+}
+.ld-modal__header{ display:flex; align-items:center; justify-content:space-between; }
+.ld-modal__title{ font-weight:700; font-size:18px; }
+.ld-modal__close{ font-size:18px; border:0; background:transparent; padding:6px 8px; cursor:pointer; }
+
+/* 「開始前＝テンキーだけ／開始後＝筆算だけ」切替 */
+.before-start .board-panel{ display:none !important; }
+.before-start #tenkey{ display:grid !important; }
+#tenkey.hidden{ display:none !important; }
+/* タイトル右の入力バー */
+.ld-titlebar{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+.exprbar{ display:flex; align-items:center; gap:8px; }
+.exprbar input[type="text"]{
+  height: 36px; padding: 6px 10px; font-size: 16px;
+  border: 1px solid #cfd3d7; border-radius: 8px; min-width: 220px;
+}
+.exprbar .eq-btn{
+  height: 36px; padding: 0 16px; border-radius: 8px; border: 1px solid #1976d2;
+  background:#1976d2; color:#fff; font-weight:700;
+}
+.exprbar .hint{ font-size:12px; color:#6b7280; }
+.hidden-start{ display:none !important; } /* 開始ボタンを画面上は非表示にする */
+/* ボードを固定高さにして伸びを防止（中身が多くても外側は伸びない） */
+.board-panel{ overflow: hidden; }
+/* ボード：中身が増えても外側は伸びない＆オーバーレイを置く */
+.board-panel{ position: relative; overflow: hidden; }
+

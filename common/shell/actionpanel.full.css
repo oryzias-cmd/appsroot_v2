@@ -1,0 +1,122 @@
+/* common/shell/actionpanel.full.css
+   ActionPanel (MATH / compact / based on length_10cm colors)
+   - main button toggles: check <-> next
+   - hint button shows "is-on" when used
+*/
+
+:root{
+  --ap-orange: #FF7A3D;
+  --ap-orange-shadow: #E35F23;
+
+  --ap-blue: #3B82F6;
+  --ap-blue-border: #2563EB;
+
+  --ap-disabled-bg: #e6e6e6;
+  --ap-disabled-fg: #888;
+
+  --ap-border: rgba(0,0,0,0.12);
+
+  /* hint ON (length_10cm “おたすけON”系) */
+  --ap-hint-on-bg: rgba(203, 182, 230, 0.45);
+
+  --ap-btn-h: 56px;
+  --ap-btn-radius: 18px;
+  --ap-btn-font: 20px;
+  --ap-btn-weight: 800;
+}
+
+.action-panel{
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: flex-end;
+  width: 100%;
+}
+
+.btn-action-main,
+.btn-hint{
+  height: var(--ap-btn-h);
+  border-radius: var(--ap-btn-radius);
+
+  font-size: var(--ap-btn-font);
+  font-weight: var(--ap-btn-weight);
+
+  font-family:
+    "BIZ UDGothic",
+    "UD Digi Kyokasho",
+    "UD デジタル 教科書体",
+    "Meiryo",
+    "Yu Gothic UI",
+    "Yu Gothic",
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+
+  padding: 0 18px;
+
+  user-select: none;
+  -webkit-appearance: none;
+  appearance: none;
+
+  white-space: nowrap;
+  line-height: 1;
+}
+
+/* main: orange */
+.btn-action-main{
+  border: none;
+  background: var(--ap-orange);
+  color: #fff;
+  box-shadow: 0 6px 0 var(--ap-orange-shadow), 0 10px 18px rgba(0,0,0,0.22);
+  cursor: pointer;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 2行縦書き用spanが来ても崩れないようにする（算数は横並び表示） */
+.btn-action-main .btn-main-line{
+  writing-mode: horizontal-tb;
+  text-orientation: mixed;
+  letter-spacing: 0;
+}
+
+/* hint: blue, hint-on: subtle */
+.btn-hint{
+  border: 2px solid var(--ap-blue-border);
+  background: var(--ap-blue);
+  color: #fff;
+  cursor: pointer;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-hint.is-on{
+  background: var(--ap-hint-on-bg);
+  color: #111;
+  border-color: rgba(0,0,0,0.18);
+}
+
+/* disabled */
+.btn-action-main.is-disabled,
+.btn-hint.is-disabled{
+  background: var(--ap-disabled-bg);
+  color: var(--ap-disabled-fg);
+  box-shadow: none;
+  cursor: not-allowed;
+  opacity: 1;
+}
+
+.btn-action-main:active{
+  transform: translateY(2px);
+  box-shadow: 0 4px 0 var(--ap-orange-shadow), 0 8px 14px rgba(0,0,0,0.20);
+}
+.btn-action-main.is-disabled:active{
+  transform: none;
+  box-shadow: none;
+}

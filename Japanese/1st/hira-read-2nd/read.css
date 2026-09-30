@@ -1,0 +1,41 @@
+/* 読みページに必要な最小スタイル（既存の app.css と共存可） */
+
+/* タップ箱（本文） */
+.read-tap-card{
+  width: 320px; max-width: 70vw; aspect-ratio: 1 / 1;
+  border: 3px solid #1a73e8; border-radius: 16px;
+  display: grid; place-items: center; background: #fff;
+  user-select: none; touch-action: manipulation;
+  transition: transform .06s ease, box-shadow .06s ease, background-color .06s ease;
+  box-shadow: 0 4px 16px rgba(0,0,0,.06);
+}
+.read-tap-card:active{ transform: scale(.98); box-shadow: 0 2px 10px rgba(0,0,0,.1); background:#f6fbff; }
+.read-tap-kana{ font-size: 7rem; line-height:1; transform: translateY(3px); }
+
+.page{ max-width:1280px; margin:0 auto; padding:14px; }
+.hidden{ display:none !important; }
+.muted{ color:#666; }
+.pill{ display:inline-flex; align-items:center; gap:.5rem; padding:.4rem .8rem; border:1px solid #cfd5dd; border-radius:999px; background:#fff; }
+.head{ display:flex; justify-content:center; margin: 10px 0 18px; }
+.result-grid{ display:grid; gap:0; justify-items:center; border:2px solid #707070; grid-template-columns: repeat(5, minmax(160px,1fr)); }
+.cellx{ width: 180px; border-right:2px solid #707070; border-bottom:2px solid #707070; display:grid; grid-template-rows:auto auto; }
+.cellx:nth-child(5n){ border-right:none; }
+.cellx:nth-last-child(-n + 5){ border-bottom:none; }
+.cellx .ch{ display:grid; place-items:center; font-size:6.6rem; line-height:1; padding:0; margin:0; transform: translateY(3px); }
+.cellx .mark{ display:grid; place-items:center; min-height:56px; font-size:2.2rem; color:#444; border-top:1px solid #cfcfcf; }
+.avg-box{ display:grid; place-items:center; margin-top:16px; }
+.avg-value{ width:9.5rem; height:9.5rem; border-radius:50%; display:grid; place-items:center; font-size:5.2rem; font-weight:900; color:#d32f2f; background:#fff1f5; border:2px solid #f6c5d0; }
+
+/* 50音ページ系（既存の見た目を踏襲） */
+.layout{ display:grid; grid-template-columns:max-content 8px auto 8px minmax(320px,1fr); align-items:start; }
+.rowpanel{ grid-column:1; background:#ecf9ee; border:1px solid #d7eadc; border-radius:14px; padding:12px; margin-bottom:10px; }
+.rowbar{ display:grid; grid-template-columns: repeat(11, 64px); grid-auto-rows:64px; gap:10px; }
+.cell{ width:64px; height:64px; display:flex; align-items:center; justify-content:center; border-radius:12px; border:1px solid #ddd; font-size:22px; background:#fff; user-select:none; }
+.cell.selected{ background:#e6f2ff; border-color:#4da3ff; }
+.start-float{ grid-column:3; align-self:start; justify-self:start; margin-top:12px; }
+.badge.big{ font-size:1.4rem; padding:.55rem 1.1rem; }
+
+/* コース選択中はフッターを隠す（phase制御） */
+body[data-phase="course"] [id*="footer"]{
+  display: none !important;
+}

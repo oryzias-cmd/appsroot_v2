@@ -1,0 +1,58 @@
+<!--
+【レゴ設計ルール（固定）】
+
+■ 最終責務
+ヘッダーの内容（左右ボタン・音声・設定等）の最終決定権は
+kit.full.js の L.header / mountArea にある。
+header.full.js は構造（枠）専用とする。
+
+■ 禁止事項
+・アプリ側JSで #slot-header / header.title を直接操作しない。
+・header.full.js 側でボタンを個別注入しない。
+
+■ 例外ルール
+この前提を崩す場合は、実装前に必ず明示的に宣言すること。
+（宣言なき変更はバグ扱いとする）
+-->
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>linegraph</title>
+
+<!-- ▼ レゴ共通CSS（pbar/footer/result は使わない） -->
+<link rel="stylesheet" href="../../../common/shell/header.full.css" />
+<link rel="stylesheet" href="../../../common/shell/setup.full.css" />
+
+<!-- ▼ linegraph 専用 -->
+<link rel="stylesheet" href="./linegraph.css" />
+</head>
+
+<body data-phase="app">
+  <!-- ▼ レゴ：ヘッダー用スロット -->
+  <div id="slot-header" data-slot="header"></div>
+
+  <!-- ▼ メインエリア -->
+  <main id="mainArea"></main>
+
+  <!-- ▼ レゴレイアウト宣言：linegraph の基本形 -->
+  <script>
+    window.AppShellLayout = {
+      header: {
+        left:   ['backlink'],
+        center: ['title'],
+        right:  ['settingsGear']
+      }
+    };
+  </script>
+
+  <!-- ▼ レゴ共通JS（pbar/footer/result は使わない） -->
+  <script src="../../../common/shell/kit.full.js"></script>
+  <script src="../../../common/shell/header.full.js"></script>
+  <script src="../../../common/shell/setup.full.js"></script>
+
+  <!-- ▼ linegraph 専用 JS -->
+  <script src="./linegraph.js"></script>
+</body>
+</html>

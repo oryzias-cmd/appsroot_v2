@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "defaultSet": "weather_day",
+  "datasets": {
+    "weather_day": {
+      "meta": {
+        "subject": "science",
+        "grade": 4,
+        "unit": "temperature",
+        "note": "1日の気温変化"
+      },
+      "title": "1日の気温変化",
+      "xLabel": "時こく",
+      "yLabel": "気温(℃)",
+      "x": [
+        { "v": 8,  "label": "午前8時" },
+        { "v": 10, "label": "午前10時" },
+        { "v": 12, "label": "正午" },
+        { "v": 14, "label": "午後2時" },
+        { "v": 16, "label": "午後4時" },
+        { "v": 18, "label": "午後6時" }
+      ],
+      "y": [10, 12, 16, 20, 19, 15],
+      "scale": { "yMin": 0, "yMax": 30, "yStep": 5 }
+    }
+  }
+}

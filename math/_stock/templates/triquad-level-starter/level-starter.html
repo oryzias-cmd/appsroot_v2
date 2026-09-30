@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>三角形と四角形をかこう</title>
+
+  <!-- Lv1と同じ順で読み込み -->
+  <link rel="stylesheet" href="../../css/base.css">
+  <link rel="stylesheet" href="../../shared/style.css">
+  <!-- 各アプリ固有のベース（例：app4-draw/app.css）を後から追記してOK -->
+  <link rel="stylesheet" href="./level-starter.css"><!-- 最小の上乗せだけ -->
+</head>
+<body>
+<div class="wrap">
+
+  <!-- Header -->
+  <header class="title">
+    <a class="backlink" href="../../index.html">← もどる</a>
+    <h1>
+      <button id="btnTri"  class="mode-btn mode-btn--xl" type="button">三角形</button>
+       と
+      <button id="btnQuad" class="mode-btn mode-btn--xl" type="button">四角形</button>
+       をかこう
+    </h1>
+    <div class="hdr-right">
+      <button id="soundBtn" class="sound-btn" type="button">🔈 OFF</button>
+    </div>
+  </header>
+
+  <!-- Problem bar -->
+  <section class="problem">
+    <div class="problem-bar">
+      <div class="problem-left">
+        <button id="levelBtn" class="btn level-btn" disabled>{{LEVEL}}</button>
+      </div>
+      <div class="problem-center">
+        <p id="message">タップして <strong>三角形</strong> を作ろう。</p>
+      </div>
+      <div class="problem-right"></div>
+    </div>
+  </section>
+
+  <!-- Board -->
+  <main class="board">
+    <div class="board-inner">
+      <div id="boardStage">
+        <canvas id="gridCanvas"></canvas>
+        <svg id="shapeLayer" class="shape-layer" aria-label="作図ボード"></svg>
+        <!-- けってい用の小丸（Lv2以降で使う） -->
+        <div id="centerDot" class="center-dot" title="ここを押すと けってい！"></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer（30/40/30） -->
+  <footer class="ctrl">
+    <div class="left">
+      <select id="zoomSel" class="btn zoom-select">
+        <option value="1">100%</option>
+        <option value="1.25">125%</option>
+        <option value="1.5">150%</option>
+      </select>
+    </div>
+    <div class="center">
+      <button class="btn" id="undoBtn"><span class="ico ico-undo"></span> ひとつもどす</button>
+      <button class="btn" id="clearBtn"><span class="ico ico-clear"></span> ぜんぶけす</button>
+    </div>
+    <div class="right">
+      <button class="btn" id="nextBtn"><span class="ico ico-next"></span> つぎの問題</button>
+    </div>
+  </footer>
+
+</div>
+
+<!-- 共通（Single Source of Truth） -->
+<script defer src="../../shared/frame-ui.js"></script>
+<script defer src="../../shared/grid_adv.js"></script>
+
+<!-- レベル固有の動きをここに差し込む -->
+<script defer src="./REPLACE_ME.js"></script>
+</body>
+</html>

@@ -1,0 +1,200 @@
+/* jpresult.full.css (JPN / vertical / right-to-left layout) */
+:root{
+  /* ★最後を serif にしない（明朝落ちを防ぐ） */
+  --font-textbook:
+    "UD Digi Kyokasho",
+    "UD デジタル 教科書体",
+    "UD Digi Kyokasho NK-B",
+    "UD デジタル 教科書体 NK-B",
+    "HG教科書体",
+    "BIZ UDGothic",
+    system-ui,
+    sans-serif;
+}
+
+.jpresult-overlay{
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.18);
+  display: grid;
+  place-items: center;
+  z-index: 9999;
+}
+
+.jpresult-card{
+  width: min(860px, calc(100vw - 120px));
+  height: min(520px, calc(100vh - 120px));
+  background: #ffffff;
+  border-radius: 24px;
+  box-shadow: 0 16px 40px rgba(0,0,0,0.18);
+  padding: 26px 28px;
+  position: relative;
+
+  /* ★リザルトの基本＝ゴシック（ボタン等のArial落ち防止） */
+  font-family:
+    "BIZ UDGothic",
+    "UD Digi Kyokasho",
+    "UD デジタル 教科書体",
+    "Meiryo",
+    "Yu Gothic UI",
+    "Yu Gothic",
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+}
+
+.jpresult-grid{
+  height: 100%;
+  width: 100%;
+  display: grid;
+
+  /* ★5カ所の余白を全部同じにする（最小幅） */
+  --rgap: 48px;
+
+  /* ★余白は「同じ比率で伸びる」列にする
+     左余白 | buttons | 余白 | message | 余白 | divider | 余白 | score | 右余白 */
+  grid-template-columns:
+    minmax(var(--rgap), 1fr)
+    max-content
+    minmax(var(--rgap), 1fr)
+    max-content
+    minmax(var(--rgap), 1fr)
+    1px
+    minmax(var(--rgap), 1fr)
+    max-content
+    minmax(var(--rgap), 1fr);
+
+  /* ★余白の経路を1本化（gap/paddingを使わない） */
+  column-gap: 0;
+  padding: 0;
+
+  /* ★縦線を上下に伸ばす */
+  align-items: stretch;
+
+  /* ★全幅を使う（余白fr列が均等に伸びる） */
+  justify-content: stretch;
+}
+
+/* ★4ブロックを「狙った列」に固定（これが決定打） */
+.jpresult-grid > .jpresult-buttons{ grid-column: 2; }
+.jpresult-grid > .jpresult-message{ grid-column: 4; }
+.jpresult-grid > .jpresult-divider{ grid-column: 6; }
+.jpresult-grid > .jpresult-score{ grid-column: 8; }
+
+.jpresult-score{
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  white-space: nowrap;
+
+  /* ★強すぎるゴシックを避ける（やさしい表示） */
+  font-family: "BIZ UDGothic", "UD Digi Kyokasho", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 30px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  line-height: 1.15;
+}
+
+.jpresult-divider{
+  width: 1px;
+
+  /* ★gridの高さに合わせて上下同じ余白で伸ばす */
+  height: auto;
+  align-self: stretch;
+
+  /* ★左右は0（余白はgrid列=--rgapで統一管理） */
+  margin: 16px 0;
+
+  background: rgba(0,0,0,0.15);
+}
+
+.jpresult-message{
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  white-space: nowrap;
+
+  font-family: var(--font-textbook, inherit);
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: 0.10em;
+  line-height: 1.35;
+
+  padding-top: 6px;
+
+  /* ★1文字分だけ下げる（縦書きなのでY方向） */
+  transform: translateY(1em);
+}
+
+.jpresult-message .jpresult-msgline{
+  display: block;
+  margin-left: 0.8em;
+}
+
+.jpresult-buttons{
+  display: grid;
+
+  /* ★縦長ボタンを横に2つ並べる */
+  grid-auto-flow: column;
+  gap: 18px;
+
+  /* ★この列だけ縦センターにする */
+  align-items: center;
+  justify-items: center;
+
+  /* ★grid全体が上詰でも、この列は中央へ */
+  align-self: center;
+}
+
+.jpresult-btn{
+  /* ★横書きresultの高さ(≈67px)＝縦書きボタンの幅 */
+  width: 67px;
+
+  /* ★長さを +150（300 → 450） */
+  height: 450px;
+
+  border: 3px solid #2563EB;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #111;
+
+  font-size: 24px;
+  font-weight: 700;
+
+  cursor: pointer;
+  user-select: none;
+  -webkit-appearance: none;
+  appearance: none;
+  font-family: inherit;
+
+  /* ★横書きresultの雰囲気（軽い影） */
+  box-shadow: 0 6px 16px rgba(0,0,0,0.10);
+}
+
+.jpresult-btn:active{
+  transform: translateY(1px);
+}
+
+.jpresult-btn span{
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  white-space: nowrap;
+  letter-spacing: 0.10em;
+}
+
+/* responsive */
+@media (max-width: 980px){
+  .jpresult-card{
+    width: calc(100vw - 60px);
+    height: calc(100vh - 60px);
+  }
+  .jpresult-btn{
+    width: 280px;
+  }
+  .jpresult-score{
+    font-size: 28px;
+  }
+  .jpresult-message{
+    font-size: 22px;
+  }
+}

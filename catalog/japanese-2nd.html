@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>２年　国語（こくご）</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- レゴ（土台） -->
+<link rel="stylesheet" href="../jpcommon/jpshell/jpbase.css">
+
+<!-- レゴ（見た目：ヘッダー / 問題バー） -->
+<link rel="stylesheet" href="../jpcommon/jpshell/jpheader.full.css">
+<link rel="stylesheet" href="../jpcommon/jpshell/jpproblem.full.css">
+
+  <!-- 既存の共通（必要なら残す） -->
+
+  <style>
+    /* =========================
+       2年 国語 目次（カタログ）固有
+       - 骨組みは jpbase.css の v-grid を使用
+       ========================= */
+
+    /* サイド：上/下ボタン */
+/* ★問題バー内スポットUI用 上書き */
+body.app-vertical-jpn.screen-catalog .v-problem{
+  position: relative;
+  overflow: visible !important;  /* ← これが本命 */
+  z-index: 1;
+}
+
+/* 問題本文は下レイヤー */
+#jpnProblemMount{
+  position: relative;
+  z-index: 1;
+}
+
+/* 上下ボタンを最前面に固定（★位置と間隔を指定） */
+.v-side-tabs{
+  position: absolute;
+
+  /* 上詰め → そこから「ボタン1個分」下げる */
+  top: 56px;
+
+  /* 問題バー中央に置く */
+  left: 50%;
+  transform: translateX(-50%);
+
+  z-index: 9999;
+
+  display: flex;
+  flex-direction: column;
+
+  /* 上ボタンと下ボタンの間を「ボタン1個分」空ける */
+  gap: 56px;
+
+  align-items: center;
+}
+
+/* もどる（算数と同じ：ピル型） */
+.v-side-top{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 0;
+}
+
+    .term-btn{
+      width: 56px;
+      height: 56px;
+      min-width: 56px;
+      min-height: 56px;
+
+      border: 2px solid #000;
+      border-radius: 6px;
+      background: #fff;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      font-family: "KyokashoUD", system-ui, sans-serif;
+      font-size: 28px;
+      line-height: 1;
+      font-weight: 700;
+      color: #000;
+
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .term-btn.is-active{
+      background: #0073d3;
+      color: #fff;
+    }
+
+    .term-btn:hover{
+      background: #e3f2ff;
+    }
+    .term-btn.is-active:hover{
+      background: #0073d3;
+    }
+
+.units-stage{
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+
+  /* ★上下：横gap16pxの半分＝8px（上下を確実に残す） */
+  padding: 8px 18px;
+
+  overflow: hidden;
+}
+
+.rows-wrap{
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  justify-content: space-between;
+
+  /* ★中央：横gap16pxの半分＝8px（中央も確実に残す） */
+  gap: 8px;
+}
+
+    .row-block{
+      width: 100%;
+      box-sizing: border-box;
+
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+
+      gap: 10px;
+    }
+
+/* 10本固定（★上下切れ対策：高さを画面に合わせて自動調整） */
+.units-grid{
+  --unitW: 104px;   /* 今後は手動調整 */
+  --unitH: 310px;
+
+  display: grid;
+  grid-template-columns: repeat(var(--cols, 10), var(--unitW));  /* ★最大10（JSで可変） */
+  gap: 16px 16px;
+
+  align-items: start;
+  justify-content: center;
+
+  direction: rtl;
+
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+    /* 縦長ボタン */
+.unit-btn{
+  width: var(--unitW);
+  height: var(--unitH);
+
+  box-sizing: border-box;
+  background: #fff;
+  border: 3px solid #bdbdbd;
+  border-radius: 18px;
+  box-shadow: none;
+  color: #000;
+
+  cursor: pointer;
+  user-select: none;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start; /* ★中身は上詰め（タイトルも上へ） */
+
+  /* ★左右パディングを0にして、横線を枠に接させやすくする */
+  padding: 10px 0;
+  margin: 0;
+  direction: ltr;
+}
+
+    .unit-btn:hover{
+      background: #eef5ff;
+    }
+
+    .unit-btn.is-disabled{
+      opacity: 0.45;
+      cursor: default;
+      pointer-events: none;
+    }
+    .unit-btn.is-disabled:hover{
+      background: #fff;
+    }
+
+    /* ○数字（上） */
+.unit-no{
+  font-size: 22px;
+  line-height: 1;
+  font-weight: 800;
+  margin-top: 2px;
+  margin-bottom: 6px;
+  color: #7a7a7a;
+
+  /* ★線は border ではなく “疑似要素” で引く（枠ギリギリを狙える） */
+  position: relative;
+  width: 100%;
+  text-align: center;
+
+  padding-bottom: 10px;
+}
+
+/* ★横線：左右を枠線3pxぶんだけ「食い込ませる」 */
+.unit-no::after{
+  content: "";
+  position: absolute;
+  left: -3px;
+  right: -3px;
+  bottom: 0;
+  height: 2px;
+  background: #cfcfcf;
+}
+
+/* タイトル（縦書き）：
+   <br>をやめて「行(列)要素」を並べる（ズレ防止） */
+.unit-title{
+  /* 行（列）の並びを制御するため、コンテナは flex にする */
+  display: flex;
+  flex-direction: row-reverse;  /* ★1行目が右、2行目が左 */
+  justify-content: center;      /* ★横中央に戻す */
+  align-items: flex-start;      /* ★上詰め */
+
+  gap: 10px;
+
+  margin-top: 0;
+  padding-top: 2px;
+
+  /* 見た目 */
+  font-family: "KyokashoUD", system-ui, sans-serif;
+  font-size: 22px;
+  font-weight: 650;
+  color: #7a7a7a;
+}
+
+/* 1行(1列)ぶん */
+.unit-title .tline{
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  line-height: 1.25;
+  white-space: normal;
+}
+
+    /* ★右帯：2列に固定（tabsはabsoluteなので列に参加しない） */
+    .v-side-middle > .v-problem{ grid-column: 1; grid-row: 1; }
+    .v-side-middle > .v-header{  grid-column: 2; grid-row: 1; }
+
+    /* ===== 歯車（catalog用） ===== */
+#btnGear{
+  font-family: "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif;
+  font-size: 18px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+  </style>
+</head>
+
+<body class="app-vertical-jpn screen-catalog">
+  <div class="v-grid">
+
+    <!-- 右サイド（quiz と同じ並び：TOP / MIDDLE(問題バー→ヘッダー) / BOTTOM） -->
+    <aside class="v-side" aria-label="右サイド（国語）">
+      <div class="v-side-top">
+        <a class="backlink" href="./index.html">もどる</a>
+      </div>
+
+      <div class="v-side-middle">
+        <!-- ★quiz と同じ：問題バー（縦バー） -->
+        <aside class="v-problem" aria-label="問題（縦バー）">
+          <div id="jpnProblemMount">
+            <!-- ★重要：jpproblem.js が探す要素を先に用意しておく（全消し防止） -->
+            <div id="jpnProblemText" class="v-problem-inner"></div>
+          </div>
+
+          <!-- 上/下（巻）※問題バーの中に“スポット入れ” -->
+          <div class="v-side-tabs" aria-label="上巻・下巻">
+            <button class="term-btn is-active" data-term="upper" type="button">上</button>
+            <button class="term-btn" data-term="lower" type="button">下</button>
+          </div>
+        </aside>
+
+        <!-- ★quiz と同じ：縦帯ヘッダー（レゴ） -->
+        <aside class="v-header" aria-label="メニュー（縦ヘッダー）">
+          <div id="jpnHeaderMount"></div>
+        </aside>
+      </div>
+
+<div class="v-side-bottom v-side-top">
+  <a id="btnGear" class="backlink" href="#" role="button" aria-label="せってい"></a>
+</div>
+    </aside>
+
+    <!-- メイン（ボード） -->
+    <main class="v-board" aria-label="国語 目次">
+      <section class="units-stage">
+        <div class="rows-wrap" id="rowsWrap">
+        </div>
+      </section>
+    </main>
+
+    <!-- 予備（未使用） -->
+    <aside class="v-tool" aria-label="ツール（未使用）"></aside>
+  </div>
+
+  <!-- ★重要：ヘッダー（レゴ）を先に読む（DOMContentLoaded より前に window.JpnHeader を用意） -->
+<script src="../jpcommon/jpshell/jpheader.js"></script>
+<script>
+  window.AppShellOptions = window.AppShellOptions || {};
+  window.AppShellOptions.gearAction = "wordMode";
+</script>
+<script src="../common/shell/gear.full.js"></script>
+<script src="../jpcommon/jpshell/jpkit.js"></script>
+<script src="../jpcommon/jpshell/jpproblem.js"></script>
+
+  <script>
+    // ==========================
+    // データ定義（国語：上巻/下巻 × お話/ことば）
+    // ★タイトルは最大2行：手動で \\n を入れる
+    // ==========================
+
+    // 上巻：お話（読む）
+    const UNITS_UPPER_TALK = [
+      { no:'①', title:'ふきのとう', link:'#' },
+      { no:'②', title:'日記(にっき)を　書(か)こう', link:'#' },
+      { no:'③', title:'ともだちは　どこかな', link:'#' },
+      { no:'④', title:'たんぽぽの　ちえ', link:'#' },
+      { no:'⑤', title:'かんさつ名人(めいじん)に\\nなろう', link:'#' },
+      { no:'⑥', title:'いなばの　白(しろ)うさぎ', link:'#' },
+      { no:'⑦', title:'スイミー', link:'#' },
+      { no:'⑧', title:'ミリーのすてきなぼうし', link:'#' },
+      { no:'⑨', title:'どうぶつ園(えん)のじゅうい', link:'#' },
+      { no:'⑩', title:'おはなし\\nサンプル', link:'#' }
+    ];
+
+    // 上巻：ことば（漢字・ことば・文法）
+    const UNITS_UPPER_LANG = [
+      { no:'①', title:'しを　よもう', link:'#' },
+      { no:'②', title:'同(おな)じ　ぶぶんを\\nもつ　かん字(じ)', link:'#' },
+      { no:'③', title:'ことばあそびをしよう', link:'#' },
+      { no:'④', title:'なかまのことばと\\nかん字(じ)', link:'#' },
+      { no:'⑤', title:'きせつの　ことば\\n春(はる)・夏(なつ)', link:'#' },
+      { no:'⑥', title:'かん字(じ)の　ひろば', link:'#' },
+      { no:'⑦', title:'かたかなの　ひろば', link:'#' },
+      { no:'⑧', title:'おはなし\\nサンプル', link:'#' },
+      { no:'⑨', title:'おはなし\\nサンプル', link:'#' },
+      { no:'⑩', title:'おはなし\\nサンプル', link:'#' }
+    ];
+
+    // 下巻：お話（読む）
+    const UNITS_LOWER_TALK = [
+      { no:'①', title:'お手紙(てがみ)', link:'#' },
+      { no:'②', title:'紙(かみ)コップ花火(はなび)の作(つく)り方(かた)\\nおもちゃの作(つく)り方(かた)', link:'#' },
+      { no:'③', title:'みきのたからもの', link:'#' },
+      { no:'④', title:'ロボット', link:'#' },
+      { no:'⑤', title:'スーホの白(しろ)い馬(うま)', link:'#' },
+      { no:'⑥', title:'せかい一(いち)の話(はなし)', link:'#' },
+      { no:'⑦', title:'おはなし\\nサンプル', link:'#' },
+      { no:'⑩', title:'おはなし\\nサンプル', link:'#' }
+    ];
+
+    // 下巻：ことば（漢字・ことば・文法）
+    const UNITS_LOWER_LANG = [
+      { no:'①', title:'主語(しゅご)と述語(じゅつご)に\\n気(き)をつけよう', link:'#' },
+      { no:'②', title:'にたいみのことば\\nはんたいのいみのことば', link:'#' },
+      { no:'③', title:'かたかなで書(か)くことば', link:'#' },
+      { no:'④', title:'ようすをあらわすことば', link:'#' },
+      { no:'⑤', title:'カンジーはかせ', link:'#' },
+      { no:'⑥', title:'きせつのことば\\n秋(あき)・冬(ふゆ)', link:'#' },
+      { no:'⑦', title:'おはなし\\nサンプル', link:'#' },
+      { no:'⑧', title:'おはなし\\nサンプル', link:'#' },
+      { no:'⑨', title:'おはなし\\nサンプル', link:'#' },
+      { no:'⑩', title:'おはなし\\nサンプル', link:'#' }
+    ];
+
+// ==========================
+// 描画
+// ==========================
+
+// ★JPKit へ統一：normalize は JPKit を正とする（未読込なら kana）
+const normalizeWordMode = (v) => {
+  if (window.JPKit && window.JPKit.wordFilter && typeof window.JPKit.wordFilter.normalizeWordMode === 'function') {
+    return window.JPKit.wordFilter.normalizeWordMode(v);
+  }
+  return 'kana';
+};
+
+// 括弧書式「漢字(よみ)」だけを切替（JPKit に統一）
+function renderText(s, mode){
+  const str = String(s ?? '');
+  const m = normalizeWordMode(mode);
+
+  // JPKit は kana / kanjiYomi の2値
+  const jpMode = (m === 'kana') ? 'kana' : 'kanjiYomi';
+
+  if (window.JPKit && window.JPKit.wordFilter && typeof window.JPKit.wordFilter.applyParen === 'function') {
+    return window.JPKit.wordFilter.applyParen(str, jpMode);
+  }
+
+  // 予備（万一 JPKit が無い時だけ）
+  const re = /([一-龥々〆ヵヶ]+)\(([^()]+)\)/g;
+  if (jpMode === 'kanjiYomi') return str.replace(re, '$1');
+  return str.replace(re, '$2');
+}
+
+// ★global wordMode（JPKit があればそれ、無ければ kana）
+let currentWordMode =
+  (window.JPKit && window.JPKit.globalWordMode && typeof window.JPKit.globalWordMode.load === 'function')
+    ? window.JPKit.globalWordMode.load()
+    : 'kana';
+
+function unitHTML(unit){
+  const rawTitle = (unit.title || "");
+
+  const lines = rawTitle
+    .split(/\\n/g)
+    .map(s => (s || "").trim())
+    .filter(s => s.length > 0)
+    .map(s => renderText(s, currentWordMode));
+
+  const titleHTML = lines.map(s => `<span class="tline">${s}</span>`).join("");
+
+  const safeLink = unit.link || "#";
+
+  const clickable = (safeLink && safeLink !== "#");
+  const disabledClass = clickable ? "" : " is-disabled";
+  const ariaDisabled = clickable ? "false" : "true";
+  const tabIndex = clickable ? "0" : "-1";
+  const cursorStyle = clickable ? "cursor:pointer;" : "cursor:default;";
+
+  return `
+        <div class="unit-btn${disabledClass}"
+             data-link="${safeLink}"
+             aria-disabled="${ariaDisabled}"
+             tabindex="${tabIndex}"
+             style="${cursorStyle}">
+          <div class="unit-no"><span>${unit.no || ""}</span></div>
+          <div class="unit-title">${titleHTML}</div>
+        </div>
+      `;
+}
+
+    function renderRow(list){
+      const n = Array.isArray(list) ? list.length : 0;
+      const cols = Math.max(1, Math.min(10, n)); // ★最大10。少ない時はその数だけ列
+
+      return `
+        <section class="row-block">
+          <div class="units-grid" style="--cols:${cols}">
+            ${list.map(unitHTML).join("")}
+          </div>
+        </section>
+      `;
+    }
+
+    function renderPage(term){
+      const wrap = document.getElementById('rowsWrap');
+
+      const talk = (term === 'upper') ? UNITS_UPPER_TALK : UNITS_LOWER_TALK;
+      const lang = (term === 'upper') ? UNITS_UPPER_LANG : UNITS_LOWER_LANG;
+
+      wrap.innerHTML =
+        renderRow(talk) +
+        renderRow(lang);
+
+      document.querySelectorAll('.unit-btn').forEach(btn=>{
+        const url = btn.getAttribute('data-link');
+        if (url && url !== '#') {
+          btn.addEventListener('click', ()=>{
+            location.href = url;
+          });
+        }
+      });
+    }
+
+    function setActiveTerm(term){
+      document.querySelectorAll('.term-btn').forEach(btn=>{
+        const isMe = (btn.getAttribute('data-term') === term);
+        btn.classList.toggle('is-active', isMe);
+      });
+
+      renderPage(term);
+      setKokugoProblem();
+
+      // ★URLへ状態を残す（reloadしない）
+      try{
+        const url = new URL(location.href);
+        url.searchParams.set('term', term);
+        history.replaceState(null, '', url.toString());
+      }catch(e){
+        // file:// 環境で万一失敗しても動作は止めない
+      }
+    }
+
+    function bindTabs(){
+      document.querySelectorAll('.term-btn').forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+          const term = btn.getAttribute('data-term');
+          setActiveTerm(term);
+        });
+      });
+    }
+
+    // ===== Header（catalog版：wordModeで“最初から”正しい文字列を出す）=====
+    // - ここで括弧つき（例：二年(ねん)）を一度でも入れると、リロード直後に「混ざった表示」が見えてしまう
+    // - entry/quiz と同じく「いまの wordMode で確定文字列を作り、遅延ロードでも確実に当てる」
+    const setKokugoHeaderByMode = () => {
+      if (!window.JpnHeader || typeof window.JpnHeader.setRich !== 'function') return false;
+
+      const wm = normalizeWordMode(currentWordMode);
+
+      if (wm === 'kana') {
+        window.JpnHeader.setRich({ grade:'二ねん', unit:'こくご', title:'もくじ' });
+      } else {
+        window.JpnHeader.setRich({ grade:'二年', unit:'国語', title:'もくじ' });
+      }
+      return true;
+    };
+
+    // 初回だけ：ヘッダーが遅れて来ても必ず反映（file:// / 重い端末対策）
+    let headerEnsured = false;
+    let headerTimer = null;
+
+    const ensureHeaderOnce = () => {
+      if (headerEnsured) return;
+      if (headerTimer) return;
+
+      if (setKokugoHeaderByMode()) {
+        headerEnsured = true;
+        headerTimer = null;
+        return;
+      }
+
+      let tries = 0;
+      headerTimer = setInterval(() => {
+        tries += 1;
+
+        if (setKokugoHeaderByMode()) {
+          headerEnsured = true;
+          clearInterval(headerTimer);
+          headerTimer = null;
+          return;
+        }
+
+        if (tries >= 120) { // 50ms * 120 = 6秒
+          clearInterval(headerTimer);
+          headerTimer = null;
+        }
+      }, 50);
+    };
+
+function setKokugoProblem(){
+  if (!window.JpnProblem || typeof window.JpnProblem.setText !== 'function') return;
+  window.JpnProblem.setText('');
+}
+
+    document.addEventListener('DOMContentLoaded', ()=>{
+      bindTabs();
+
+      // ★最初にヘッダーを確定（混ざり表示を出さない）
+      ensureHeaderOnce();
+      setKokugoHeaderByMode();
+
+      // ★歯車：直書き⚙️は禁止。JPKit.ui.makeGearButton で生成して差し替え。
+      const gearMount = document.getElementById('btnGear');
+      if (gearMount && window.JPKit && JPKit.ui && typeof JPKit.ui.makeGearButton === 'function') {
+        const btn = JPKit.ui.makeGearButton({
+          className: gearMount.className || 'backlink gear-btn',
+          ariaLabel: gearMount.getAttribute('aria-label') || 'せってい',
+          onClick: () => {
+            // 次のモードへ（kana ⇄ kanjiYomi）
+            currentWordMode = window.JPKit.globalWordMode.toggle();
+
+            // いま表示中の term を維持して再描画（hashのみ）
+            const hash = (location.hash || '').replace('#','');
+            const term = (hash === 'lower') ? 'lower' : 'upper';
+
+            renderPage(term);
+
+            // ★ヘッダーも同じ関数で（常に確定文字列）
+            ensureHeaderOnce();
+            setKokugoHeaderByMode();
+          }
+        });
+
+        btn.id = 'btnGear';
+        try { gearMount.replaceWith(btn); } catch (e) {}
+      }
+
+// ★C案：global wordMode 変更を購読して catalog を即同期（entry / quiz からの変更も反映）
+      // - 歯車クリックと同じ「term維持→再描画→ヘッダー確定」を使う
+      const CATALOG_WORDMODE_SYNC_FLAG = '__catalogWordModeSyncInstalled__japanese2';
+      if (!window[CATALOG_WORDMODE_SYNC_FLAG]) {
+        window[CATALOG_WORDMODE_SYNC_FLAG] = true;
+
+        window.addEventListener('global:wordMode-changed', (e) => {
+          const detail = (e && e.detail) ? e.detail : {};
+          const next = detail.wordMode;
+
+          if (typeof next === 'string' && next) {
+            currentWordMode = next;
+          } else if (window.JPKit && window.JPKit.globalWordMode && typeof window.JPKit.globalWordMode.load === 'function') {
+            currentWordMode = window.JPKit.globalWordMode.load();
+          }
+
+          const hash = (location.hash || '').replace('#','');
+          const term = (hash === 'lower') ? 'lower' : 'upper';
+
+          renderPage(term);
+          ensureHeaderOnce();
+          setKokugoHeaderByMode();
+        });
+      }
+
+      // ★hashのみ（指定なしは upper）
+      const hash = (location.hash || '').replace('#','');
+      const initialTerm = (hash === 'lower') ? 'lower' : 'upper';
+
+      setActiveTerm(initialTerm);
+      // ★最後に問題バー
+      setKokugoProblem();
+    });
+
+    // ★戻り復帰（BFCache）でもヘッダーを再適用（entryと同じ保険）
+    window.addEventListener('pageshow', () => {
+      ensureHeaderOnce();
+      setKokugoHeaderByMode();
+    });
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        ensureHeaderOnce();
+        setKokugoHeaderByMode();
+      }
+    });
+  </script>
+</body>
+</html>

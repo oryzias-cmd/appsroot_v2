@@ -1,0 +1,142 @@
+/* ========================================
+   blankテンプレ：レイアウトの最低限だけ
+   見た目はすべてレゴCSS側に任せる
+======================================== */
+
+/* ================================
+   共通フォント：教科書体（main 用）
+================================ */
+:root{
+  --font-kyokasho:
+    "UD デジタル 教科書体 N-R",
+    "UD デジタル 教科書体 N-B",
+    "BIZ UDゴシック",
+    "YuGothic",
+    sans-serif;
+
+  /* ★教科書体の見た目中心補正（基準値） */
+  --kyo-shift-y: 0.06em;
+}
+
+html,
+body{
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+
+  /* タブレット：長押しのメニュー/選択カーソル/青い範囲選択を抑止（共通ルール） */
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  caret-color: transparent;
+}
+
+/* 入力UIを使うアプリのための保険（必要ならアプリ側で上書きOK） */
+input, textarea{
+  -webkit-user-select: text;
+  user-select: text;
+  caret-color: auto;
+}
+
+/* ★最外周に「余白っぽく見える帯」が出る原因の多くは
+   横方向のはみ出し（100vw系や小数px計算）なので、保険で潰す */
+body{
+  overflow-x: hidden;
+}
+
+/* ヘッダー → 問題バー → メイン → フッター を縦に並べる */
+body{
+  font-family: var(--font-kyokasho);
+  display: flex;
+  flex-direction: column;
+}
+
+/* メインは余った高さを全部取るキャンバス */
+main#mainArea{
+  flex: 1;
+}
+
+/* フッターの境目ラインはレゴ(full)側にも入れるが、
+   念のためここでも上書きできるようにしておく */
+footer.ctrl{
+  border-top: 1px solid #c8c8c8;
+}
+
+/* ========================================
+   ResultCard（結果モーダル）最低限の見た目
+   - ResultCard（result.full.js）が後から注入するCSSに勝つため
+     ここは !important で上書きする
+======================================== */
+
+/* ベース（secondary-btn：文字サイズ優先） */
+/* セカンダリーボタン（白ベース）＝ベースに戻す（サクランボ方式） */
+.result-actions .secondary-btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:140px;
+  padding:10px 18px;
+  border-radius:999px;
+  border:2px solid #cccccc;
+  background:#ffffff;
+  color:#444444;
+  font-family:"BIZ UDGothic","BIZ UD Gothic", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size:0.95rem;
+  cursor:pointer;
+  box-shadow:none;
+}
+
+/* ★ここで最終形を統一（サクランボ方式）
+   3ボタンの横幅を揃える：いちばん長い「もんだいを えらぶ」に合わせて固定 */
+.result-actions button{
+  width:210px !important;          /* ★全ボタン同じ幅（調整値） */
+  min-width:210px !important;      /* 念のため */
+  padding:12px 24px !important;
+  text-align:center !important;
+  white-space:nowrap !important;   /* ★改行させない */
+
+  font-family:"BIZ UDGothic","BIZ UD Gothic", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  font-size:1.05rem !important;
+  font-weight:700 !important;
+  line-height:1.2 !important;
+}
+
+/* 種別ボタンもピル型を強制（他CSSに負けない） */
+.result-actions .retry-btn,
+.result-actions .setup-btn,
+.result-actions .purple-btn{
+  border-radius:999px !important;
+}
+
+/* 2つ目まで（既存仕様：淡い黄色／淡い緑） */
+.result-actions .retry-btn{
+  background:#FFF3D6 !important;
+  border:2px solid #e0d1ad !important;
+  color:#444444 !important;
+}
+
+.result-actions .setup-btn{
+  background:#E7F6E8 !important;
+  border:2px solid #bcd9c2 !important;
+  color:#444444 !important;
+}
+
+/* 3つ目（next）：淡い紫（文字は濃くして読みやすく） */
+.result-actions .purple-btn{
+  background:#F1E9FF !important;
+  border:2px solid #D8C7F0 !important;
+  color:#333333 !important;
+}
+
+/* ========================================
+   将来保険（通常は使わない）
+   ・横1024px未満になった場合のための下地
+   ・現時点では scale / レイアウト変更はしない
+======================================== */
+@media (max-width: 1024px){
+  :root{
+    /* entry 側で参照するかどうかを決める */
+    --font-scale: 1;
+  }
+}

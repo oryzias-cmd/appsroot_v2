@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- 右下にわずかな開き（5px相当） -->
+  <path d="M 10,30 L 88,30 L 70,86" stroke="#000" stroke-width="3" fill="none"/>
+  <path d="M 10,30 L 52,66" stroke="#000" stroke-width="3" fill="none"/>
+</svg>

@@ -1,0 +1,1566 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>ひらがな書字教材・安定版</title>
+<style>
+  :root{
+    --mm-scale: 3.78;
+    --box-mm: 50;
+    --gap-mm: 10;
+    --frame-mm: 1.0;
+    --guide-mm: 0.3;
+
+    --cell: 64px;
+    --gap: 10px;
+    --panel-gap: 12px;
+
+    --btn-lg-h: 52px;
+    --btn-lg-w: 140px;
+
+    --grid-line: #707070;
+    --optical-shift: 3px;
+  }
+
+  html,body{height:100%; margin:0; background:#fafafa; color:#111;
+    font-family:"UD Digi Kyokasho N-R","UD Digi Kyokasho NK-R",
+      "Hiragino Maru Gothic ProN","Hiragino Maru Gothic Pro",
+      "Yu Gothic","Meiryo","Hiragino Sans","Noto Sans JP",sans-serif;}
+  button{cursor:pointer; border-radius:12px; border:1px solid #cfd5dd; padding:.7rem 1.1rem; background:#fff; white-space:nowrap;}
+  button[aria-pressed="true"]{background:#e6f2ff; border-color:#4da3ff;}
+  .page{max-width:1280px; margin:0 auto; padding:14px;}
+  .hidden{display:none !important;}
+  .muted{color:#666}
+  .sj-blue { color:#1e66ff; }  /* 角数（全角数字）だけ青字 */
+
+  /* ===== ヘッダ ===== */
+  .headgrid{
+    display:grid;
+    grid-template-columns: max-content 8px auto 8px minmax(320px,1fr);
+    align-items:center;
+    margin-bottom: calc(var(--cell) / 2);
+    position:relative;
+  }
+  .title{ grid-column:1 / -1; justify-self:center;
+    font-weight:900; font-size:1.9rem; letter-spacing:.04em; }
+  .picked-wrap{ grid-column:3; justify-self:center; }
+  .badge{display:inline-flex; align-items:center; gap:.5rem;
+    background:#e7f0ff; color:#0b57d0; border:1px solid #cfe0ff;
+    padding:.55rem 1.1rem; border-radius:999px; font-weight:800; }
+  .badge.big{ font-size:1.4rem; }
+  .badge .count{ display:inline-block; min-width:3ch; text-align:right; }
+
+  .gear-btn{
+    position:absolute; right:0; top:-4px;
+    display:inline-flex; align-items:center; gap:.4rem;
+    border-radius:999px; padding:.5rem .8rem;
+  }
+  .gear-btn svg{ width:20px; height:20px; }
+
+  /* ===== オープニング（50音選択） ===== */
+  .layout{
+    display:grid;
+    grid-template-columns: max-content 8px auto 8px minmax(320px,1fr);
+    grid-auto-rows:auto; align-items:start;
+  }
+  .rowpanel{ grid-column:1; background:#ecf9ee; border:1px solid #d7eadc; border-radius:14px; padding:12px; margin-bottom:10px;}
+  .rowbar{display:grid; grid-template-columns: repeat(11, var(--cell)); grid-auto-rows: var(--cell); gap: var(--gap);}
+  .row-spacer{ width:var(--cell); height:var(--cell);}
+  .rowbtn{
+    width: var(--cell); height: var(--cell);
+    border:1px solid #cfd5dd; border-radius:12px; background:#fff;
+    display:flex; align-items:center; justify-content:center;
+    writing-mode: vertical-rl; text-orientation: upright;
+    white-space: nowrap; font-size:18px; line-height:1; user-select:none;
+  }
+  .start-float{ grid-column:3; align-self:start; justify-self:start; margin-top:12px; }
+  #startBtnOpen{
+    font-size:1.22rem; padding:1.0rem 2.2rem;
+    border-color:#1a73e8; background:#1a73e8; color:#fff;
+    min-width:8.5em;
+  }
+  .main{ grid-column: 1 / -1; display:grid; grid-template-columns: max-content 8px auto 8px minmax(320px,1fr); align-items:start; }
+
+  .grid{ grid-column:1; display:grid; grid-template-columns:repeat(11, var(--cell)); grid-auto-rows:var(--cell);
+    gap:var(--gap); background:#fff; border:1px solid #e5e5e5; border-radius:14px; padding:12px;}
+  .cell{ width:var(--cell); height:var(--cell); display:flex; align-items:center; justify-content:center;
+    border-radius:12px; border:1px solid #ddd; font-size:22px; background:#fff; user-select:none;}
+  .cell.empty{background:#f4f4f4; color:#bbb; border-style:dashed;}
+  .cell.placeholder{background:#f8f8f8; color:#666; border-color:#e0e0e0;}
+  .cell.n-hidden{background:transparent; border:none;}
+  .cell.selected{background:#e6f2ff; border-color:#4da3ff;}
+
+  .dan-panel{ grid-column:3; background:#fffbe6; border:1px solid #f4e6a6; border-radius:14px; padding:12px;}
+  .dancol{display:grid; grid-auto-rows: var(--cell); gap: var(--gap);}
+  .danbtn{ width: var(--cell); min-width: var(--cell); height: var(--cell);
+    border-radius:12px; border:1px solid #cfd5dd; background:#fff;
+    display:flex; align-items:center; justify-content:center; font-size:18px; line-height:1;}
+
+  .util{ grid-column:5; display:flex; flex-direction:column; gap: var(--panel-gap); }
+  .panel{background:#fff; border:1px solid #e5e5e5; border-radius:14px; padding:12px;}
+  .panel .center-title{font-weight:800; text-align:center; margin:0 0 10px 0;}
+  .quick{ display:flex; flex-direction: column; gap: 12px; align-items: center; justify-content: center; }
+  .quick .qbtn{width:100%; max-width:360px;}
+  .quick .qbtn, #calibToggle{min-width:8.6em; font-size:1.08rem; padding:.85rem 1.25rem; border-radius:12px;}
+  .calib-line{height:14px; background:#111; margin:6px auto; width:calc(var(--mm-scale) * 50px); border-radius:7px;}
+
+  /* ===== コース選択 ===== */
+  #coursePage .card{ position:relative; background:#fff; border:1px solid #e5e5e5; border-radius:14px; padding:24px 24px 84px; width:min(780px,92vw); }
+  #coursePage .row{ display:flex; flex-wrap:wrap; gap:14px; align-items:center; justify-content:center; margin:22px 0; }
+  #coursePage .name-input.name-lg{ font-size:1.5rem; padding:1.1rem 1.2rem; height:auto; }
+  #coursePage #recordToggle{ display:inline-flex; align-items:center; justify-content:center; font-size:1.5rem; padding:1.1rem 1.2rem; border:1px solid #cfd5dd; background:#fff; border-radius:0; width:auto; min-width:6ch; white-space:nowrap; }
+  #coursePage .grid3{ display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:18px; align-items:center; }
+  #coursePage .grid3 > *{ display:block; }
+  #coursePage .grid3 .course-btn{ width:100%; min-width:0; box-sizing:border-box; font-size:1.5rem; padding:1.1rem 2.4rem; border-radius:999px; border:1px solid #cfd5dd; background:#fff; }
+  #coursePage .grid3 .course-btn[aria-pressed="true"]{ background:#e6f2ff; border-color:#4da3ff; }
+  #coursePage .start-hero{ display:block; margin:60px auto 0; font-size:1.5rem; padding:1.1rem 2.4rem; background:#e53935; border-color:#e53935; color:#fff; border-radius:999px; min-width:12.5em; box-shadow:0 6px 18px rgba(229,57,53,.25); }
+  #coursePage .back-ghost{ position:absolute; right:16px; bottom:16px; padding:.8rem 1.2rem; border-radius:12px; background:#fff; border:1px solid #cfd5dd; }
+  #coursePage .center{ display:grid; place-items:center; }
+  #coursePage .card{ margin:0 auto; }
+  #coursePage .card .row{ margin: 0 0 60px; }
+
+  /* ===== 書字 ===== */
+  .workgrid{ display:grid; grid-template-columns: max-content max-content; justify-content:center; align-items:start; column-gap: 12px; row-gap: 24px; }
+  #writeWrap{ display:flex; flex-direction:column; gap:6px; align-items:center; }
+  canvas.box{background:#fff; border-radius:0;}
+  #writePage .title{ display:none !important; }
+  #writePage .headgrid{ row-gap: 1.2rem; margin-bottom: 1.2rem; grid-template-columns: 1fr max-content 1fr; }
+  #writePage .picked-wrap{ grid-column:2; justify-self:center; }
+  #writePage .badge{ font-size: 2.28rem; padding:.55rem 1.1rem; }
+  .stack-gap{ margin-top: 32px; }
+  #scoreBox{ margin: 22px 0 8px; min-height: 2.4rem; font-size: 2.28rem; text-align:center; color:#0b57d0; font-weight:800; line-height: 1; display: grid; place-items: center; 
+    font-variant-numeric: tabular-nums;
+  font-family: system-ui, "Yu Gothic", "Meiryo", "Hiragino Sans", "Noto Sans JP", sans-serif;
+}
+
+  .toolbar-fixed{
+    display: grid;
+    grid-template-columns: repeat(6, var(--btn-lg-w));
+    grid-template-rows: var(--btn-lg-h);
+    grid-auto-flow: column;
+    justify-content: center; align-items: center;
+    gap: 20px; margin-top: 18px; height: var(--btn-lg-h);
+  }
+  .toolbar-fixed > * { margin: 0; }
+  .slot{ display:flex; justify-content:center; align-items:center; height: var(--btn-lg-h); }
+  .slot-stack{ position:relative; width: var(--btn-lg-w); height: var(--btn-lg-h); }
+  .slot-stack > .btn-lg{ position:absolute; inset:0; }
+  .toolbar-fixed .slot-clear{ grid-column: 3; }
+  .toolbar-fixed .slot-hint { grid-column: 4; }
+  .toolbar-fixed .slot-stack{ grid-column: 5; }
+  .toolbar-fixed .slot-retry{ grid-column: 6; }
+  .hand-left .toolbar-fixed .slot-retry{ grid-column: 1; }
+  .hand-left .toolbar-fixed .slot-stack{ grid-column: 2; }
+  .hand-left .toolbar-fixed .slot-clear{ grid-column: 3; }
+  .hand-left .toolbar-fixed .slot-hint { grid-column: 4; }
+  .btn-lg{ height: var(--btn-lg-h); min-width: var(--btn-lg-w); font-size: 1.08rem; padding: 0 18px; border-radius: 12px; }
+  .btn-primary{ background:#1a73e8; color:#fff; border-color:#1a73e8; }
+  .btn-success{ background:#1fa74f; color:#fff; border-color:#1fa74f; }
+  .toggle-on{ background:#e6f2ff; border-color:#4da3ff; }
+
+  /* ===== ふりかえり ===== */
+  .review-wrap{ display:grid; gap:24px; place-items:center; }
+
+  #resultKanaRow.result-grid{
+    display:grid; gap:0; justify-items:center;
+    border:2px solid var(--grid-line);
+  }
+  #resultKanaRow.result-grid.cols-3{ grid-template-columns: repeat(3, minmax(160px,1fr)); }
+  #resultKanaRow.result-grid.cols-5{ grid-template-columns: repeat(5, minmax(160px,1fr)); }
+
+  .kana-card{
+    width: 180px;
+    background:#fff;
+    border-right:2px solid var(--grid-line);
+    border-bottom:2px solid var(--grid-line);
+    border-radius:0;
+    box-shadow:none;
+    display:grid;
+    grid-template-rows: auto auto;
+    overflow:hidden;
+    box-sizing:border-box;
+  }
+ #resultKanaRow.result-grid,
+.kana-card { box-sizing: border-box; }
+ .result-grid.cols-5 > .kana-card:nth-child(5n){ border-right:none; }
+  .result-grid.cols-5 > .kana-card:nth-last-child(-n + 5){ border-bottom:none; }
+  .result-grid.cols-3 > .kana-card:nth-child(3n){ border-right:none; }
+  .result-grid.cols-3 > .kana-card:nth-last-child(-n + 3){ border-bottom:none; }
+
+  .kana-char{
+    width:100%;
+    aspect-ratio: 1 / 1;
+    display:flex; align-items:center; justify-content:center;
+    font-size: 6.6rem;
+    line-height: 1;
+    padding:0; margin:0;
+    transform: translateY(var(--optical-shift));
+    box-sizing:border-box;
+  }
+/* レビューカード下段：数字は完全中央・フォントは汎用に固定 */
+.kana-score{
+  border-top:1px solid #cfcfcf;
+  min-height: 56px;
+  display:grid;
+  place-items:center;
+  font-size: 2.2rem;
+  line-height:1;
+  padding:0; margin:0; color:#444;
+  /* 光学シフトは適用しない（数字は純粋に中央） */
+  font-family: system-ui, "Yu Gothic", "Meiryo", "Hiragino Sans", "Noto Sans JP", sans-serif;
+}
+
+
+  .avg-box{ display:grid; place-items:center; }
+  .avg-label{ display:none !important; }
+/* 平均点の丸：半角・太字・大きめでも中央で収まる */
+.avg-value{
+  width: 9.5rem;                /* ← 8rem → 9rem に拡大 */
+  height: 9.5rem;
+  border-radius: 50%;
+  display: grid; place-items: center;
+  line-height: 1;
+  font-size: 5.2rem;            /* 100（3桁）でも 9rem 内に収まる目安 */
+  font-weight: 900;           /* 太字でくっきり */
+  white-space: nowrap;        /* 改行させない */
+  letter-spacing: -0.01em;    /* 過度に詰めない */
+  color:#d32f2f;
+  background:#fff1f5;
+  border:2px solid #f6c5d0;
+
+  /* 見た目安定（等幅風の桁揃え） */
+  font-variant-numeric: tabular-nums;
+
+  /* 太めに見えるフォント優先 */
+  font-family:
+    system-ui, "Segoe UI", "Arial Black", Impact,
+    "Hiragino Sans W6", "Hiragino Sans",
+    "Noto Sans JP", "Yu Gothic", Meiryo, sans-serif;
+}
+
+
+  .review-actions{ display:flex; gap:14px; justify-content:center; margin-top:22px; }
+  .review-actions button{ font-size:1.5rem; padding:1.1rem 2.4rem; border-radius:999px; min-width:12.5em; }
+  #retryCourse{ background:#1fa74f; color:#fff; border:1px solid #1fa74f; }
+  #backOpenFromReview{ background:#fff; border:1px solid #cfd5dd; color:#111; }
+
+  #fxCanvas{ position:fixed; inset:0; pointer-events:none; z-index:999; }
+/* ===== 設定モーダル（最小スタイル） ===== */
+#settingsBackdrop{
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.35);
+  display: none; align-items: center; justify-content: center;
+  z-index: 9999;
+}
+.settings-dialog{
+  background:#fff; border:1px solid #e5e5e5; border-radius:16px;
+  width:min(640px, 92vw); padding:20px 20px 16px; box-shadow:0 18px 36px rgba(0,0,0,.18);
+}
+.settings-dialog h2{
+  margin:0 0 10px; font-size:1.3rem; font-weight:900; letter-spacing:.02em;
+}
+.settings-section{ margin:14px 0; }
+.settings-label{ font-weight:700; margin-bottom:6px; }
+.settings-row{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+.settings-val{ min-width:2ch; text-align:right; font-variant-numeric: tabular-nums; }
+.settings-actions{ display:flex; justify-content:flex-end; gap:10px; margin-top:16px; }
+
+.radio{ display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border:1px solid #e5e5e5; border-radius:12px; }
+.toggle{ border:1px solid #cfd5dd; background:#fff; border-radius:12px; padding:.6rem 1.1rem; min-width:6ch; }
+.toggle.toggle-on, .toggle[aria-pressed="true"]{ background:#e6f2ff; border-color:#4da3ff; }
+
+.settings-calib{ align-items:center; }
+.calib-bar{
+  width: calc(var(--mm-scale) * 50px); height: 14px; background:#111;
+  border-radius:7px;
+}
+.settings-note{ color:#666; font-size:.9rem; margin:.4rem 0 0; }
+/* 50音ページ：選んだ文字数バッジを中央＆大きめに */
+#openPage .picked-wrap{
+  grid-column: 1 / -1;   /* 行全体を使って中央に配置 */
+  justify-self: center;
+  margin-top: .3rem;     /* タイトルとの間隔を少しだけ */
+}
+#openPage .badge.big{
+  font-size: 1.8rem;     /* ちょい大きめ（お好みで2.0remまで可） */
+  padding: .6rem 1.2rem; /* 文字を大きくしても余白が詰まらないように */
+}
+/* 50音ページ：タイトルとバッジの行間を広げる */
+#openPage .headgrid{
+  row-gap: 1.6rem;   /* 好みで 1.0rem〜1.6rem くらいに */
+}
+
+/* 以前つけた margin-top をリセット（row-gap に任せる） */
+#openPage .picked-wrap{
+  grid-column: 1 / -1;
+  justify-self: center;
+  margin-top: 0;     /* ← ここを 0 に */
+}
+</style>
+</head>
+<body>
+
+<!-- ========== オープニング ========== -->
+<div id="openPage" class="page">
+  <div class="headgrid">
+    <div class="title">50おん から えらんで ください</div>
+    <div class="picked-wrap">
+      <span class="badge big">えらんだもじ：<span id="selCount" class="count">0</span></span>
+    </div>
+    <button id="openSettings" class="gear-btn" title="教師設定">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+          d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543-.89 3.31.877 2.42 2.42a1.724 1.724 0 0 0 1.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 0 0-1.066 2.573c.89 1.543-.877 3.31-2.42 2.42a1.724 1.724 0 0 0-2.573 1.066z"/>
+        <circle cx="12" cy="12" r="3" stroke-width="1.8"/>
+      </svg>
+      設定
+    </button>
+  </div>
+
+  <div class="layout">
+    <div class="rowpanel"><div id="rowBar" class="rowbar"></div></div>
+
+    <div class="start-float">
+      <button id="startBtnOpen" class="pill">つ　ぎ</button>
+    </div>
+
+    <div class="main">
+      <div class="grid" id="grid"></div>
+      <div></div>
+      <div class="dan-panel" id="danPanel"><div class="dancol" id="danCol"></div></div>
+      <div></div>
+      <div class="util" id="utilCol">
+        <div class="panel" id="quickPanel">
+          <div class="center-title">クイック</div>
+          <div class="quick">
+            <button id="allOn"  class="qbtn pill">すべてえらぶ</button>
+            <button id="allOff" class="qbtn pill">すべてはずす</button>
+            <button id="invert" class="qbtn pill">はんたいにする</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== コース選択 ========== -->
+<div id="coursePage" class="page hidden">
+  <div class="headgrid">
+    <div class="title">コースを えらんで ください</div>
+    <button id="openSettings2" class="gear-btn" title="教師設定">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543-.89 3.31.877 2.42 2.42a1.724 1.724 0 0 0 1.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 0 0-1.066 2.573c.89 1.543-.877 3.31-2.42 2.42.966.557 2.147.113 2.573-1.066z"/><circle cx="12" cy="12" r="3" stroke-width="1.8"/></svg>
+      設定
+    </button>
+  </div>
+  <div class="center">
+    <div class="card">
+      <div class="row">
+        <input id="studentName" class="name-input name-lg" type="text" placeholder="なまえ（れい：やまだ はなこ）" />
+        <label id="recordToggle" class="rect-btn" role="button" aria-pressed="false">きろく</label>
+      </div>
+
+      <div class="grid3">
+        <div class="left">
+          <button class="course-btn" id="course3" aria-pressed="false">3もん</button>
+        </div>
+        <div class="center">
+          <button class="course-btn" id="course5" aria-pressed="true">5もん</button>
+        </div>
+        <div class="right">
+          <button class="course-btn" id="course10" aria-pressed="false">10もん</button>
+        </div>
+      </div>
+
+      <button class="start-hero" id="startCourse" disabled>スタート</button>
+      <button class="back-ghost" id="backToOpen">もどる</button>
+      <div class="helper" style="text-align:center; margin-top:14px;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== 書字画面 ========== -->
+<div id="writePage" class="page hidden">
+  <!-- ヘッダ（安全な完成版） -->
+  <div class="headgrid">
+    <div class="title">れんしゅう</div>
+    <div class="picked-wrap">
+      <span class="badge">なんもんめ：<span id="qIndex" class="count">1</span>/<span id="qTotal">5</span></span>
+    </div>
+    <!-- 設定 -->
+    <button id="openSettings3" class="gear-btn" title="教師設定">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+          d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543-.89 3.31.877 2.42 2.42a1.724 1.724 0 0 0 1.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 0 0-1.066 2.573c.89 1.543-.877 3.31-2.42 2.42a1.724 1.724 0 0 0-2.573 1.066z"/>
+        <circle cx="12" cy="12" r="3" stroke-width="1.8"/>
+      </svg>
+      設定
+    </button>
+    <!-- 50音へ -->
+    <button id="backToOpenFromWrite" class="gear-btn">50おんへ</button>
+  </div>
+
+  <div class="stack-gap"></div>
+  <div class="workgrid" id="workarea">
+    <div id="sampleWrap" style="display:flex; flex-direction:column; gap:6px; align-items:center;">
+      <canvas id="sampleBox" class="box" width="1" height="1"></canvas>
+    </div>
+
+    <div id="writeWrap">
+      <canvas id="writeBox" class="box" width="1" height="1"></canvas>
+    </div>
+  </div>
+
+  <div id="scoreBox" class="muted"></div>
+  <!-- 追加：筆順コメント欄 -->
+  <div id="judgeComment" class="muted" style="text-align:center; min-height:1.6rem;"></div>
+
+  <div class="toolbar-fixed">
+    <div class="slot slot-clear">
+      <button id="clearBtn" class="btn-lg">けす</button>
+    </div>
+    <div class="slot slot-hint">
+      <button id="hintBtn"  class="btn-lg">ヒント</button>
+    </div>
+    <div class="slot-stack">
+      <button id="scoreBtn" class="btn-lg btn-primary">さいてん</button>
+      <button id="nextBtn"  class="btn-lg btn-success" style="display:none;">つぎへ</button>
+    </div>
+    <div class="slot slot-retry">
+      <button id="retryBtn" class="btn-lg" style="display:none;">もういちど</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== ふりかえり（リザルト） ========== -->
+<div id="reviewPage" class="page hidden">
+  <div class="headgrid">
+    <div class="title">ふりかえり</div>
+    <button id="openSettings4" class="gear-btn" title="教師設定">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543-.89 3.31.877 2.42 2.42a1.724 1.724 0 0 0 1.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 0 0-1.066 2.573c.89 1.543-.877 3.31-2.42 2.42a1.724 1.724 0 0 0-2.573 1.066z"/><circle cx="12" cy="12" r="3" stroke-width="1.8"/></svg>
+      設定
+    </button>
+  </div>
+  <div class="review-wrap">
+    <div id="resultKanaRow" class="result-grid"></div>
+    <div class="avg-box">
+      <div class="avg-label">へいきん点</div>
+      <div id="avgValue" class="avg-value">0</div>
+    </div>
+    <div class="review-actions">
+      <button id="retryCourse" class="pill btn-success">おなじコース</button>
+      <button id="backOpenFromReview" class="pill">ひらがなをえらぶ</button>
+    </div>
+  </div>
+  <canvas id="fxCanvas" class="hidden"></canvas>
+</div>
+<!-- ===== 設定モーダル（最小構成） ===== -->
+<div id="settingsBackdrop" aria-hidden="true" style="display:none;">
+  <div class="settings-dialog" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+    <h2 id="settingsTitle">せってい</h2>
+
+    <!-- 採点の太らせ（px） -->
+    <section class="settings-section">
+      <label for="inflateRange" class="settings-label">せんの ふとさ（さいてん）</label>
+      <div class="settings-row">
+        <input id="inflateRange" type="range" min="0" max="12" step="1" value="3" />
+        <span class="settings-val" id="inflateVal">3</span><span> px</span>
+      </div>
+    </section>
+
+    <!-- きき手 -->
+    <section class="settings-section">
+      <div class="settings-label">ききて</div>
+      <div class="settings-row">
+        <label class="radio">
+          <input type="radio" name="handedPref" value="right" checked /> みぎ
+        </label>
+        <label class="radio">
+          <input type="radio" name="handedPref" value="left" /> ひだり
+        </label>
+      </div>
+    </section>
+
+    <!-- オーバーレイ -->
+    <section class="settings-section">
+      <div class="settings-label">おおまかな ひょうか の いろ（オーバーレイ）</div>
+      <div class="settings-row">
+        <button id="toggleOverlay" class="toggle" aria-pressed="true">ON</button>
+      </div>
+    </section>
+
+    <!-- 実寸50mm 確認バー -->
+    <section class="settings-section">
+      <div class="settings-label">実寸 50mm の はば</div>
+      <div class="settings-row settings-calib">
+        <button id="calibMinusM" class="pill">−</button>
+        <div id="calibBarModal" class="calib-bar"></div>
+        <button id="calibPlusM" class="pill">＋</button>
+      </div>
+      <p class="settings-note">じっけん：じょうぎで はばが 50mm か かくにんしてね。</p>
+    </section>
+
+    <!-- 操作ボタン -->
+    <div class="settings-actions">
+      <button id="saveSettings" class="pill btn-primary">ほぞん</button>
+      <button id="closeSettings" class="pill">とじる</button>
+    </div>
+  </div>
+</div>
+
+<!-- ====== 教師設定モーダル ====== -->
+<div id="settingsBackdrop" class="modal-backdrop" aria-hidden="true" style="display:none;">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+    <h3 id="settingsTitle">教師設定</h3>
+    <div class="form-row">
+      <div>スコア表示</div>
+      <div class="row-inline">
+        <label><input type="radio" name="scoreMode" value="numeric"> 点数のみ</label>
+        <label><input type="radio" name="scoreMode" value="icon"> アイコン＋点数</label>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div>評価の甘さ（はみ出し許容）</div>
+      <div class="row-inline">
+        <input id="inflateRange" type="range" min="1" max="6" step="1" style="width:240px;">
+        <span><span id="inflateVal">3</span> px</span>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div>利き手</div>
+      <div class="row-inline">
+        <label><input type="radio" name="handedPref" value="left"> ひだり</label>
+        <label><input type="radio" name="handedPref" value="right"> みぎ</label>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div>キャリブ（50mm）</div>
+      <div class="row-inline">
+        <div class="calib-line" id="calibBarModal" style="width:calc(var(--mm-scale) * 50px)"></div>
+        <button id="calibMinusM">−</button>
+        <button id="calibPlusM">＋</button>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div>見える化</div>
+      <div class="row-inline">
+        <button id="toggleOverlay" class="chip" aria-pressed="false">OFF</button>
+        <span class="help">※ 採点後の表示に反映されます</span>
+      </div>
+    </div>
+
+    <div class="help">※ 設定はこの端末に保存され、次回も復元されます。</div>
+    <div class="modal-actions">
+      <button id="closeSettings" class="pill">閉じる</button>
+      <button id="saveSettings" class="pill primary">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ▼▼ 筆順モジュール → ブリッジ（順番厳守） ▼▼ -->
+<script src="./stroke_judge_module.js"></script>
+<script src="./judge_bridge.js"></script>
+<!-- ▲▲ ここまで追加読み込み ▲▲ -->
+
+<script>
+(function(){
+  "use strict";
+  function toZenkakuDigits(n){
+    return String(n).replace(/[0-9]/g, function(d){
+        return String.fromCharCode(d.charCodeAt(0)+0xFEE0);
+    });
+}
+
+  /* ===== データ ===== */
+  var columns = [
+    { label:"あ行", key:"a",  chars:["あ","い","う","え","お"] },
+    { label:"か行", key:"ka", chars:["か","き","く","け","こ"] },
+    { label:"さ行", key:"sa", chars:["さ","し","す","せ","そ"] },
+    { label:"た行", key:"ta", chars:["た","ち","つ","て","と"] },
+    { label:"な行", key:"na", chars:["な","に","ぬ","ね","の"] },
+    { label:"は行", key:"ha", chars:["は","ひ","ふ","へ","ほ"] },
+    { label:"ま行", key:"ma", chars:["ま","み","む","め","も"] },
+    { label:"や行", key:"ya", chars:["や","","ゆ","","よ"] },
+    { label:"ら行", key:"ra", chars:["ら","り","る","れ","ろ"] },
+    { label:"わ行", key:"wa", chars:["わ","","","","を"] },
+    { label:"ん列", key:"n",  chars:["ん","","","",""] }
+  ];
+  var danList = [{label:"あ段",idx:0},{label:"い段",idx:1},{label:"う段",idx:2},{label:"え段",idx:3},{label:"お段",idx:4}];
+
+  /* ===== 状態 ===== */
+  var selected=new Set();
+  var questionQueue=[];
+  var totalQuestions=5;
+  var currentIndex=1;
+  var mmScale=parseFloat(localStorage.getItem("mmScale")||(window.devicePixelRatio?3.78*window.devicePixelRatio:3.78));
+  var handed=localStorage.getItem("handedPref")||"right";
+  var hintShown=false;
+  var scoreMode = localStorage.getItem('scoreModePref') || "numeric";
+  var evalInflatePx = Number(localStorage.getItem('evalInflatePx') || 3);
+  var showOverlay = true;
+  var runResults = [];
+  var recordedForCurrent = false;
+  var isAdvancing = false; // 画面遷移/記録の二重実行防止
+
+  /* util */
+  function updateCssVars(){ document.documentElement.style.setProperty("--mm-scale", String(mmScale)); }
+  function updateCount(){ document.getElementById("selCount").textContent = String(selected.size); }
+  function setPressed(el,on){ if(el){ el.setAttribute("aria-pressed", on ? "true" : "false"); } }
+  function pxOf(mm){ return Math.round(mm * mmScale); }
+  function isKana(ch){ return /^[ぁ-ん]$/.test(ch||""); }
+  function getAllKanaPool(){ return "あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん".split(""); }
+
+  /* ===== 50音UI ===== */
+  var gridEl  = document.getElementById("grid");
+  var rowBar  = document.getElementById("rowBar");
+  var danCol  = document.getElementById("danCol");
+  var utilCol = document.getElementById("utilCol");
+  var rowBtnMap = new Map();
+  var danBtnList = [];
+
+  function makeCell(ch, extra){
+    var cell=document.createElement("div");
+    cell.className="cell"+(extra?(" "+extra):"")+(ch===""?" empty":"");
+    if(ch!==""){
+      cell.textContent=ch;
+      cell.addEventListener("click", function(){
+        if(cell.classList.contains("placeholder")) return;
+        if(selected.has(ch)){ selected.delete(ch); cell.classList.remove("selected"); }
+        else { selected.add(ch); cell.classList.add("selected"); }
+        updateCount();
+        updateGroupPressedStates();
+      });
+    }
+    return cell;
+  }
+  function buildGrid(){
+    gridEl.innerHTML="";
+    var rows=5, cols=columns.length;
+    for(var r=0;r<rows;r++){
+      for(var c=cols-1;c>=0;c--){
+        var col=columns[c];
+        var ch=col.chars[r]||"";
+        if(ch===""&&(col.key==="ya"||col.key==="wa")&&(r===1||r===2||r===3)){
+          ch = (r===1?"い": r===2?"う":"え");
+          gridEl.appendChild(makeCell(ch,"placeholder")); continue;
+        }
+        if(col.key==="n" && r>0){ var hidden=document.createElement("div"); hidden.className="cell n-hidden"; gridEl.appendChild(hidden); continue; }
+        gridEl.appendChild(makeCell(ch));
+      }
+    }
+  }
+  function buildRowBar(){
+    rowBar.innerHTML="";
+    rowBar.appendChild(Object.assign(document.createElement("div"),{className:"row-spacer"}));
+    ["wa","ra","ya","ma","ha","na","ta","sa","ka","a"].forEach(function(key){
+      var col=columns.find(function(c){return c.key===key;});
+      var b=document.createElement("button");
+      b.className="rowbtn"; b.textContent=col.label; b.title=col.chars.filter(Boolean).join(" ");
+      b.addEventListener("click", function(){
+        var base=col.chars.filter(Boolean);
+        var chars=(key==="wa") ? base.concat(["ん"]) : base;
+        var hasAll=chars.every(function(ch){return selected.has(ch);});
+        chars.forEach(function(ch){ if(hasAll) selected.delete(ch); else selected.add(ch); });
+        refreshGridSelections(); updateCount(); setPressed(b,!hasAll);
+        updateGroupPressedStates();
+      });
+      rowBar.appendChild(b);
+      rowBtnMap.set(key,b);
+    });
+  }
+  function buildDanCol(){
+    danCol.innerHTML="";
+    danBtnList.length = 0;
+    danList.forEach(function(d){
+      var b=document.createElement("button"); b.className="danbtn"; b.textContent=d.label;
+      b.addEventListener("click", function(){
+        var chars=columns.map(function(col){return col.chars[d.idx];}).filter(Boolean);
+        var hasAll=chars.every(function(ch){return selected.has(ch);});
+        chars.forEach(function(ch){ if(hasAll) selected.delete(ch); else selected.add(ch); });
+        refreshGridSelections(); updateCount(); setPressed(b,!hasAll);
+        updateGroupPressedStates();
+      });
+      danCol.appendChild(b);
+      danBtnList.push({ idx:d.idx, el:b });
+    });
+  }
+  function refreshGridSelections(){
+    gridEl.querySelectorAll(".cell:not(.empty):not(.placeholder)").forEach(function(cell){
+      var ch=cell.textContent.trim();
+      if(selected.has(ch)) cell.classList.add("selected"); else cell.classList.remove("selected");
+    });
+  }
+  function updateGroupPressedStates(){
+    var rowOrder = ["wa","ra","ya","ma","ha","na","ta","sa","ka","a"];
+    rowOrder.forEach(function(key){
+      var col = columns.find(function(c){return c.key===key;});
+      if(!col) return;
+      var base = col.chars.filter(Boolean);
+      var chars = (key === "wa") ? base.concat(["ん"]) : base;
+      var hasAll = chars.length>0 && chars.every(function(ch){return selected.has(ch);});
+      var el = rowBtnMap.get(key);
+      if(el) setPressed(el, hasAll);
+    });
+    danBtnList.forEach(function(o){
+      var chars = columns.map(function(col){return col.chars[o.idx];}).filter(Boolean);
+      var hasAll = chars.length>0 && chars.every(function(ch){return selected.has(ch);});
+      setPressed(o.el, hasAll);
+    });
+  }
+
+ document.getElementById("allOn").onclick=function(){
+  selected.clear();
+  columns.forEach(function(col){col.chars.filter(Boolean).forEach(function(ch){selected.add(ch);});});
+  refreshGridSelections(); updateCount();
+  updateGroupPressedStates();
+};
+
+  document.getElementById("allOff").onclick=function(){
+    selected.clear(); refreshGridSelections(); updateCount();
+    updateGroupPressedStates();
+  };
+  document.getElementById("invert").onclick=function(){
+    var now=new Set(selected); selected.clear();
+    columns.forEach(function(col){col.chars.filter(Boolean).forEach(function(ch){ if(!now.has(ch)) selected.add(ch); });});
+    if(!now.has("ん")) selected.add("ん"); else selected.delete("ん");
+    refreshGridSelections(); updateCount();
+    updateGroupPressedStates();
+  };
+
+  /* キャリブ（共通） */
+  function updateCalib(){
+    var bm=document.getElementById("calibBarModal"); if(bm) bm.style.width=(mmScale*50)+"px";
+    updateCssVars();
+    var wa=document.getElementById("workarea");
+    if(wa){ wa.style.columnGap = pxOf(25)+"px"; }
+  }
+
+  /* 右列高さ */
+  function syncRightColHeight(){
+    var p=document.getElementById("danPanel"); if(!p) return;
+    utilCol.style.height=p.offsetHeight+"px"; utilCol.style.justifyContent="space-between";
+  }
+  window.addEventListener("resize", syncRightColHeight);
+
+  /* ===== コース ===== */
+  var courseBtn3=document.getElementById("course3");
+  var courseBtn5=document.getElementById("course5");
+  var courseBtn10=document.getElementById("course10");
+  function chooseCourse(n){
+    totalQuestions = Number(n);
+    setPressed(courseBtn3, n===3);
+    setPressed(courseBtn5, n===5);
+    setPressed(courseBtn10,n===10);
+    validateCourseStart();
+  }
+  courseBtn3.onclick = function(){ chooseCourse(3); };
+  courseBtn5.onclick = function(){ chooseCourse(5); };
+  courseBtn10.onclick= function(){ chooseCourse(10); };
+
+  var recordOn=false;
+  document.getElementById("recordToggle").onclick=function(){
+    recordOn=!recordOn; setPressed(document.getElementById("recordToggle"), recordOn); validateCourseStart();
+  };
+  document.getElementById('studentName').addEventListener('input', validateCourseStart);
+
+  function applyScoreModeUI(){
+    var rads = document.querySelectorAll('input[name="scoreMode"]');
+    rads.forEach(function(r){ r.checked = (r.value === scoreMode); });
+  }
+  function validateCourseStart(){
+    var okName = recordOn ? document.getElementById("studentName").value.trim().length>0 : true;
+    var okCourse = [3,5,10].includes(totalQuestions);
+    document.getElementById("startCourse").disabled = !(okName && okCourse);
+  }
+
+  /* 画面遷移（オープン→コース） */
+document.getElementById("startBtnOpen").onclick=function(){
+  if(selected.size===0){
+    columns.forEach(function(col){col.chars.filter(Boolean).forEach(function(ch){selected.add(ch);});});
+    // ※「ん」は「わ行」ボタンで必要に応じて手動選択できます
+  }
+  refreshGridSelections(); updateCount(); updateGroupPressedStates();
+
+  chooseCourse(totalQuestions || 5);
+  applyScoreModeUI();
+  document.getElementById("openPage").classList.add("hidden");
+  document.getElementById("coursePage").classList.remove("hidden");
+};
+
+  document.getElementById("backToOpen").onclick = showOpenPage;
+
+  /* ===== オープンページ再構築 ===== */
+  function showOpenPage(){
+    document.getElementById("coursePage").classList.add("hidden");
+    document.getElementById("writePage").classList.add("hidden");
+    document.getElementById("reviewPage").classList.add("hidden");
+    document.getElementById("openPage").classList.remove("hidden");
+    buildRowBar(); buildGrid(); buildDanCol(); refreshGridSelections(); updateCount(); syncRightColHeight();
+  }
+
+  var sampleCanvas=document.getElementById("sampleBox");
+  var writeCanvas =document.getElementById("writeBox");
+  var sampleWrap  =document.getElementById("sampleWrap");
+  var writeWrap   =document.getElementById("writeWrap");
+
+  function placeByHanded(){
+    var wa=document.getElementById("workarea");
+    wa.innerHTML="";
+    if(handed==="right"){ wa.appendChild(sampleWrap); wa.appendChild(writeWrap); }
+    else{ wa.appendChild(writeWrap); wa.appendChild(sampleWrap); }
+    document.body.classList.toggle('hand-left', handed === 'left');
+    localStorage.setItem("handedPref", handed);
+  }
+
+  function pxVar(name){ return pxOf(parseFloat(getComputedStyle(document.documentElement).getPropertyValue(name))); }
+
+  function resizeBoxes(){
+    var size=pxOf(parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--box-mm")));
+    var frame=pxVar("--frame-mm");
+    var guide=pxVar("--guide-mm");
+    [sampleCanvas, writeCanvas].forEach(function(cv){
+      cv.width=size; cv.height=size; cv.style.width=size+"px"; cv.style.height=size+"px";
+      var ctx=cv.getContext("2d");
+      ctx.clearRect(0,0,cv.width,cv.height);
+      ctx.lineWidth=frame; ctx.strokeStyle="#111";
+      ctx.strokeRect(frame/2, frame/2, size-frame, size-frame);
+      ctx.save(); ctx.setLineDash([pxOf(2), pxOf(2)]); ctx.lineWidth=guide; ctx.strokeStyle="#999";
+      ctx.beginPath(); ctx.moveTo(frame, size/2); ctx.lineTo(size-frame, size/2); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(size/2, frame); ctx.lineTo(size/2, size-frame); ctx.stroke();
+      ctx.restore();
+    });
+  }
+
+  /* === グリフを“見た目中央”に描くユーティリティ === */
+  function fillGlyphCentered(ctx, glyph, boxSize, opts){
+    opts = opts||{};
+    var opacity = (opts.opacity==null?1:opts.opacity);
+    var padPx   = (opts.padPx==null? pxOf(2) : opts.padPx);
+    var optical = (opts.opticalShiftPx!=null)
+      ? opts.opticalShiftPx
+      : (parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--optical-shift'))||0);
+
+    function setFont(px){
+      var fam = '"UD Digi Kyokasho N-R","UD Digi Kyokasho NK-R","Hiragino Maru Gothic ProN","Hiragino Maru Gothic Pro","Yu Gothic","Meiryo","Hiragino Sans","Noto Sans JP",sans-serif';
+      ctx.font = Math.max(8, Math.floor(px)) + 'px ' + fam;
+    }
+
+    var fontPx = boxSize * 1.00;
+    setFont(fontPx);
+    var m = ctx.measureText(glyph);
+    var hasAB = (m.actualBoundingBoxAscent!=null && m.actualBoundingBoxDescent!=null);
+    var ascent  = hasAB ? m.actualBoundingBoxAscent  : fontPx*0.80;
+    var descent = hasAB ? m.actualBoundingBoxDescent : fontPx*0.20;
+    var inkH = ascent + descent;
+
+    var target = Math.max(8, boxSize - padPx*2);
+    var scale  = Math.max(0.9, Math.min(1.1, target / (inkH||1)));
+    fontPx *= scale;
+    setFont(fontPx);
+    m = ctx.measureText(glyph);
+    if (hasAB){
+      ascent  = m.actualBoundingBoxAscent;
+      descent = m.actualBoundingBoxDescent;
+      inkH = ascent + descent;
+    }else{
+      ascent  = fontPx*0.80;
+      descent = fontPx*0.20;
+      inkH = ascent + descent;
+    }
+
+    var y = boxSize/2 + (ascent - descent)/2 + optical;
+    y = Math.round(y) + 0.5;
+
+    ctx.save();
+    ctx.globalAlpha = opacity;
+    ctx.textAlign   = "center";
+    ctx.textBaseline= "alphabetic";
+    ctx.fillStyle   = "#111";
+    ctx.fillText(glyph, boxSize/2, y);
+    ctx.restore();
+  }
+  function drawGlyphCenteredTo(ctx, sizePx, glyph, opacity){
+    ctx.clearRect(0,0,sizePx,sizePx);
+    if(!/^[ぁ-ん]$/.test(glyph||"")) return;
+    fillGlyphCentered(ctx, glyph, sizePx, {opacity: (opacity==null?1:opacity)});
+  }
+
+  function drawSample(opacity){
+    if(opacity===undefined) opacity=1;
+    var cv = sampleCanvas, ctx = cv.getContext("2d");
+    var size  = cv.width;
+    var frame = pxVar("--frame-mm");
+    var guide = pxVar("--guide-mm");
+    ctx.clearRect(0,0,size,size);
+    ctx.lineWidth = frame; ctx.strokeStyle = "#111";
+    ctx.strokeRect(frame/2, frame/2, size - frame, size - frame);
+    ctx.save(); ctx.setLineDash([pxOf(2), pxOf(2)]); ctx.lineWidth = guide; ctx.strokeStyle = "#999";
+    ctx.beginPath(); ctx.moveTo(frame,   size/2); ctx.lineTo(size-frame, size/2); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(size/2,  frame ); ctx.lineTo(size/2,      size-frame); ctx.stroke();
+    ctx.restore();
+
+    var glyph = questionQueue[currentIndex - 1];
+    if (!isKana(glyph)) return;
+    fillGlyphCentered(ctx, glyph, size, {opacity: opacity});
+  }
+
+  var drawing=false; var strokes=[];
+
+  function drawWriteBox(showHint){
+    var cv = writeCanvas, ctx = cv.getContext("2d");
+    var size  = cv.width;
+    var frame = pxVar("--frame-mm");
+    var guide = pxVar("--guide-mm");
+    ctx.clearRect(0,0,size,size);
+
+    ctx.lineWidth = frame; ctx.strokeStyle = "#111";
+    ctx.strokeRect(frame/2, frame/2, size - frame, size - frame);
+    ctx.save(); ctx.setLineDash([pxOf(2), pxOf(2)]); ctx.lineWidth = guide; ctx.strokeStyle = "#999";
+    ctx.beginPath(); ctx.moveTo(frame,   size/2); ctx.lineTo(size-frame, size/2); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(size/2,  frame ); ctx.lineTo(size/2,      size-frame); ctx.stroke();
+    ctx.restore();
+
+    var glyph = questionQueue[currentIndex - 1];
+    if (showHint && isKana(glyph)){
+      fillGlyphCentered(ctx, glyph, size, {opacity: 0.15});
+    }
+
+    ctx.save();
+    ctx.lineCap = "round"; ctx.lineJoin = "round";
+    ctx.strokeStyle = "#111";
+    ctx.lineWidth = pxOf(2);
+    strokes.forEach(function(s){
+      if(s.length < 2) return;
+      ctx.beginPath(); ctx.moveTo(s[0].x, s[0].y);
+      for(var i=1;i<s.length;i++) ctx.lineTo(s[i].x, s[i].y);
+      ctx.stroke();
+    });
+    ctx.restore();
+
+    if(showOverlay && overlayCanvas){
+      var octx = cv.getContext('2d');
+      octx.save(); octx.drawImage(overlayCanvas, 0, 0); octx.restore();
+    }
+  }
+
+  (function attachDraw(){
+    var cv = writeCanvas;
+    function pos(e){
+      var r=cv.getBoundingClientRect();
+      return { x:(e.clientX-r.left)*(cv.width/r.width), y:(e.clientY-r.top)*(cv.height/r.height) };
+    }
+    var start = function(e){
+      e.preventDefault();
+      if(cv.setPointerCapture) cv.setPointerCapture(e.pointerId);
+      setPhase('writing');
+      drawing=true; strokes.push([pos(e)]);
+      drawWriteBox(hintShown);
+    };
+    var move = function(e){ if(!drawing) return; strokes[strokes.length-1].push(pos(e)); drawWriteBox(hintShown); };
+    var end  = function(){ drawing=false; };
+    cv.addEventListener("pointerdown",start);
+    cv.addEventListener("pointermove",move);
+    window.addEventListener("pointerup",end);
+  })();
+
+  document.getElementById("hintBtn").onclick=function(){ hintShown=!hintShown; drawWriteBox(hintShown); };
+
+  var scoreBtn = document.getElementById('scoreBtn');
+  /* ===== さいてん／つぎへ／もういちど のイベント再登録（安全版） ===== */
+function rebindHandlers(){
+  // いったん同じ見た目の要素に置き換えて既存ハンドラを掃除
+  function cleanBind(id){ 
+    var oldEl = document.getElementById(id);
+    var newEl = oldEl.cloneNode(true);
+    oldEl.parentNode.replaceChild(newEl, oldEl);
+    return newEl;
+  }
+
+  scoreBtn = cleanBind('scoreBtn');
+  nextBtn  = cleanBind('nextBtn');
+  retryBtn = cleanBind('retryBtn');
+
+  scoreBtn.addEventListener('click', evaluateAndShow);
+  nextBtn .addEventListener('click', nextQuestion);
+  retryBtn.addEventListener('click', function(){
+    recordedForCurrent = false; 
+    strokes = []; 
+    scoreBox.textContent = '';
+    if (commentBox) commentBox.textContent = '';
+    overlayCanvas = null; 
+    drawWriteBox(hintShown);
+    setPhase('writing');
+  });
+}
+rebindHandlers();
+var retryBtn = document.getElementById('retryBtn');
+  var nextBtn  = document.getElementById('nextBtn');
+  var scoreBox = document.getElementById('scoreBox');
+  var clearBtn = document.getElementById('clearBtn');
+  var commentBox = document.getElementById('judgeComment');
+
+  function setPhase(phase){
+    if(phase === 'writing'){
+      scoreBtn.style.display = 'inline-block'; scoreBtn.tabIndex = 0; scoreBtn.setAttribute('aria-hidden','false');
+      nextBtn.style.display  = 'none';         nextBtn.tabIndex  = -1; nextBtn.setAttribute('aria-hidden','true');
+      retryBtn.style.display = 'none';         retryBtn.tabIndex = -1; retryBtn.setAttribute('aria-hidden','true');
+    }else{
+      scoreBtn.style.display = 'none';         scoreBtn.tabIndex = -1; scoreBtn.setAttribute('aria-hidden','true');
+      nextBtn.style.display  = 'inline-block'; nextBtn.tabIndex  = 0;  nextBtn.setAttribute('aria-hidden','false');
+      retryBtn.style.display = 'inline-block'; retryBtn.tabIndex = 0;  retryBtn.setAttribute('aria-hidden','false');
+    }
+  }
+
+  var overlayCanvas = null;
+  function buildOverlayCanvas(userMask, sampleMask, sizePx, glyph){
+    var ov = document.createElement('canvas');
+    ov.width = sizePx; ov.height = sizePx;
+    var octx = ov.getContext('2d');
+
+    if (isKana(glyph)) {
+      fillGlyphCentered(octx, glyph, sizePx, {opacity: 0.28});
+    }
+
+    var img = octx.createImageData(sizePx, sizePx);
+    var u = userMask.data, s = sampleMask.data, d = img.data;
+    var ALPHA_THR = 16;
+    for(var i=0;i<u.length;i+=4){
+      var U = u[i+3] > ALPHA_THR ? 1 : 0;
+      var S = s[i+3] > ALPHA_THR ? 1 : 0;
+      var r=0,g=0,b=0,a=0;
+      if (U && S){ r=0;   g=190; b=0;   a=150; }
+      else if (U && !S){ r=220; g=0;   b=0;   a=140; }
+      else if (!U && S){ r=0;   g=90;  b=230; a=120; }
+      d[i]=r; d[i+1]=g; d[i+2]=b; d[i+3]=a;
+    }
+    octx.putImageData(img, 0, 0);
+    return ov;
+  }
+
+  function rasterizeStrokesTo(ctx, sizePx, inflatePx){
+    if(inflatePx===undefined) inflatePx=0;
+    ctx.clearRect(0,0,sizePx,sizePx);
+    ctx.save();
+    ctx.lineCap = "round"; ctx.lineJoin = "round";
+    ctx.strokeStyle = "#000"; ctx.lineWidth = pxOf(2) + inflatePx;
+    strokes.forEach(function(s){
+      if(s.length < 2) return;
+      ctx.beginPath(); ctx.moveTo(s[0].x, s[0].y);
+      for(var i=1;i<s.length;i++) ctx.lineTo(s[i].x, s[i].y);
+      ctx.stroke();
+    });
+    ctx.restore();
+  }
+  function drawSampleGlyphTo(ctx, sizePx, glyph){
+    drawGlyphCenteredTo(ctx, sizePx, glyph, 1);
+  }
+  function computePrecRecall(maskUser, maskSample){
+    var u = maskUser.data, s = maskSample.data;
+    var inter = 0, sumU = 0, sumS = 0;
+    var ALPHA_THR = 16;
+    for(var i=0;i<u.length;i+=4){
+      var U = u[i+3] > ALPHA_THR ? 1 : 0;
+      var S = s[i+3] > ALPHA_THR ? 1 : 0;
+      if (U) sumU++; if (S) sumS++; if (U && S) inter++;
+    }
+    var precision = sumU ? (inter / sumU) : 0;
+    var recall    = sumS ? (inter / sumS) : 0;
+    return { precision:precision, recall:recall };
+  }
+// ===== 書き順（順番だけ）判定ユーティリティ =====
+
+// 「ふ」：相対位置だけで判定する超ゆるい版
+function checkOrder_FU(strokes, size){
+  // すごく短い“点”はノイズとして捨てる
+  var MIN_LEN = size * 0.04; // 0.03〜0.06で調整可
+
+  // 最初の4筆の「開始点」だけ取り出す（0〜1正規化）
+  var starts = [];
+  function segLen(st){
+    var L = 0;
+    for (var i = 1; i < st.length; i++) {
+      var dx = st[i].x - st[i-1].x, dy = st[i].y - st[i-1].y;
+      L += Math.hypot(dx, dy);
+    }
+    return L;
+  }
+  for (var k = 0; k < strokes.length; k++) {
+    var s = strokes[k];
+    if (segLen(s) >= MIN_LEN) {
+      starts.push({ x: s[0].x/size, y: s[0].y/size });
+      if (starts.length === 4) break; // 4筆集まったら止める
+    }
+  }
+
+  // 4筆なければ不合格（かくすう不足）
+  if (starts.length < 4) return { ok:false, code:'count' };
+
+  var p1 = starts[0], p2 = starts[1], p3 = starts[2], p4 = starts[3];
+
+  // 許容ゆらぎ（0〜1の比率）
+  var tolX = 0.03, tolY = 0.03;
+
+  // ① 1画目は上半分（y小さい側）
+  if (p1.y > 0.5 + tolY) return { ok:false, code:'order', wrongAt:1 };
+
+  // ② 2画目は1画目より下（yが大きい）
+  if (p2.y < p1.y - tolY) return { ok:false, code:'order', wrongAt:2 };
+
+  // ③ 3画目は2画目より左（xが小さい）
+  if (p3.x > p2.x - tolX) return { ok:false, code:'order', wrongAt:3 };
+
+  // ④ 4画目は2画目より右（xが大きい）
+  if (p4.x < p2.x + tolX) return { ok:false, code:'order', wrongAt:4 };
+
+  return { ok:true };
+}
+
+/* === 汎用：テンプレ順序エンジン（テンプレで役割→順序を判定） === */
+
+var ORDER_TEMPLATES = {
+  // 期待順：①上の点 → ②メイン曲線 → ③左の短線 → ④右の短線
+  "ふ": {
+    expected: ["dotTop","curveMain","leftTick","rightTick"],
+    minCount: 4
+  }
+};
+
+// ★ strokeLength に依存せず、ここで長さを自己完結で計算します
+function _extractStrokeFeatures(strokes, size){
+  var MIN_LEN = size * 0.05; // ごく短いブツ切れは除外
+
+  function segLen(st){
+    var L = 0;
+    for (var i = 1; i < st.length; i++){
+      var dx = st[i].x - st[i-1].x;
+      var dy = st[i].y - st[i-1].y;
+      L += Math.hypot(dx, dy);
+    }
+    return L;
+  }
+
+  var feats = [];
+  for (var i = 0; i < strokes.length; i++){
+    var s = strokes[i];
+    if (!s || s.length < 2) continue;
+    var L = segLen(s);
+    if (L < MIN_LEN) continue;
+
+    var start = s[0];
+    feats.push({
+      idx: i,               // ユーザーが描いた順
+      len: L / size,        // 正規化長さ（0〜1）
+      x:   start.x / size,  // 開始X（0〜1）
+      y:   start.y / size   // 開始Y（0〜1）
+    });
+  }
+  return feats;
+}
+
+
+// ふ：役割推定ヒューリスティック
+function _assignRoles_FU(feats){
+  if(feats.length < 4) return null;
+
+  // ① メイン曲線＝最長
+  var curveMain = feats.slice().sort(function(a,b){return b.len - a.len;})[0];
+
+  // 残り３本から ②上の点＝最も上（yが小）を優先、同点なら短い方
+  var rest = feats.filter(function(f){ return f.idx !== curveMain.idx; });
+  var dotTop = rest.slice().sort(function(a,b){
+    if(a.y !== b.y) return a.y - b.y;
+    return a.len - b.len;
+  })[0];
+
+  // 残り２本 → 左右割当（基本はメイン開始Xで左右）
+  var rest2 = rest.filter(function(f){ return f.idx !== dotTop.idx; });
+  var leftTick, rightTick;
+  var lefts  = rest2.filter(function(f){ return f.x <= curveMain.x; });
+  var rights = rest2.filter(function(f){ return f.x >  curveMain.x; });
+
+  if(lefts.length === 1 && rights.length === 1){
+    leftTick  = lefts[0];
+    rightTick = rights[0];
+  }else{
+    // 同じ側に寄ったら X 小さい方→left、大きい方→right
+    rest2.sort(function(a,b){ return a.x - b.x; });
+    leftTick  = rest2[0];
+    rightTick = rest2[1];
+  }
+
+  return {
+    dotTop: dotTop.idx,
+    curveMain: curveMain.idx,
+    leftTick: leftTick.idx,
+    rightTick: rightTick.idx
+  };
+}
+
+// テンプレ判定本体：期待順と比較し、ズレの最初の位置を返す
+function checkOrderByTemplate(glyph, strokes, size){
+  var tpl = ORDER_TEMPLATES[glyph];
+  if(!tpl) return {ok:true};
+
+  var feats = _extractStrokeFeatures(strokes, size);
+  if(feats.length < (tpl.minCount || tpl.expected.length)){
+    return {ok:false, code:'count'};
+  }
+
+  // 「ふ」専用の役割推定（将来は glyph ごとに切替）
+  var roleMap = _assignRoles_FU(feats);
+  if(!roleMap) return {ok:false, code:'count'};
+
+  // ユーザーが描いた順に並べ直し → 役割ラベル列へ
+  var byDrawnOrder = feats.slice().sort(function(a,b){ return a.idx - b.idx; });
+  var userSeq = byDrawnOrder.map(function(f){
+    if(f.idx === roleMap.dotTop)    return 'dotTop';
+    if(f.idx === roleMap.curveMain) return 'curveMain';
+    if(f.idx === roleMap.leftTick)  return 'leftTick';
+    if(f.idx === roleMap.rightTick) return 'rightTick';
+    return 'other';
+  });
+
+  var expected = tpl.expected;
+  for(var i=0;i<expected.length;i++){
+    if(userSeq[i] !== expected[i]){
+      return {ok:false, code:'order', wrongAt:(i+1)};
+    }
+  }
+  return {ok:true};
+}
+
+// 既存のディスパッチ関数（未対応の文字はスルーOK）
+function checkStrokeOrderOnly(ch, strokes, size){
+  if (ORDER_TEMPLATES[ch]) return checkOrderByTemplate(ch, strokes, size);
+  return {ok:true};
+}
+
+  /* ====== 採点（差し替え） ====== */
+function evaluateAndShow(){
+  try{
+    // 何も書いていなければメッセージだけ出す
+    if (!strokes || !strokes.length){
+      scoreBox.textContent = '０ てん';
+      if (commentBox) commentBox.textContent = 'まず かいて から さいてん してね';
+      return setPhase('scored');
+    }
+
+    var sizePx = writeCanvas.width;
+    var kanaNow = questionQueue[currentIndex - 1];
+    var valid = isKana(kanaNow);
+
+    var ucv = document.createElement('canvas');
+    var scv = document.createElement('canvas');
+    ucv.width = scv.width = sizePx; ucv.height = scv.height = sizePx;
+    var uctx = ucv.getContext('2d'); var sctx = scv.getContext('2d');
+    rasterizeStrokesTo(uctx, sizePx, evalInflatePx);
+    if (valid){ drawSampleGlyphTo(sctx, sizePx, kanaNow); }
+    var userMask   = uctx.getImageData(0,0,sizePx,sizePx);
+    var sampleMask = sctx.getImageData(0,0,sizePx,sizePx);
+    overlayCanvas  = buildOverlayCanvas(userMask, sampleMask, sizePx, valid ? kanaNow : null);
+
+    var orderRes = checkStrokeOrderOnly(kanaNow, strokes, sizePx);
+
+    var score = 0;
+    var comment = '';
+    if(!orderRes.ok){
+      if(orderRes.code === 'count'){
+        comment = 'かくすう が ちがうよ';
+      }else{
+        var n = orderRes.wrongAt || 1;
+        comment = 'だい' + toZenkakuDigits(n) + 'かく の じゅんばん が ちがうよ';
+      }
+    }else{
+      var pr = computePrecRecall(userMask, sampleMask);
+      var wP = 0.8, wR = 0.2;
+      score = Math.round(100 * (wP*pr.precision + wR*pr.recall));
+    }
+
+    if(scoreMode === "numeric"){
+      scoreBox.textContent = toZenkakuDigits(score) + " てん";
+    }else{
+      var icon = "👀"; if(score >= 70) icon = "🙂"; else if(score >= 40) icon = "💪";
+      scoreBox.textContent = icon + "　" + toZenkakuDigits(score) + " てん";
+    }
+    if (commentBox) commentBox.textContent = comment;
+
+    if (!recordedForCurrent && runResults.length < totalQuestions){
+      runResults.push({ kana: valid ? kanaNow : '', score: score });
+      recordedForCurrent = true;
+    }
+
+    drawWriteBox(hintShown);
+    scoreBtn.blur();
+    setPhase('scored');
+
+  }catch(err){
+    console.error('[score error]', err);
+    scoreBox.textContent = 'エラー';
+    if (commentBox) commentBox.textContent = 'さいてんちゅう の エラー：' + err.message;
+    setPhase('scored');
+  }
+}
+
+
+// ====== 以下はイベントハンドラ登録 ======
+scoreBtn.onclick = evaluateAndShow;
+nextBtn.onclick  = nextQuestion;
+retryBtn.onclick = function () {
+  recordedForCurrent = false;
+  strokes = [];
+  scoreBox.textContent = '';
+  overlayCanvas = null;
+  drawWriteBox(hintShown);
+  setPhase('writing');
+};
+
+// クリアボタン（長押しで全消し／短押しで1筆戻す）
+(function setupClearButton() {
+  var holdTimer = null;
+  var longPressed = false;
+  var LONGPRESS_MS = 1000;
+  function clearHoldTimer() {
+    if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; }
+  }
+  function onDown(e) {
+    e.preventDefault();
+    longPressed = false;
+    clearHoldTimer();
+    holdTimer = setTimeout(function () {
+      longPressed = true;
+      strokes = [];
+      drawWriteBox(hintShown);
+    }, LONGPRESS_MS);
+  }
+  function onUp(e) {
+    e.preventDefault();
+    if (!longPressed) {
+      if (strokes.length) strokes.pop();
+      drawWriteBox(hintShown);
+    }
+    longPressed = false;
+    clearHoldTimer();
+  }
+  clearBtn.addEventListener('pointerdown', onDown);
+  clearBtn.addEventListener('pointerup', onUp);
+  clearBtn.addEventListener('pointerleave', onUp);
+  clearBtn.addEventListener('pointercancel', onUp);
+})();
+
+
+  function buildQuestionQueue(){
+    var pool = Array.from(selected).filter(isKana);
+    if (pool.length === 0) pool = getAllKanaPool();
+
+    var need = totalQuestions;
+    var uniq = Array.from(new Set(pool));
+    var result = [];
+    function shuffle(arr){ for(var i=arr.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=arr[i]; arr[i]=arr[j]; arr[j]=t; } return arr; }
+
+    var prev = null;
+    while (result.length < need) {
+      var cycle = shuffle(uniq.slice());
+      if (prev !== null && cycle.length > 1 && cycle[0] === prev) {
+        var idx = cycle.findIndex(function(ch){return ch !== prev;});
+        if (idx !== -1) { var tmp=cycle[0]; cycle[0]=cycle[idx]; cycle[idx]=tmp; }
+      }
+      for (var i=0; i<cycle.length && result.length < need; i++) {
+        var ch = cycle[i];
+        if (prev !== null && ch === prev) {
+          var swapIdx = cycle.findIndex(function(x, j){ return j>i && x!==prev; });
+          if (swapIdx !== -1) { var t=cycle[i]; cycle[i]=cycle[swapIdx]; cycle[swapIdx]=t; ch = cycle[i]; }
+        }
+        result.push(ch);
+        prev = ch;
+      }
+    }
+    return result.slice(0, need);
+  }
+
+  function showProgress(){
+    document.getElementById("qIndex").textContent = String(currentIndex);
+    document.getElementById("qTotal").textContent = String(totalQuestions);
+  }
+
+function nextQuestion(){
+  // すでに遷移中なら無視
+  if (isAdvancing) return;
+  isAdvancing = true;
+
+  if (currentIndex >= totalQuestions) {
+    goReview();
+    isAdvancing = false;
+    return;
+  }
+
+  currentIndex++;
+  hintShown = false;
+  strokes = [];
+  recordedForCurrent = false;
+  overlayCanvas = null;
+
+  resizeBoxes();
+  drawSample(1);
+  drawWriteBox(false);
+  showProgress();
+  setPhase('writing');
+  scoreBox.textContent = '';
+  if (commentBox) commentBox.innerHTML = '';
+
+  // 次のフレームで解除（連打吸収）
+  setTimeout(function(){ isAdvancing = false; }, 0);
+}
+
+  function initWritePage(){
+    hintShown = false; strokes = []; overlayCanvas = null; recordedForCurrent = false; scoreBox.textContent = '';
+    if (commentBox) commentBox.innerHTML = '';
+    runResults = [];
+    questionQueue = buildQuestionQueue();
+    if (questionQueue.length === 0){ questionQueue = getAllKanaPool().slice(0,totalQuestions); }
+    questionQueue = questionQueue.slice(0, totalQuestions);
+    currentIndex = 1;
+    showProgress();
+    placeByHanded();
+    updateCalib();
+    resizeBoxes();
+    drawSample();
+    drawWriteBox(false);
+    setPhase('writing');
+  }
+
+  document.getElementById("startCourse").onclick=function(){
+    localStorage.setItem("handedPref", handed);
+    document.getElementById("coursePage").classList.add("hidden");
+    document.getElementById("writePage").classList.remove("hidden");
+    document.getElementById("reviewPage").classList.add("hidden");
+    initWritePage();
+  };
+
+  var resultKanaRow = document.getElementById('resultKanaRow');
+  var avgValue = document.getElementById('avgValue');
+
+  function goReview(){
+    document.getElementById("writePage").classList.add("hidden");
+    document.getElementById("reviewPage").classList.remove("hidden");
+    runResults = runResults.slice(0, totalQuestions);
+
+    resultKanaRow.innerHTML = '';
+    var sum = 0;
+
+    runResults.forEach(function(r){
+      sum += r.score;
+
+      var card = document.createElement('div');
+      card.className = 'kana-card';
+
+      var ch = document.createElement('div');
+      ch.className = 'kana-char';
+      var glyph = document.createElement('span');
+      glyph.className = 'glyph';
+      glyph.textContent = isKana(r.kana) ? r.kana : '・';
+      ch.appendChild(glyph);
+
+      var sc = document.createElement('div');
+      sc.className = 'kana-score';
+      if(scoreMode === 'icon'){
+        var icon = "👀"; if(r.score >= 70) icon = "🙂"; else if(r.score >= 40) icon = "💪";
+        sc.textContent = icon + "　" + String(r.score) + " てん";
+      }else{
+        sc.textContent = String(r.score) + " てん";
+      }
+
+      card.appendChild(ch);
+      card.appendChild(sc);
+      resultKanaRow.appendChild(card);
+    });
+
+    resultKanaRow.classList.remove('cols-3','cols-5');
+    resultKanaRow.classList.add(runResults.length <= 3 ? 'cols-3' : 'cols-5');
+    var avg = runResults.length ? Math.round(sum / runResults.length) : 0;
+    avgValue.textContent = String(avg);
+
+  }
+
+  document.getElementById('retryCourse').onclick = function(){
+    document.getElementById("reviewPage").classList.add("hidden");
+    document.getElementById("writePage").classList.remove("hidden");
+    initWritePage();
+  };
+  document.getElementById('backOpenFromReview').onclick = showOpenPage;
+
+  /* 追加：書字ページの「50おんへ」 */
+  var backFromWriteBtn = document.getElementById('backToOpenFromWrite');
+  if (backFromWriteBtn) {
+    backFromWriteBtn.onclick = showOpenPage;
+  }
+
+  /* ====== 設定モーダル ====== */
+  var settingsBackdrop = document.getElementById('settingsBackdrop');
+  var openSettingsBtns = [document.getElementById('openSettings'), document.getElementById('openSettings2'), document.getElementById('openSettings3'), document.getElementById('openSettings4')].filter(Boolean);
+  var saveSettingsBtn = document.getElementById('saveSettings');
+  var closeSettingsBtn = document.getElementById('closeSettings');
+  var inflateRange = document.getElementById('inflateRange');
+  var inflateVal = document.getElementById('inflateVal');
+  var handedRadios = document.querySelectorAll('input[name="handedPref"]');
+  var toggleOverlayBtn   = document.getElementById('toggleOverlay');
+  var calibMinusM = document.getElementById('calibMinusM');
+  var calibPlusM  = document.getElementById('calibPlusM');
+
+  function openSettings(){
+    inflateRange.value = String(evalInflatePx);
+    inflateVal.textContent = String(evalInflatePx);
+    applyScoreModeUI();
+    handedRadios.forEach(function(r){ r.checked = (r.value === handed); });
+    toggleOverlayBtn.textContent = showOverlay ? 'ON' : 'OFF';
+    toggleOverlayBtn.classList.toggle('toggle-on', showOverlay);
+    toggleOverlayBtn.setAttribute('aria-pressed', showOverlay ? 'true' : 'false');
+    var bm=document.getElementById("calibBarModal"); if(bm) bm.style.width=(mmScale*50)+"px";
+    settingsBackdrop.style.display = 'flex';
+    settingsBackdrop.setAttribute('aria-hidden','false');
+  }
+  function closeSettings(){ settingsBackdrop.style.display = 'none'; settingsBackdrop.setAttribute('aria-hidden','true'); }
+  openSettingsBtns.forEach(function(btn){ btn.addEventListener('click', openSettings); });
+  closeSettingsBtn.addEventListener('click', closeSettings);
+  inflateRange.addEventListener('input', function(){ inflateVal.textContent = inflateRange.value; });
+  saveSettingsBtn.addEventListener('click', function(){
+    evalInflatePx = Number(inflateRange.value); localStorage.setItem('evalInflatePx', String(evalInflatePx));
+    var chosen = document.querySelector('input[name="scoreMode"]:checked'); if(chosen){ scoreMode = chosen.value; localStorage.setItem('scoreModePref', scoreMode); applyScoreModeUI(); }
+    var chosenHand = Array.prototype.slice.call(handedRadios).find(function(r){return r.checked;}); 
+    if (chosenHand && chosenHand.value !== handed){ handed = chosenHand.value; placeByHanded(); }
+    showOverlay = toggleOverlayBtn.getAttribute('aria-pressed') === 'true';
+    closeSettings();
+  });
+  toggleOverlayBtn.addEventListener('click', function(e){
+    e.preventDefault();
+    var now = toggleOverlayBtn.getAttribute('aria-pressed') === 'true';
+    var nxt = !now;
+    toggleOverlayBtn.setAttribute('aria-pressed', nxt ? 'true':'false');
+    toggleOverlayBtn.textContent = nxt ? 'ON' : 'OFF';
+    toggleOverlayBtn.classList.toggle('toggle-on', nxt);
+    showOverlay = nxt;
+    drawWriteBox(hintShown);
+  });
+  function modalCalibUpdate(delta){
+    mmScale = Math.min(10, Math.max(1, mmScale + delta));
+    localStorage.setItem("mmScale", mmScale);
+    updateCalib();
+    resizeBoxes(); drawSample(hintShown?0.85:1); drawWriteBox(hintShown);
+  }
+  calibMinusM.addEventListener('click', function(){ modalCalibUpdate(-0.05); });
+  calibPlusM .addEventListener('click', function(){ modalCalibUpdate( 0.05); });
+
+  /* 起動 */
+  function syncRightAway(){ updateCssVars(); updateCalib(); placeByHanded(); }
+  window.addEventListener('DOMContentLoaded', function(){
+    buildRowBar(); buildGrid(); buildDanCol(); updateCount(); syncRightColHeight();
+    syncRightAway();
+  });
+
+})();
+</script>
+</body>
+</html>

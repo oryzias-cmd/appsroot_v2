@@ -1,0 +1,179 @@
+/* ============================================
+   common/shell/header.full.css
+   「フル装備ヘッダー」拡張用プレースホルダー
+
+   CSS-only ヘッダー（見た目だけレゴ）
+   - header.full.js が作る <header class="title">
+     + .left / .center / .right に対応
+   - JSの有無に関係なく「見た目」だけを提供
+   ============================================ */
+
+/* ヘッダー本体：左右固定幅・中央可変 */
+header.title{
+  display: grid;
+  grid-template-columns: 120px 1fr 120px; /* 左/中央/右の3分割 */
+  min-height:40px;                       /* 少し高めにして余裕を持たせる */
+  align-items: center;
+  justify-items: center;
+  gap: 0;
+
+  /* 上下10pxずつで、帯の中でしっかり中央寄せ */
+  padding: 0;
+
+  box-sizing: border-box;
+  background: var(--header-bg, #eaf6ff);
+
+  /* ヘッダーは教科書体ベースに統一 */
+  font-family:
+    "BIZ UD教科書体",
+    "UD Digi Kyokasho N-R",
+    "YuKyokasho",
+    "Hiragino Kaku Gothic ProN",
+    "Yu Gothic",
+    "Noto Sans JP",
+    system-ui,
+    sans-serif;
+}
+
+/* 左/中央/右スロット：中身を中央寄せで配置 */
+header.title > .left,
+header.title > .right{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 中央セルは「縦に1列」＋ 真ん中寄せ */
+header.title > .center{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* タイトル文字（中央の h1） */
+header.title h1{
+  margin: 0;
+  font-weight: 600;
+  font-size: 1.6rem;
+  line-height: 1.1;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  /* 上下差を無くして、flex のセンタリングに任せる */
+  padding: 0;
+}
+
+/* タイトル内のボタン（例：三角形／四角形）を想定したスタイル
+   九九では使わなくても害は出ないようにしておく */
+header.title h1 button{
+  font-size: inherit;
+  font-family: inherit;
+  font-weight: inherit;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.1;
+  padding: 9px 8px 3px;   /* 上を厚め／下を薄めにして文字をやや下へ */
+  vertical-align: middle;
+  position: relative;
+  top: -2px;              /* ボタン全体を少しだけ上へ */
+  border: 2px solid #000;
+  border-radius: 12px;
+  background: #fff;
+  color: inherit;
+  margin: 0 8px;
+}
+
+/* ヘッダー内の a / button を「教科書体＋素の文字」ベースにそろえる */
+header.title a,
+header.title button{
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  text-decoration: none;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+/* ヘッダー左右の操作ボタン（←もどる／音声など）共通ボタン枠
+   → 図形アプリ(base.css)と同じ形にそろえる */
+header.title .backlink,
+header.title .gear-btn,
+header.title button.gear-btn,
+header.title .gear-btn button,
+header.title > .right button{
+  box-sizing: border-box;
+  width: 100px;
+  min-width: 100px;
+
+  height: 30px !important;          /* ★高さを固定（buttonデフォに負けない） */
+  min-height: 30px !important;
+  padding: 2px 4px !important;      /* ★padding差で高く見えるのを止める */
+
+  border: 1.5px solid #111 !important;
+  border-radius: 999px !important;  /* ★完全ピル：もどると同じ形 */
+  background: #fff !important;
+  color: #111 !important;
+
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  line-height: 1 !important;
+  font-family:"BIZ UDGothic", system-ui, sans-serif;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  text-decoration: none;
+  cursor: pointer;
+
+  /* ★button要素の“見えないデフォ”を殺す（高さ差の本丸） */
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* ★ラッパの中のbutton構造でも余計な余白を0に固定 */
+header.title .gear-btn button{
+  margin: 0 !important;
+}
+
+/* メインタイトル行のラッパー */
+header.title .title-main{
+  display:flex;
+  align-items:center;   /* 縦方向まんなか */
+  justify-content:center;
+  width:100%;
+  height:100%;
+}
+
+header.title .title-main h1{
+  margin:0;             /* 上下マージンで上に寄るのを防ぐ */
+}
+
+/* クイズ条件表示用のサブタイトル行 */
+header.title .title-sub{
+  margin-top: 2px;
+  min-height: 1.1em;      /* 空のときも高さを確保してヘッダーの高さを安定させる */
+  font-size: 0.9rem;
+  line-height: 1.2;
+  color: #333;
+}
+
+/* ===== 未配線（disabled）ボタン：押せないのが一目で分かる ===== */
+header.title button:disabled,
+header.title [aria-disabled="true"]{
+  opacity: 0.45;
+  cursor: default;
+  pointer-events: none; /* クリックを完全無効化（安全） */
+}
+
+/* disabledでも枠は残す（“見た目は出す”要件） */
+header.title button:disabled.backlink,
+header.title button:disabled.gear-btn{
+  background: #fff;
+}

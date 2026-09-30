@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="ja"><meta charset="utf-8">
+<title>えもじ → PNG へんかん</title>
+<body style="font-family: system-ui, 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', sans-serif; text-align:center;">
+<h2>えもじ を 画像に する</h2>
+<p>サイズをえらんでから「ダウンロード」を押してください。</p>
+<label>ピクセル：<input id="size" type="number" value="512" min="64" step="64"></label>
+<div style="margin:12px 0;">
+  <button onclick="save('usagi','🐇')">🐇 うさぎ を ダウンロード</button>
+  <button onclick="save('kame','🐢')">🐢 かめ を ダウンロード</button>
+</div>
+<canvas id="cv" width="512" height="512" style="border:1px solid #ccc"></canvas>
+<script>
+function save(name, emoji){
+  const n = Math.max(64, parseInt(document.getElementById('size').value||512,10));
+  const c = document.getElementById('cv'); c.width=n; c.height=n;
+  const ctx=c.getContext('2d');
+  ctx.clearRect(0,0,n,n);
+  ctx.fillStyle="#ffffff"; ctx.fillRect(0,0,n,n);
+  ctx.textBaseline="middle"; ctx.textAlign="center";
+  ctx.font = `${Math.floor(n*0.8)}px 'Segoe UI Emoji','Apple Color Emoji','Noto Color Emoji',system-ui,sans-serif`;
+  ctx.fillText(emoji, n/2, n/2);
+  const a=document.createElement('a');
+  a.href=c.toDataURL('image/png'); a.download=name+".png"; a.click();
+}
+</script>
+</body></html>

@@ -1,0 +1,77 @@
+/* entryはSetupCardを出すだけ。余計な装飾は最小に。 */
+/* entryはSetupCardを出すだけ。余計な装飾は最小に。 */
+html, body{
+  height: 100%;
+}
+body{
+  margin: 0;
+  overflow-x: hidden;
+  overflow-y: hidden;          /* ★縦スクロールも出さない */
+  display: flex;               /* ★縦に積む */
+  flex-direction: column;
+}
+
+/* ヘッダーは上、mainは残り全部 */
+#slot-header{
+  flex: 0 0 auto;
+}
+#mainArea{
+  flex: 1 1 auto;              /* ★残り高さを使う */
+  min-height: 0;               /* ★flex内のはみ出し防止（重要） */
+  overflow-x: hidden;
+  overflow-y: hidden;          /* ★念のため */
+}
+
+/* おたすけ「なし」のとき下段を無効化（JSが .setupcard-block に is-disabled を付ける） */
+.setupcard-block.is-disabled{
+  opacity: 0.35; /* 少し弱めて「選べそう感」を消す */
+}
+
+/* ★無効時：文字もグレー化（強制） */
+.setupcard-block.is-disabled .setupcard-label,
+.setupcard-block.is-disabled .setupcard-desc,
+.setupcard-block.is-disabled .setupcard-pill span{
+  color: #888 !important;
+}
+
+/* ★無効時：ラジオも薄く（見た目で「無効」を強める） */
+.setupcard-block.is-disabled .setupcard-pill{
+  border-color: #cfcfcf;
+  box-shadow: none !important;
+}
+/* ★個別 disabled（10cmのとき「くわしく」だけグレーにする） */
+.setupcard-pill.is-disabled{
+  opacity: 0.35;
+  cursor: default;
+  pointer-events: none; /* 押せないのを確実に */
+}
+
+/* ★1行化：helpMark（おたすけの しゅるい）は折り返し禁止（確実に当てる） */
+input[name="setupcard_helpMark"] + span{
+  white-space: nowrap;
+  font-size: 1.0rem; /* ★ ここが確実に効く */
+}
+
+/* ★はみ出し防止：カード幅に収める（helpMarkのピルだけ） */
+label.setupcard-pill:has(input[name="setupcard_helpMark"]){
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 14px;
+}
+
+/* ★1行化：選択肢テキストを折り返さない（helpMarkだけ） */
+[data-id="helpMark"] label span{
+  white-space: nowrap;
+}
+
+/* ★ヘッダーが注入されても「見えない」を潰す（entryだけ） */
+#slot-header{
+  display: block;
+  min-height: 56px; /* header.full.css が効かなくても最低これだけ確保 */
+}
+/* header.title の display は common/shell/header.css に完全に任せる */
+
+/* ===== 音声ボタン：OFFのとき薄くする（見た目で状態が分かる） ===== */
+header.title .voice-btn[aria-pressed="false"]{
+  opacity: 0.45;
+}

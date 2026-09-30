@@ -1,0 +1,432 @@
+  :root{
+#openPage{ --open-btn-font: 1.28rem; } /* ここを変えるだけで行/段/クイックの文字サイズが一括調整できます */
+    --mm-scale: 3.78;
+    --box-mm: 50;
+    --gap-mm: 10;
+    --frame-mm: 1.0;
+    --guide-mm: 0.3;
+
+    --cell: 64px;
+    --gap: 10px;
+    --panel-gap: 12px;
+
+    --btn-lg-h: 52px;
+    --btn-lg-w: 140px;
+
+    --grid-line: #707070;
+    --optical-shift: 3px;
+    --kana-gap: 10px; /* 50音と段カラムの“縦・横ギャップ”を完全共通化 */
+  }
+
+  html,body{height:100%; margin:0; background:#fafafa; color:#111;
+    font-family:"UD Digi Kyokasho N-R","UD Digi Kyokasho NK-R",
+      "Hiragino Maru Gothic ProN","Hiragino Maru Gothic Pro",
+      "Yu Gothic","Meiryo","Hiragino Sans","Noto Sans JP",sans-serif;}
+  button{cursor:pointer; border-radius:12px; border:1px solid #cfd5dd; padding:0 16px;; background:#fff; height: var(--cell);white-space:nowrap;}
+  button[aria-pressed="true"]{background:#e6f2ff; border-color:#4da3ff;}
+  .page{max-width:1280px; margin:0 auto; padding:14px;}
+  .hidden{display:none !important;}
+  .muted{color:#666}
+  .sj-blue { color:#1e66ff; }  /* 角数（全角数字）だけ青字 */
+
+  /* ===== ヘッダ ===== */
+  .headgrid{
+    display:grid;
+    grid-template-columns: max-content 8px auto 8px minmax(320px,1fr);
+    align-items:center;
+    margin-bottom: calc(var(--cell) / 2);
+    position:relative;
+  }
+  .title{ grid-column:1 / -1; justify-self:center;
+    font-weight:900; font-size:1.9rem; letter-spacing:.04em; }
+  .picked-wrap{ grid-column:3; justify-self:center; }
+  .badge{display:inline-flex; align-items:center; gap:.5rem;
+    background:#e7f0ff; color:#0b57d0; border:1px solid #cfe0ff;
+    padding:.55rem 1.1rem; border-radius:999px; font-weight:800; }
+  .badge.big{ font-size:1.4rem; }
+  .badge .count{ display:inline-block; min-width:3ch; text-align:right; }
+
+  .gear-btn{
+    position:absolute; right:0; top:-4px;
+    display:inline-flex; align-items:center; gap:.4rem;
+    border-radius:999px; padding:.5rem .8rem;
+  }
+  .gear-btn svg{ width:20px; height:20px; }
+
+  /* ===== オープニング（50音選択） ===== */
+.layout{
+  display:grid;
+  grid-template-columns: max-content var(--kana-gap) auto var(--kana-gap) minmax(320px,1fr);
+  grid-auto-rows:auto; align-items:start;
+}
+  .rowpanel{ grid-column:1; background:#ecf9ee; border:1px solid #d7eadc; border-radius:14px; padding:12px; margin-bottom:10px;}
+  .rowbar{display:grid; grid-template-columns: repeat(11, var(--cell)); grid-auto-rows: var(--cell); gap: var(--gap);}
+  .row-spacer{ width:var(--cell); height:var(--cell);}
+.rowbtn{
+  width: var(--cell); height: var(--cell);
+  border:1px solid #cfd5dd; border-radius:12px; background:#fff;
+  display:flex; align-items:center; justify-content:center;
+  writing-mode: vertical-rl; text-orientation: upright;
+  white-space: nowrap;
+  font-size: var(--open-btn-font);
+  line-height: 1;
+  user-select:none;
+}
+  .start-float{ grid-column:3; align-self:start; justify-self:start; margin-top:12px; }
+  #startBtnOpen{
+    font-size:1.22rem; padding:1.0rem 2.2rem;
+    border-color:#1a73e8; background:#1a73e8; color:#fff;
+    min-width:8.5em;
+  }
+.main{ grid-column: 1 / -1; display:grid; grid-template-columns: max-content 8px max-content 8px minmax(320px,1fr); align-items:stretch; }
+.grid{
+    grid-column:1; 
+    display:grid; 
+    grid-template-columns:repeat(11, var(--cell)); 
+    grid-auto-rows:var(--cell);
+    background:#fff; 
+    border:1px solid #e5e5e5; 
+    border-radius:14px; 
+    padding:12px;
+    align-self: stretch;
+    height: 100%;
+    align-content:start; 
+    justify-content:start; 
+    box-sizing:border-box;
+    gap: var(--kana-gap);            /* ← 統一変数に寄せる */
+  }
+  .cell{ width:var(--cell); height:var(--cell); display:flex; align-items:center; justify-content:center;
+    border-radius:12px; border:1px solid #ddd; font-size:22px; background:#fff; user-select:none;}
+  .cell.empty{background:#f4f4f4; color:#bbb; border-style:dashed;}
+  .cell.placeholder{background:#f8f8f8; color:#666; border-color:#e0e0e0;}
+  .cell.n-hidden{background:transparent; border:none;}
+  .cell.selected{background:#e6f2ff; border-color:#4da3ff;}
+
+.dan-panel{
+  grid-column:3;
+  background:#fffbe6;
+  border:1px solid #f4e6a6;
+  border-radius:14px;
+  padding:12px;
+  /* ▼ 追加：パネルを中身の幅に合わせる＆左寄せ */
+  width:max-content;
+  justify-self:start;
+}
+.dancol{
+  display:grid;
+  grid-auto-rows: var(--cell);
+  gap: var(--kana-gap);
+  /* ▼ 追加：子要素を伸ばさず中央に置く（横幅を勝手に広げない） */
+  justify-items:center;
+  align-items:center;
+}
+/* 段ボタンを 1マス正方形で統一（classが無くても適用） */
+.dancol > button{
+  width: var(--cell);
+  min-width: var(--cell);
+  height: var(--cell);
+  display:flex; align-items:center; justify-content:center;
+  border:1px solid #cfd5dd;
+  border-radius:12px;
+  background:#fff;
+  font-size:18px; line-height:1;
+  box-sizing:border-box;
+}
+  .cell, .danbtn{ box-sizing: border-box; }
+.danbtn{ width: var(--cell); min-width: var(--cell); height: var(--cell);
+  border-radius:12px; border:1px solid #cfd5dd; background:#fff;
+  display:flex; align-items:center; justify-content:center; font-size:var(--open-btn-font); line-height:1;}
+
+.util{ grid-column:5; display:flex; flex-direction:column; gap: var(--panel-gap); align-items:flex-start; }
+  .panel{background:#fff; border:1px solid #e5e5e5; border-radius:14px; padding:12px;}
+  .panel .center-title{font-weight:800; text-align:center; margin:0 0 10px 0;}
+
+/* 右カラムの枠は中身の幅にフィット＆左寄せ */
+#utilCol { justify-self: start; }
+#utilCol .panel { width: max-content; }
+
+/* quick 内の並びは縦、ボタンは同じ高さで“幅はJSで統一” */
+.quick{
+  display:flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: stretch;      /* ← 横幅は親に合わせる（JSで同一幅を指定） */
+  justify-content: center;
+}
+.quick .qbtn{
+  height: var(--cell);
+  padding: 0 16px;
+  white-space: nowrap;
+  border-radius: 12px;
+  /* 幅は JS で設定するのでここでは指定しない */
+}
+
+/* もし残っていたら無効化：以前の幅固定 */
+.quick .qbtn{ width:auto; max-width:none; min-width:0; }
+
+/* ここは #calibToggle のみ最小幅を確保（クイックボタンには効かせない） */
+#calibToggle{
+  min-width: 8.6em;
+  font-size: 1.08rem;
+  padding: .85rem 1.25rem;
+  border-radius: 12px;
+}
+
+/* クイックの表示サイズ（最小幅の上書きは上の .qbtn で済んでいるので font-size だけ） */
+.quick .qbtn{
+  font-size: 1.08rem;
+}
+
+.calib-line{height:14px; background:#111; margin:6px auto; width:calc(var(--mm-scale) * 50px); border-radius:7px;}
+
+  /* ===== コース選択 ===== */
+  #coursePage .card{ position:relative; background:#fff; border:1px solid #e5e5e5; border-radius:14px; padding:24px 24px 84px; width:min(780px,92vw); }
+  #coursePage .row{ display:flex; flex-wrap:wrap; gap:14px; align-items:center; justify-content:center; margin:22px 0; }
+  #coursePage .name-input.name-lg{ font-size:1.5rem; padding:1.1rem 1.2rem; height:auto; }
+  #coursePage #recordToggle{ display:inline-flex; align-items:center; justify-content:center; font-size:1.5rem; padding:1.1rem 1.2rem; border:1px solid #cfd5dd; background:#fff; border-radius:0; width:auto; min-width:6ch; white-space:nowrap; }
+  #coursePage .grid3{ display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:18px; align-items:center; }
+  #coursePage .grid3 > *{ display:block; }
+  #coursePage .grid3 .course-btn{ width:100%; min-width:0; box-sizing:border-box; font-size:1.5rem; padding:1.1rem 2.4rem; border-radius:999px; border:1px solid #cfd5dd; background:#fff; }
+  #coursePage .grid3 .course-btn[aria-pressed="true"]{ background:#e6f2ff; border-color:#4da3ff; }
+  #coursePage .start-hero{ display:block; margin:60px auto 0; font-size:1.5rem; padding:1.1rem 2.4rem; background:#e53935; border-color:#e53935; color:#fff; border-radius:999px; min-width:12.5em; box-shadow:0 6px 18px rgba(229,57,53,.25); }
+  #coursePage .back-ghost{ position:absolute; right:16px; bottom:16px; padding:.8rem 1.2rem; border-radius:12px; background:#fff; border:1px solid #cfd5dd; }
+  #coursePage .center{ display:grid; place-items:center; }
+  #coursePage .card{ margin:0 auto; }
+  #coursePage .card .row{ margin: 0 0 60px; }
+
+  /* ===== 書字 ===== */
+  .workgrid{ display:grid; grid-template-columns: max-content max-content; justify-content:center; align-items:start; column-gap: 12px; row-gap: 24px; }
+  #writeWrap{ display:flex; flex-direction:column; gap:6px; align-items:center; }
+  canvas.box{background:#fff; border-radius:0;}
+  #writePage .title{ display:none !important; }
+  #writePage .headgrid{ row-gap: 1.2rem; margin-bottom: 1.2rem; grid-template-columns: 1fr max-content 1fr; }
+  #writePage .picked-wrap{ grid-column:2; justify-self:center; }
+  #writePage .badge{ font-size: 2.28rem; padding:.55rem 1.1rem; }
+  .stack-gap{ margin-top: 32px; }
+  #scoreBox{ margin: 22px 0 8px; min-height: 2.4rem; font-size: 2.28rem; text-align:center; color:#0b57d0; font-weight:800; line-height: 1; display: grid; place-items: center; 
+    font-variant-numeric: tabular-nums;
+  font-family: system-ui, "Yu Gothic", "Meiryo", "Hiragino Sans", "Noto Sans JP", sans-serif;
+}
+
+  .toolbar-fixed{
+    display: grid;
+    grid-template-columns: repeat(6, var(--btn-lg-w));
+    grid-template-rows: var(--btn-lg-h);
+    grid-auto-flow: column;
+    justify-content: center; align-items: center;
+    gap: 20px; margin-top: 18px; height: var(--btn-lg-h);
+  }
+  .toolbar-fixed > * { margin: 0; }
+  .slot{ display:flex; justify-content:center; align-items:center; height: var(--btn-lg-h); }
+  .slot-stack{ position:relative; width: var(--btn-lg-w); height: var(--btn-lg-h); }
+  .slot-stack > .btn-lg{ position:absolute; inset:0; }
+  .toolbar-fixed .slot-clear{ grid-column: 3; }
+  .toolbar-fixed .slot-hint { grid-column: 4; }
+  .toolbar-fixed .slot-stack{ grid-column: 5; }
+  .toolbar-fixed .slot-retry{ grid-column: 6; }
+  .hand-left .toolbar-fixed .slot-retry{ grid-column: 1; }
+  .hand-left .toolbar-fixed .slot-stack{ grid-column: 2; }
+  .hand-left .toolbar-fixed .slot-clear{ grid-column: 3; }
+  .hand-left .toolbar-fixed .slot-hint { grid-column: 4; }
+  .btn-lg{ height: var(--btn-lg-h); min-width: var(--btn-lg-w); font-size: 1.08rem; padding: 0 18px; border-radius: 12px; }
+  .btn-primary{ background:#1a73e8; color:#fff; border-color:#1a73e8; }
+  .btn-success{ background:#1fa74f; color:#fff; border-color:#1fa74f; }
+  .toggle-on{ background:#e6f2ff; border-color:#4da3ff; }
+
+  /* ===== ふりかえり ===== */
+  .review-wrap{ display:grid; gap:24px; place-items:center; }
+
+  #resultKanaRow.result-grid{
+    display:grid; gap:0; justify-items:center;
+    border:2px solid var(--grid-line);
+  }
+  #resultKanaRow.result-grid.cols-3{ grid-template-columns: repeat(3, minmax(160px,1fr)); }
+  #resultKanaRow.result-grid.cols-5{ grid-template-columns: repeat(5, minmax(160px,1fr)); }
+
+  .kana-card{
+    width: 180px;
+    background:#fff;
+    border-right:2px solid var(--grid-line);
+    border-bottom:2px solid var(--grid-line);
+    border-radius:0;
+    box-shadow:none;
+    display:grid;
+    grid-template-rows: auto auto;
+    overflow:hidden;
+    box-sizing:border-box;
+  }
+ #resultKanaRow.result-grid,
+.kana-card { box-sizing: border-box; }
+ .result-grid.cols-5 > .kana-card:nth-child(5n){ border-right:none; }
+  .result-grid.cols-5 > .kana-card:nth-last-child(-n + 5){ border-bottom:none; }
+  .result-grid.cols-3 > .kana-card:nth-child(3n){ border-right:none; }
+  .result-grid.cols-3 > .kana-card:nth-last-child(-n + 3){ border-bottom:none; }
+
+  .kana-char{
+    width:100%;
+    aspect-ratio: 1 / 1;
+    display:flex; align-items:center; justify-content:center;
+    font-size: 6.6rem;
+    line-height: 1;
+    padding:0; margin:0;
+    transform: translateY(var(--optical-shift));
+    box-sizing:border-box;
+  }
+/* レビューカード下段：数字は完全中央・フォントは汎用に固定 */
+.kana-score{
+  border-top:1px solid #cfcfcf;
+  min-height: 56px;
+  display:grid;
+  place-items:center;
+  font-size: 2.2rem;
+  line-height:1;
+  padding:0; margin:0; color:#444;
+  /* 光学シフトは適用しない（数字は純粋に中央） */
+  font-family: system-ui, "Yu Gothic", "Meiryo", "Hiragino Sans", "Noto Sans JP", sans-serif;
+}
+
+
+  .avg-box{ display:grid; place-items:center; }
+  .avg-label{ display:none !important; }
+/* 平均点の丸：半角・太字・大きめでも中央で収まる */
+.avg-value{
+  width: 9.5rem;                /* ← 8rem → 9rem に拡大 */
+  height: 9.5rem;
+  border-radius: 50%;
+  display: grid; place-items: center;
+  line-height: 1;
+  font-size: 5.2rem;            /* 100（3桁）でも 9rem 内に収まる目安 */
+  font-weight: 900;           /* 太字でくっきり */
+  white-space: nowrap;        /* 改行させない */
+  letter-spacing: -0.01em;    /* 過度に詰めない */
+  color:#d32f2f;
+  background:#fff1f5;
+  border:2px solid #f6c5d0;
+
+  /* 見た目安定（等幅風の桁揃え） */
+  font-variant-numeric: tabular-nums;
+
+  /* 太めに見えるフォント優先 */
+  font-family:
+    system-ui, "Segoe UI", "Arial Black", Impact,
+    "Hiragino Sans W6", "Hiragino Sans",
+    "Noto Sans JP", "Yu Gothic", Meiryo, sans-serif;
+}
+
+
+  .review-actions{ display:flex; gap:14px; justify-content:center; margin-top:22px; }
+  .review-actions button{ font-size:1.5rem; padding:1.1rem 2.4rem; border-radius:999px; min-width:12.5em; }
+  #retryCourse{ background:#1fa74f; color:#fff; border:1px solid #1fa74f; }
+  #backOpenFromReview{ background:#fff; border:1px solid #cfd5dd; color:#111; }
+
+  #fxCanvas{ position:fixed; inset:0; pointer-events:none; z-index:999; }
+/* ===== 設定モーダル（最小スタイル） ===== */
+#settingsBackdrop{
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.35);
+  display: none; align-items: center; justify-content: center;
+  z-index: 9999;
+}
+.settings-dialog{
+  background:#fff; border:1px solid #e5e5e5; border-radius:16px;
+  width:min(640px, 92vw); padding:20px 20px 16px; box-shadow:0 18px 36px rgba(0,0,0,.18);
+}
+.settings-dialog h2{
+  margin:0 0 10px; font-size:1.3rem; font-weight:900; letter-spacing:.02em;
+}
+.settings-section{ margin:14px 0; }
+.settings-label{ font-weight:700; margin-bottom:6px; }
+.settings-row{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+.settings-val{ min-width:2ch; text-align:right; font-variant-numeric: tabular-nums; }
+.settings-actions{ display:flex; justify-content:flex-end; gap:10px; margin-top:16px; }
+
+.radio{ display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border:1px solid #e5e5e5; border-radius:12px; }
+.toggle{ border:1px solid #cfd5dd; background:#fff; border-radius:12px; padding:.6rem 1.1rem; min-width:6ch; }
+.toggle.toggle-on, .toggle[aria-pressed="true"]{ background:#e6f2ff; border-color:#4da3ff; }
+
+.settings-calib{ align-items:center; }
+.calib-bar{
+  width: calc(var(--mm-scale) * 50px); height: 14px; background:#111;
+  border-radius:7px;
+}
+.settings-note{ color:#666; font-size:.9rem; margin:.4rem 0 0; }
+/* 50音ページ：選んだ文字数バッジを中央＆大きめに */
+#openPage .picked-wrap{
+  grid-column: 1 / -1;   /* 行全体を使って中央に配置 */
+  justify-self: center;
+  margin-top: .3rem;     /* タイトルとの間隔を少しだけ */
+}
+#openPage .badge.big{
+  font-size: 1.8rem;     /* ちょい大きめ（お好みで2.0remまで可） */
+  padding: .6rem 1.2rem; /* 文字を大きくしても余白が詰まらないように */
+}
+/* 50音ページ：タイトルとバッジの行間を広げる */
+#openPage .headgrid{
+  row-gap: 1.6rem;   /* 好みで 1.0rem〜1.6rem くらいに */
+}
+
+/* 以前つけた margin-top をリセット（row-gap に任せる） */
+#openPage .picked-wrap{
+  grid-column: 1 / -1;
+  justify-self: center;
+  margin-top: 0;     /* ← ここを 0 に */
+}
+  /* ふりかえりカードの下段（点数表示）を一行で収める */
+  .kana-score{
+    white-space: nowrap;     /* 折り返し禁止 → 「ん」だけ次行に落ちるのを防止 */
+    font-size: 2em;       /* ほんの少しだけ縮小（枠内に余裕を出す） */
+    line-height: 1.25;       /* 行の上下の余白を確保（アイコンが当たらない） */
+    display: flex;           /* アイコン＋数字をきれいに横並び */
+    align-items: center;     /* ベースラインずれ防止 */
+    gap: .25em;              /* アイコンと数字の間に少し隙間 */
+  }
+  /* 3列でも5列でも上下が詰まりすぎないよう最低高を付ける（過剰な伸びはしない） */
+  .kana-card .kana-score{ min-height: 1.8em; }
+
+  #scoreBtn:disabled, #nextBtn:disabled { opacity:.6; cursor:not-allowed; }
+
+/* ▼ open（50音）画面の最終決定版：選択ハイライト＆footer非表示 */
+.grid .cell.selected,
+.grid .cell.is-selected,
+.grid .cell.picked,                 /* ★ 追加：JSの picked を反映 */
+.grid .cell[aria-pressed="true"]{
+  background:#e6f2ff !important;
+  border-color:#4da3ff !important;
+}
+/* ▼ 五十音ボタンの選択（反転表示） */
+#openPage .pill.is-selected,
+#openPage .pill[aria-pressed="true"]{
+  background:#e6f2ff !important;
+  border-color:#4da3ff !important;
+}
+/* 行ボタン（pill）を段ボタンと同じフォントに揃える */
+#openPage .pill{
+  font-size: var(--open-btn-font);
+  line-height: 1;
+}
+
+/* ▼ setup（50音）中は共通シェルの固定フッターだけを確実に隠す */
+body[data-phase="setup"] #appFooterFixed{
+  display:none !important;
+}
+/* ▼ course（コース選択）中もフッターは不要にする */
+body[data-phase="course"] #appFooterFixed{
+  display: none !important;
+}
+/* ▲ end */
+/* 行ボタン（上の緑帯）のサイズを段ボタンと揃える */
+#openPage .rowSel .pill{
+  font-size: 1.28rem;   /* ← ここが決定打（以前と同等サイズ） */
+  height: var(--cell);  /* ひらがな格子と同じ高さに揃える */
+  padding: 0 .9em;      /* 横だけ少し余裕をつける */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+/* 行ボタンの最終上書き（確実適用用） */
+#openPage .rowbar .rowbtn{ font-size: var(--open-btn-font); }
+
+/* ▼ コース選択ページではフッター非表示（固定フッターを確実に消す） */
+#coursePage:not(.hidden) ~ [id*="footer"] {
+  display: none !important;
+}

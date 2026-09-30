@@ -1,0 +1,611 @@
+:root{
+  --bg-color: #fff6f7; /* 極薄ピンク */
+  --title-size: clamp(64px, 10vw, 120px);
+  --btn-font:   clamp(64px, 10vw, 120px);
+  --num-scale-y: 1.2;
+
+  --btn-min-h: clamp(120px, 22vh, 210px);
+  --btn-min-w: calc(var(--btn-min-h) * 2);
+  --btn-pad:   clamp(10px, 2vh, 16px);
+  --border-w: 8px;
+  --border-color: #999;
+
+  --page-padding: clamp(16px, 4vh, 40px);
+  --gap: clamp(16px, 3vh, 28px);
+  --footer-spacer: clamp(24px, 12vh, 160px);
+
+  --ok-color: #e53935;
+  --ng-dim: 0.5;
+
+  --confirm-ms: 60ms;
+  --slide-ms:   400ms; /* 0.5秒固定 */
+
+  --panel-font:  clamp(24px, 5.2vw, 34px);
+  --chip-font:   clamp(22px, 4.8vw, 28px);
+  --gear-size:   clamp(30px, 6.4vw, 38px);
+  --start-btn-h: clamp(52px, 9.6vh, 84px);
+  --input-h:     clamp(44px, 7.5vh, 68px);
+
+  --select-blue: #e7f2ff;
+  --select-blue-border: #5aa7ff;
+  --course-h: clamp(110px, 22vw, 160px);
+}
+
+/* base */
+* { box-sizing: border-box; }
+html, body {
+  height: 100%; margin: 0;
+  background: var(--bg-color);
+  font-family:
+    'Roboto','Inter','Segoe UI',
+    'Hiragino Maru Gothic ProN','Yu Gothic UI','Yu Gothic',Meiryo,'BIZ UDPGothic','MS PGothic','Noto Sans JP',
+    system-ui,-apple-system,sans-serif;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+.hidden{ display: none !important; }
+
+.app {
+  min-height: 100%;
+  padding: var(--page-padding);
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: var(--gap);
+  position: relative;
+  overflow: hidden;
+}
+
+header { display: grid; place-items: center; position: relative; }
+header h1 { margin: 0; font-size: var(--title-size); letter-spacing: .04em; font-weight: 800; }
+header.hide { display:none; }
+
+.progress {
+  position: absolute; right: 0; top: 0; transform: translateY(-10%);
+  font-size: clamp(22px, 3.2vw, 30px);
+  background: rgba(255,255,255,.95);
+  padding: 6px 12px; border-radius: 999px; border: 2px solid #ccc;
+}
+
+/* viewport & cards */
+main.center { display: grid; place-items: center; position: relative; overflow: hidden; }
+.viewport { position: relative; width: 100%; min-height: 52vh; display: grid; place-items: center; }
+.card {
+  position: absolute; inset: 0; display: grid; place-items: center;
+}
+
+.choices {
+  display: grid; grid-auto-flow: column; gap: var(--gap);
+  align-items: stretch; justify-content: center; width: 100%;
+}
+.choice {
+  display: flex; justify-content: space-evenly; align-items: center; position: relative;
+  min-width: var(--btn-min-w); min-height: var(--btn-min-h); padding: var(--btn-pad);
+
+  font-size: var(--btn-font); font-weight: 800; line-height: 1;
+  background: #fff; color: #000; cursor: pointer; user-select: none; touch-action: manipulation;
+
+  border-radius: 9999px; border: var(--border-w) solid var(--border-color);
+  overflow: hidden; transition: border-color 120ms ease, filter 120ms ease, transform 220ms ease;
+}
+.choice[disabled]{ pointer-events: none; }
+.choice::before{
+  content:""; position:absolute; top: calc(-1 * var(--border-w)); bottom: calc(-1 * var(--border-w));
+  left: 50%; transform: translateX(-50%); width: 0;
+  border-left: var(--border-w) solid var(--border-color); pointer-events:none;
+}
+.num { display:inline-block; min-width:1.2em; text-align:center;
+       transform: scaleY(var(--num-scale-y)); transform-origin:center center; }
+
+/* 正解・不正解の演出 */
+.choice.correct { border-color: var(--ok-color); animation: bounce 360ms ease-out; }
+@keyframes bounce {
+  0%{transform:scale(1)}
+  30%{transform:scale(1.12)}
+  60%{transform:scale(0.95)}
+  100%{transform:scale(1)}
+}
+.choice.wrongFlash { animation: shake 300ms ease-in-out 1; filter: grayscale(var(--ng-dim)) brightness(.96); }
+.choice.wrongPersistent { filter: grayscale(var(--ng-dim)) brightness(.92); }
+@keyframes shake {
+  0%{transform:translateX(0)} 20%{transform:translateX(-8px)} 40%{transform:translateX(8px)}
+  60%{transform:translateX(-6px)} 80%{transform:translateX(6px)} 100%{transform:translateX(0)}
+}
+
+.footer-spacer{ height: var(--footer-spacer); }
+
+/* オーバーレイ（スタート） */
+.overlay { position: fixed; inset:0; background:var(--bg-color); display:grid; place-items:center; z-index:50; }
+.overlay.hide { display:none; }
+
+.startPanel{
+  display:grid; gap:18px; padding:28px 30px; border:2px solid #ddd; border-radius:16px;
+  background:#fff; box-shadow: 0 8px 18px rgba(0,0,0,0.08);
+  width:min(92vw, 780px);
+  font-size: var(--panel-font);
+}
+.startPanel h2{ margin:0 0 10px; font-size: calc(var(--panel-font) * 1.15); }
+.nameRow{ display:flex; gap:12px; align-items:center; }
+.nameRow .flex{ flex:1; position:relative; }
+.startPanel input{
+  width:100%; font-size: clamp(22px, 4.2vw, 28px); height: var(--input-h);
+  padding: 8px 56px 8px 16px; border:2px solid #bbb; border-radius:12px;
+}
+.gearBtn{ position:absolute; right:8px; top:50%; transform:translateY(-50%); border:none; background:transparent; cursor:pointer; padding:6px; }
+.gearBtn svg{ width: var(--gear-size); height: var(--gear-size); opacity:.85; }
+.startPanel button#startBtn{
+  font-size: var(--panel-font); height: var(--start-btn-h);
+  padding: 10px 18px; border:2px solid #666; border-radius:14px; background:#fff; cursor:pointer;
+}
+
+/* 名前選択 */
+.settings{ position: fixed; inset:0; display:none; z-index:60; }
+.settings.show{ display:grid; place-items:center; background: rgba(0,0,0,.25); }
+.settingsPanel{
+  width:min(92vw, 820px); background:#fff; border-radius:16px; border:2px solid #ddd;
+  padding:20px 22px; display:grid; gap:14px; font-size: var(--panel-font);
+  box-shadow: 0 8px 18px rgba(0,0,0,0.08);
+}
+.settingsHeader{ display:flex; justify-content:space-between; align-items:center; }
+.chips{ display:flex; flex-wrap:wrap; gap:12px; }
+.chip{
+  border:2px solid #bbb; border-radius:999px; padding:12px 18px; background:#fff; cursor:pointer;
+  font-size: var(--chip-font);
+}
+.closeBtn{ border:2px solid #bbb; border-radius:10px; background:#fff; padding:10px 16px; cursor:pointer;
+  font-size: var(--panel-font); }
+
+/* コース選択 */
+.selectOverlay{ position: fixed; inset:0; background:var(--bg-color); z-index:55; display:none; }
+.selectOverlay.show{ display:grid; grid-template-rows: auto 1fr; gap:16px; padding: clamp(16px, 4vh, 40px); }
+.selTitle{ text-align:center; font-size: calc(var(--panel-font) * 1.15); font-weight: 800; }
+.courseGrid{
+  display:grid; place-items:stretch; gap: clamp(12px, 3vw, 18px);
+  grid-template-columns: repeat(3, minmax(0,1fr));
+  grid-auto-rows: var(--course-h);
+  width:min(96vw,900px); margin: 0 auto;
+}
+.courseBtn{
+  height:100%; width:100%;
+  display:grid; place-items:center; padding: 18px;
+  border: 3px solid #888; background:#fffafc;
+  border-radius: 18px; cursor:pointer;
+  font-size: clamp(34px, 7.6vw, 56px); font-weight:800; text-align:center;
+  transition: transform .2s ease, background .2s ease;
+}
+.courseBtn:hover{ transform: scale(1.05); }
+.courseBtn.selected{ background: var(--select-blue); border-color: var(--select-blue-border); }
+.courseBtn small{ font-size: .5em; opacity:.6; }
+
+/* 難易度/順序 */
+.optionPanel{ display:grid; gap:16px; width:min(96vw, 900px); margin: 0 auto; }
+.group{ border:2px solid #ddd; border-radius:16px; padding:16px; background:#fff; box-shadow: 0 8px 18px rgba(0,0,0,0.05);}
+.groupTitle{ font-weight:800; margin-bottom:10px; text-align:center; font-size: calc(var(--panel-font) * 1.0); }
+.optionBtns{ display:grid; grid-template-columns: repeat(3, 1fr); gap:12px; }
+.option{
+  border:2px solid #888; border-radius:14px; background:#fff; padding:14px; text-align:center;
+  font-size: clamp(24px, 4.6vw, 34px); cursor:pointer;
+}
+.option.selected{ background: var(--select-blue); border-color: var(--select-blue-border); }
+.startGo{
+  margin-top: 6px; display:block; width:100%; text-align:center;
+  border:3px solid #333; border-radius:16px; background:#fff; padding:16px;
+  font-size: clamp(28px, 5.6vw, 38px); cursor:pointer;
+}
+
+/* カウントダウン */
+.countdown {
+  position: fixed; inset:0; background:var(--bg-color);
+  display:grid; place-items:center; z-index:70;
+  font-weight:900; font-size: clamp(72px, 18vw, 200px);
+}
+
+/* 結果 */
+.finishOverlay{
+  position: fixed; inset:0; background:var(--bg-color); z-index:80;
+  display:flex; flex-direction:column; justify-content:space-between; align-items:center;
+  padding: clamp(16px,4vh,40px);
+}
+.heroBadge{
+  margin-top: clamp(8px, 6vh, 60px);
+  display:inline-block; padding:12px 20px; border-radius:999px;
+  background:#ffe8e8; color:#d33; border:1px solid #f5bcbc;
+  font-size: clamp(40px, 7.4vw, 60px); font-weight:800;
+}
+.statsBox{
+  width: min(92vw, 900px);
+  border: 3px solid #ddd; border-radius: 16px; background:#fff;
+  padding: clamp(14px, 4vh, 28px) clamp(20px, 4.8vw, 40px);
+  text-align: center; line-height: 1.7;
+  font-size: clamp(36px, 6.2vw, 48px);
+}
+.finBtns{
+  display:flex; gap: clamp(12px, 3.2vw, 22px); margin-bottom: clamp(8px, 4vh, 28px);
+  width: min(92vw, 680px);
+}
+.finBtn{
+  flex: 1 1 0; text-align:center;
+  font-size: clamp(28px, 5.6vw, 38px);
+  padding: 16px 22px; border: 3px solid #666; border-radius: 14px; background:#fff; cursor:pointer;
+}
+.finBtn.primary { border-color:#333; }
+
+/* 結果：コロン中央揃えの3カラム（左/コロン/右） */
+.statsBox{
+  display: grid;
+  gap: clamp(10px, 2.4vw, 16px);
+}
+
+.statRow{
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;  /* 左=1fr | ：=auto | 右=1fr */
+  align-items: baseline;
+  font-size: inherit;
+}
+.statRow .label,
+.statRow .value{
+  text-align: center;                  /* 左右それぞれの枠内で中央寄せ */
+}
+.statRow .sep{
+  min-width: 0.8em;
+  padding: 0 0.2em;
+  display: grid;
+  place-items: center;                 /* コロンは中央に固定 */
+  font-weight: 700;
+}
+
+/* 結果ページのロゴの余白 */
+.finishBrand{ margin-top: clamp(8px, 5vh, 36px); }
+
+/* 結果：左右の枠幅を同一にし、「：」中央で揃える */
+.statsBox{
+  display: grid;
+  gap: clamp(10px, 2.4vw, 16px);
+  --label-w: auto;   /* JSで実幅をセット */
+  --value-w: auto;   /* JSで実幅をセット */
+}
+.statRow{
+  display: grid;
+  grid-template-columns: var(--label-w) auto var(--value-w); /* 左/コロン/右 */
+  align-items: baseline;
+  justify-content: center;  /* 行全体を中央寄せ */
+}
+.statRow .label,
+.statRow .value{
+  justify-self: center;     /* それぞれの枠の中で中央寄せ */
+  text-align: center;
+}
+.statRow .sep{
+  min-width: 0.8em;
+  padding: 0 0.2em;
+  display: grid;
+  place-items: center;       /* コロンは常に中央 */
+  font-weight: 700;
+}
+/* 結果：左右の枠幅を同一にし、「：」中央で揃える（改良版） */
+.statsBox{
+  display: grid;
+  gap: clamp(10px, 2.4vw, 16px);
+  --label-w: auto;   /* JSで上書き */
+  --value-w: auto;   /* JSで上書き */
+}
+.statRow{
+  display: grid;
+  grid-template-columns: var(--label-w) auto var(--value-w); /* 左/コロン/右 */
+  align-items: baseline;
+  justify-content: center;   /* 行全体を中央に */
+}
+.statRow .label,
+.statRow .value{
+  justify-self: center;
+  text-align: center;
+}
+.statRow .value{ white-space: nowrap; }  /* 値は折返さない */
+.statRow .sep{
+  min-width: 0.8em;
+  padding: 0 0.2em;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+}
+
+/* 5セル均等割りのラベル */
+.mono5{
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  column-gap: 0.15em;
+  align-items: baseline;
+}
+.mono5 i{ font-style: normal; text-align: center; }
+
+/* 分子を強調、分母（数字+もん）を小さく */
+.frac .numEm{ font-size: 1.18em; font-weight: 900; }
+.frac .den  { font-size: .86em; opacity: .96; }
+
+/* 分子を強調、分母は少し小さく */
+.frac .numEm{ font-size: 1.18em; font-weight: 900; }
+.frac .den  { font-size: .86em; opacity: .96; }
+
+/* タイトル（ポップ） */
+.brandWrap{ display:grid; place-items:center; margin-bottom: clamp(8px, 3.3vh, 20px); }
+.brandTitle{
+  font-family:
+    "Rounded Mplus 1c","M PLUS Rounded 1c","Nunito","Baloo 2",
+    "Hiragino Maru Gothic ProN","Yu Gothic UI","Segoe UI",system-ui,sans-serif;
+  font-weight: 800;
+  font-size: clamp(56px, 12vw, 120px);
+  line-height: 1.05;
+  letter-spacing: .02em;
+  color: #ff4081;
+  text-align: center;
+  text-shadow: 0 2px 0 rgba(0,0,0,.06);
+  margin: 0;
+}
+.brandTitle .ten{ display:inline-block; font-size: 1.34em; transform: translateY(0.01em); }
+.brandTitle .pita{ display:inline-block; margin-left: -0.06em; transform: translateY(0.05em); color:#ffca28; }
+.brandTitle ruby{ font-size: 1em; ruby-position: over; }
+.brandTitle rt{
+  font-size: 0.42em; font-weight: 900; color: #29b6f6; letter-spacing: .08em;
+  font-family:
+    "Rounded Mplus 1c","M PLUS Rounded 1c","Nunito","Baloo 2",
+    "Hiragino Maru Gothic ProN","Yu Gothic UI","Segoe UI",system-ui,sans-serif;
+  line-height: 0.8; transform: translateY(0.22em);
+}
+
+.brandWrap--sm{ display:grid; place-items:center; margin: 0 0 6px; }
+.brandTitle--sm{
+  font-size: clamp(24px, 4.6vw, 36px);
+  font-weight: 800;
+  text-shadow: 0 1px 0 rgba(0,0,0,.06);
+}
+.brandTitle--sm .ten{ font-size: 1.22em; }
+.brandTitle--sm .pita{ margin-left: -0.10em; transform: translateY(0.01em); }
+.brandTitle--sm rt{ font-size: 0.46em; transform: translateY(0.14em); }
+
+/* 省エネ */
+@media (prefers-reduced-motion: reduce){
+  .choice.wrongFlash{ animation:none !important; }
+}
+/* ======= 結果：厳密センタリング & 列位置固定 ======= */
+.finishOverlay .statsBox{
+  display: grid;
+  gap: clamp(10px, 2.4vw, 16px);
+  width: min(92vw, 840px);
+  margin: 0 auto;
+
+  /* 列幅（固定値） */
+  --label-w: 10ic;     /* 全角5字ぶん＋余白：ic=和文1字幅 */
+  --sep-w:   1ic;      /* コロン列は全角幅1つぶん */
+  --value-w: 18ch;     /* 右側の値用の枠幅。多い・少ないはここで微調整 */
+}
+.finishOverlay .statRow{
+  display: grid;
+  grid-template-columns: var(--label-w) var(--sep-w) var(--value-w);
+  align-items: baseline;
+}
+.finishOverlay .statRow .label,
+.finishOverlay .statRow .value{
+  display: flex;                 /* 中身を正確に中央寄せ */
+  justify-content: center;
+  align-items: baseline;
+  text-align: center;
+  white-space: nowrap;           /* 値の折返し禁止 */
+}
+.finishOverlay .statRow .sep{
+  width: var(--sep-w);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700;
+  padding: 0;
+}
+
+/* 5マス均等ラベル（列位置を完全固定） */
+.finishOverlay .mono5{
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.18em;                   /* 文字の間隔（好みで ±） */
+  width: 100%;
+}
+.finishOverlay .mono5 i{
+  display: block;
+  font-style: normal;
+  text-align: center;
+}
+
+/* 分数：分子は強調、分母（数字+もん）を小さく */
+.finishOverlay .frac{ display:inline-flex; gap:.08em; align-items:baseline; }
+.finishOverlay .frac .numEm{ font-size: 1.18em; font-weight: 900; }
+.finishOverlay .frac .den  { font-size: .86em;  opacity: .96; }
+/* ======= 結果：コロン中央・左右同幅・厳密センタリング ======= */
+.finishOverlay .statsBox{
+  display: grid;
+  gap: clamp(10px, 2.4vw, 16px);
+  width: min(92vw, 880px);
+  margin: 0 auto;
+  --sep-w: 1.2ch;               /* コロン列の幅（好みで 1.0〜1.4ch） */
+}
+.finishOverlay .statRow{
+  display: grid;
+  grid-template-columns: 1fr var(--sep-w) 1fr;  /* 左/コロン/右 を完全に同幅に */
+  align-items: baseline;
+}
+.finishOverlay .statRow .label,
+.finishOverlay .statRow .value{
+  display: flex;
+  justify-content: center;      /* それぞれの枠で中央寄せ */
+  align-items: baseline;
+  text-align: center;
+  white-space: nowrap;          /* 折返し防止（値がはみ出さない） */
+}
+.finishOverlay .statRow .sep{
+  width: var(--sep-w);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; padding: 0;
+}
+
+/* 5マス均等ラベル（空セルは <i></i> でOK） */
+.finishOverlay .mono5{
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.18em;                  /* 文字間の隙間。好みで ± */
+  width: 100%;
+}
+.finishOverlay .mono5 i{
+  display: block;
+  font-style: normal;
+  text-align: center;
+}
+/* ======= 結果：コロン中央・左右同幅（固定幅トラック） ======= */
+.finishOverlay .statsBox{
+  display: grid;
+  gap: clamp(10px, 2.4vw, 16px);
+  width: min(92vw, 880px);
+  margin: 0 auto;
+
+  /* 左右の枠幅を同値で固定（frではなく固定→左右で差が出ない） */
+  --side-w: clamp(22ch, 40vw, 26ch);
+  --sep-w: 1.2ch; /* コロン列の幅（1.0〜1.4chで微調整OK） */
+}
+.finishOverlay .statRow{
+  display: grid;
+  grid-template-columns: var(--side-w) var(--sep-w) var(--side-w); /* 左/コロン/右 */
+  align-items: baseline;
+}
+.finishOverlay .statRow .label,
+.finishOverlay .statRow .value{
+  display: flex;
+  justify-content: center;   /* 各枠の中でド真ん中 */
+  align-items: baseline;
+  text-align: center;
+  white-space: nowrap;       /* 値は折返さない */
+}
+.finishOverlay .statRow .sep{
+  width: var(--sep-w);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; padding: 0;
+}
+
+/* 5マス均等ラベル（空セルは <i></i>） */
+.finishOverlay .mono5{
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.18em;    /* 文字間隔の微調整 */
+  width: 100%;
+}
+.finishOverlay .mono5 i{
+  display: block; font-style: normal; text-align: center;
+}
+
+/* 分数：分子を強調、分母（数字+もん）を小さく */
+.finishOverlay .frac{ display:inline-flex; gap:.08em; align-items:baseline; }
+.finishOverlay .frac .numEm{ font-size:1.18em; font-weight:900; }
+.finishOverlay .frac .den  { font-size:.86em; opacity:.96; }
+
+/* 分数：分子を強調、分母（数字+もん）を小さく */
+.finishOverlay .frac{ display: inline-flex; gap: .08em; align-items: baseline; }
+.finishOverlay .frac .numEm{ font-size: 1.18em; font-weight: 900; }
+.finishOverlay .frac .den  { font-size: .86em; opacity: .96; }
+/* === 結果：コロン中央・左右同幅・正確センタリング（最終オーバーライド） === */
+.finishOverlay .statsBox{
+  display: grid;
+  gap: clamp(10px, 2.4vw, 16px);
+  width: min(92vw, 880px);
+  margin: 0 auto;
+  --sep-w: 1.2ch;                /* コロン列の幅 */
+}
+.finishOverlay .statRow{
+  display: grid;
+  grid-template-columns: 1fr var(--sep-w) 1fr !important; /* 左右を常に同幅に */
+  align-items: baseline;
+}
+.finishOverlay .statRow .label,
+.finishOverlay .statRow .value{
+  display: flex;
+  justify-content: center !important;   /* 各枠内でド真ん中に */
+  align-items: baseline;
+  text-align: center;
+  white-space: nowrap;                   /* 折返し防止 */
+}
+.finishOverlay .statRow .sep{
+  width: var(--sep-w);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; padding: 0;
+}
+
+/* 5マス均等ラベル（空セルは <i></i>） */
+.finishOverlay .mono5{
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.18em;
+  width: 100%;
+}
+.finishOverlay .mono5 i{ display:block; font-style:normal; text-align:center; }
+
+/* 分数：分子を強調、分母（数字+もん）を小さく */
+.finishOverlay .frac{ display:inline-flex; gap:.08em; align-items:baseline; }
+.finishOverlay .frac .numEm{ font-size:1.18em; font-weight:900; }
+.finishOverlay .frac .den  { font-size:.86em; opacity:.96; }
+/* 左ラベル：全角7マス均等（空きは <i></i> で埋める） */
+.finishOverlay .mono7{
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.18em;            /* 文字間の見た目調整。0.12〜0.22emで好み調整 */
+  width: 100%;
+}
+.finishOverlay .mono7 i{
+  display: block;
+  text-align: center;
+  font-style: normal;
+}
+/* === 結果：左も右も“センタリングだけ”。幅は強制しない === */
+.finishOverlay .statsBox{
+  display: grid;
+  gap: clamp(10px, 2.4vw, 16px);
+  width: min(92vw, 880px);
+  margin: 0 auto;
+  --sep-w: 1.2ch;                 /* コロン列の幅（好みで 1.0〜1.4ch） */
+}
+
+.finishOverlay .statRow{
+  display: grid;
+  grid-template-columns: 1fr var(--sep-w) 1fr;  /* 左右は同じ“領域”にして中央寄せ */
+  align-items: baseline;
+}
+
+.finishOverlay .statRow .label,
+.finishOverlay .statRow .value{
+  display: flex;
+  justify-content: center;        /* ここが“センタリングだけ” */
+  align-items: baseline;
+  text-align: center;
+  white-space: nowrap;            /* 値は折返さない */
+}
+
+.finishOverlay .statRow .sep{
+  width: var(--sep-w);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; padding: 0;
+}
+
+/* 分数：分子強調・分母小さめ */
+.finishOverlay .frac{ display:inline-flex; gap:.08em; align-items:baseline; }
+.finishOverlay .frac .numEm{ font-size:1.18em; font-weight:900; }
+.finishOverlay .frac .den  { font-size:.86em; opacity:.96; }
+
+/* ラベル文字に軽く間をあけたい場合だけ（任意） */
+.finishOverlay .labelText{ letter-spacing: .02em; } /* ごく控えめ */
+/* confetti */
+.confetti{
+  position: fixed; top:-8vh; left:0;
+  width:8px; height:14px; opacity:.9; pointer-events:none; z-index:9999;
+  transform: translateY(-8vh) rotate(0deg);
+  animation: confFall var(--fall-ms,3200ms) linear forwards;
+}
+@keyframes confFall { to { transform: translateY(110vh) rotate(720deg); } }
+
+/* cracker → burst */
+.cracker{ position:fixed; bottom:22px; left:24px; font-size:32px; z-index:9999; transition:opacity .2s; }
+.cracker.fadeout{ opacity:0; }
+.burstPiece{
+  position:fixed; width:10px; height:10px; border-radius:2px; pointer-events:none; z-index:9999;
+  transform:translate(0,0);
+  animation: burst var(--burst-ms,360ms) ease-out forwards;
+}
+@keyframes burst { to { transform: var(--to); opacity:0; } }

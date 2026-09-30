@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- 三角形の各頂点に半径6の丸み -->
+  <path d="
+    M 50,14
+    L 88,86
+    A 6 6 0 0 1 82,92
+    L 18,92
+    A 6 6 0 0 1 12,86
+    L 50,14
+    A 6 6 0 0 1 56,18
+    Z" stroke="#000" stroke-width="3" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+</svg>

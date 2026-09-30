@@ -1,0 +1,135 @@
+/* ============================================
+   common/shell/pbar.full.css
+   問題バー共通レゴ v1
+   - 120 / 1fr / 120 の3分割（ヘッダーと同じ）
+   - 中央テキストは大きく（30px）
+   - 下に細い線だけで区切る
+   - 左右のボタンはヘッダーと同じピル枠
+   ============================================ */
+
+.problem-bar{
+  display: grid;
+  grid-template-columns: 120px 1fr 120px; /* 左/中央/右の3分割 */
+  align-items: center;
+  justify-items: center;
+  box-sizing: border-box;
+
+  min-height: 70px;      /* 1行想定の高さ */
+  padding: 0;       /* 左右に少しだけ余白 */
+
+  background: #fff;
+  border-bottom: 1px solid rgba(0,0,0,0.12); /* 細い仕切り線だけ */
+}
+
+/* 左右スロット：ボタン置き場（最初は空でもOK） */
+.problem-bar > :first-child,
+.problem-bar > :last-child{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 中央スロット：指示文・コース名などメインテキスト */
+.problem-bar > :nth-child(2){
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+
+  font-size: 30px;    /* ヘッダーより一段大きく */
+  line-height: 1.2;
+
+  /* ★問題バー中央＝教科書体（太字なし） */
+  font-family:
+    "BIZ UD教科書体",
+    "UD Digi Kyokasho N-R",
+    "YuKyokasho",
+    "Hiragino Kaku Gothic ProN",
+    "Yu Gothic",
+    "Noto Sans JP",
+    system-ui,
+    sans-serif;
+  font-weight: 400;   /* ★太字にしない */
+}
+
+/* h1/h2 のデフォルト余白を殺して、pbar側の指定を優先する */
+.problem-bar h1,
+.problem-bar h2,
+.problem-bar h3,
+.problem-bar p{
+  margin: 0;
+  font-size: inherit;
+  font-weight: inherit;
+}
+
+/* pbar-main クラスが付いている場合も同じ見た目にしておく */
+.problem-bar .pbar-main{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+
+  font-size: 30px;
+  line-height: 1.2;
+}
+
+/* 左右に .pbar-left / .pbar-right を使っている場合のフォールバック */
+.problem-bar .pbar-left,
+.problem-bar .pbar-right{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 問題バー内のボタン（レベル切替など）
+   → ヘッダーと同じ形（1.5px枠・角丸12px・100×30px）に統一 */
+.problem-bar button{
+  box-sizing: border-box;
+  width: 100px;
+  min-width: 100px;
+  height: 30px;
+  padding: 2px 4px;
+
+  border: 1.5px solid #111;
+  border-radius: 12px;
+  background: #fff;
+  color: #111;
+
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1;
+  font-family:"BIZ UDGothic", system-ui, sans-serif;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+select.btn{
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+
+  box-sizing: border-box;
+  min-width: 100px;
+  height: 30px;
+  padding: 2px 4px;
+
+  border: 1.5px solid #111;
+  border-radius: 12px;
+
+  background: #fff;
+  color: #111;
+
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.1;
+  font-family: "BIZ UDGothic","BIZ UDPGothic","Hiragino Sans","Yu Gothic",system-ui,sans-serif;
+
+  text-align: center;   /* ←★追加：文字を中央寄せ */
+
+  cursor: pointer;
+}

@@ -1,0 +1,18 @@
+/* sakura_entry.css
+   - entry.full / setup.full の構造はそのまま
+   - 余計なレイアウト変更はしない（壊れ防止）
+*/
+
+/* header が他要素に潰されるのを防ぐ（保険） */
+#slot-header { position: relative; z-index: 50; }
+header.title { position: relative; z-index: 50; }
+
+/*
+body[data-appkey="sakura.entry"]{ --setupcard-col-w: 300px; }
+*/
+
+/* tenkeypad 自体は列幅に任せる（縮みすぎ防止） */
+.setupcard-custom .tenkeypad,
+.setupcard-custom .tenkeypad-root{
+  max-width: none;
+}

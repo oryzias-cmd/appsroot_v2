@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- 左右に安全マージンを確保（ストローク3pxでも切れない） -->
+  <path d="
+    M 22,30
+    H 78
+    A 18 18 0 0 1 78 70
+    H 22
+    A 18 18 0 0 1 22 30
+    Z"
+    stroke="#000" stroke-width="3" fill="none"
+    stroke-linejoin="round" stroke-linecap="round"/>
+</svg>

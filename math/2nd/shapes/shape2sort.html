@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<!-- head 内 -->
+
+  <!-- ▼ 図形 共通CSS（1本化） -->
+<link rel="stylesheet" href="../../../common/shell/shape.full.css">
+
+<link rel="stylesheet" href="../../../common/shell/header.full.css">
+<link rel="stylesheet" href="../../../common/shell/pbar.full.css">
+<link rel="stylesheet" href="../../../common/shell/footer.full.css">
+
+<title>三角形と 四角形を 分けよう</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+
+<style>
+/* ─ app1 固有：盤面と図形だけ ─ */
+
+.shape{
+  position:absolute;
+  width:86px; height:86px;
+  display:flex; align-items:center; justify-content:center;
+  cursor:grab; user-select:none; touch-action:none;
+  will-change:auto; transition:none;
+}
+.shape svg{
+  width:100%; height:100%;
+  display:block; transform-origin:50% 50%;
+}
+.shape.wrong{
+  outline:3px solid #c62828;
+  animation:bounce .6s ease;
+}
+@keyframes bounce{
+  0%{transform:translateY(0)}
+  30%{transform:translateY(-24px)}
+  60%{transform:translateY(8px)}
+  100%{transform:translateY(0)}
+}
+
+.dropzone h2{
+  margin:6px 0 4px;
+  font-size:1.35rem;
+  font-weight:700;
+  letter-spacing:.04em;
+}
+
+/* 手描き風の○×（中央重ね） */
+.marker{
+  position:absolute; pointer-events:none;
+  left:50%; top:50%; transform:translate(-50%,-50%);
+  width:34px; height:34px;
+  background-size:contain; background-repeat:no-repeat;
+}
+.marker.red{
+  background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" stroke="red" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>');
+}
+.marker.blue{
+  background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" stroke="blue" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>');
+}
+
+/* 「色あり」ボタン：ヘッダーより少し濃い青地 */
+.sound-btn.is-active {
+  background-color: var(--color-accent-lightblue);
+  color: #000;               /* 文字は黒で読みやすく */
+}
+
+
+</style>
+
+<script>
+// このページ専用の拡大率（必要に応じて調整してください）
+window.SHAPE_SCALE = {
+  rt_left:  1.35,  // ① 直角三角形（左・横長）
+  para:     1.25,  // ② 平行四辺形
+  tri_eq_s: 1.30,  // ③ 並三角形（非正三角）
+  tri_iso:  1.50,  // ④ 直角二等辺（三角）
+  square:   1.00,  // ⑤ 正方形
+  rt_right: 1.35,  // ⑥ 直角三角形（右・縦長）
+  trape:    1.10,  // ⑦ 台形
+  square45: 1.00,  // ⑧ ひし形
+  tri_eq_l: 1.20,  // ⑨ 正三角形（大）
+  rect:     1.25   // ⑩ 長方形（縦長）
+};
+// （任意）この設定を永続化したい場合は次の1行を一度だけ実行：
+// localStorage.setItem('shapeScale', JSON.stringify(window.SHAPE_SCALE));
+
+// 第1弾用：ボタンが押されたらどうするか
+document.addEventListener('DOMContentLoaded', ()=>{
+  if (!window.MainAction) return;
+
+  window.MainAction.onPress = (mode)=>{
+    if (mode === 'check'){
+      // こたえあわせする（採点）
+      handleMainAction(); // ←あなたの採点関数
+    } else if (mode === 'next'){
+      // 次のもんだい
+      if (typeof generateProblem === 'function'){
+        generateProblem();
+      }
+      window.MainAction.setMode('hide');
+    }
+  };
+});
+</script>
+
+</head>
+
+<body class="app-shell">
+  <!-- ▼ AppShellがヘッダーをここに注入 -->
+  <div id="slot-header"></div>
+
+  <!-- ▼ 問題バー（第4弾と同等構成） -->
+  <div id="slot-pbar"></div>
+
+  <!-- ▼ 中央メイン：既存の盤面DOMをそのまま内包 -->
+  <div id="slot-main">
+
+<main class="board">
+  <div class="board-inner">
+
+<div id="board" aria-label="並べ替え盤面">
+  <div id="answerControlSlot"></div>
+</div>
+
+<div class="zones">
+  <section id="zoneTriangle" class="dropzone" aria-label="三角形">
+    <h2>三角形</h2>
+  </section>
+  <section id="zoneSquare" class="dropzone" aria-label="四角形">
+    <h2>四角形</h2>
+  </section>
+</div>
+
+  </div><!-- /.board-inner -->
+</main>
+
+  </div><!-- /#slot-main -->
+
+<script>
+// ====== 第1弾 分類ゲーム 本体一式（A1統合版） ======
+
+// --- 参照DOM ---
+const board = document.getElementById('board');
+const zones = {
+  triangle: document.getElementById('zoneTriangle'),
+  square:   document.getElementById('zoneSquare'),
+};
+
+// --- Shapes / Common ブリッジ ---
+// （colors_shapes10.js / shapes.js / Common.* の関数をここから呼ぶ）
+const makeSVGByKey = (...a)=> window.Shapes.makeSVGByKey(...a);
+const scaleFor     = (...a)=> window.Shapes.scaleFor(...a);
+
+// Common.snapBackToHome を呼び出すブリッジ
+function snapBackToHome(el){
+  if (window.Common && typeof Common.snapBackToHome === 'function'){
+    Common.snapBackToHome(el);
+  }
+}
+
+// --- ユーティリティ・乱数系 ---
+const COLORS = [
+  '#81c995','#8ad1ff','#ffb74d','#ffd166',
+  '#80cbc4','#90caf9','#f6c1a1','#a78bfa',
+  '#ffd54f','#ef9a9a'
+];
+let colorBag = [];
+
+function shuffle(arr){
+  for(let i=arr.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]]=[arr[j],arr[i]];
+  }
+  return arr;
+}
+function pickColor(){
+  if (colorBag.length === 0) colorBag = shuffle([...COLORS]);
+  return colorBag.pop();
+}
+
+// --- 出題リスト（10個） ---
+const SPECS = [
+  { k:'rt_left',  type:'triangle' },   // 直角三角形（左）
+  { k:'para',     type:'square'   },   // 平行四辺形
+  { k:'tri_eq_s', type:'triangle' },   // 正三角形（小）
+  { k:'tri_iso',  type:'triangle' },   // 二等辺三角形（小）
+  { k:'square',   type:'square'   },   // 正方形（0°）
+  { k:'rt_right', type:'triangle' },   // 直角三角形（右）
+  { k:'trape',    type:'square'   },   // 台形
+  { k:'square45', type:'square'   },   // ひし形（45°の正方形）
+  { k:'tri_eq_l', type:'triangle' },   // 正三角形（大）
+  { k:'rect',     type:'square'   },   // 長方形
+];
+
+/* ===============================
+   ボタン帯の状態管理（第1弾用・統一版）
+   =============================== */
+function updateMainButton(allCorrectAfterCheck = false) {
+  const boardEl = document.getElementById('board');
+  if (!boardEl) return;
+
+  // まだ #board に図形が残っている？
+  const remaining = [...boardEl.children].filter(ch =>
+    ch.classList && ch.classList.contains('shape')
+  ).length;
+
+  if (remaining > 0) {
+    // 仕分け途中 → ボタン非表示
+    window.MainAction?.setMode?.('hide');
+    return;
+  }
+
+  // ぜんぶ zones 側に移動済み
+  if (allCorrectAfterCheck) {
+    window.MainAction?.setMode?.('next');   // 全正解後は「▶ つぎのもんだい」
+  } else {
+    window.MainAction?.setMode?.('check');  // 採点前/不正解時は「✓ こたえあわせ」
+  }
+}
+
+// 「こたえあわせ」/「つぎのもんだい」を押したときの本体
+function handleMainAction(){
+  // nextモードなら次の問題を出す
+  if (window.MainAction?.getMode && window.MainAction.getMode() === 'next'){
+    if (typeof generateProblem === 'function'){
+      generateProblem();
+    }
+    // 新しい問題を出したので一旦ボタン消す
+    window.MainAction?.setMode('hide');
+    return;
+  }
+
+  // ここから採点処理
+  let allCorrect = true;
+  document.querySelectorAll('.marker').forEach(m=>m.remove());
+
+  document.querySelectorAll('.shape').forEach(el=>{
+    const pid = el.parentElement.id;
+    const ok =
+      (el.dataset.type==='triangle' && pid==='zoneTriangle') ||
+      (el.dataset.type==='square'   && pid==='zoneSquare');
+
+    if (ok){
+      // 正解表示（赤or青の○）
+      const mk = document.createElement('div');
+      mk.className = 'marker ' + (Number(el.dataset.attempts)>0 ? 'blue' : 'red');
+      const s = Math.min(el.offsetWidth, el.offsetHeight)*0.85;
+      mk.style.width  = s+'px';
+      mk.style.height = s+'px';
+      el.appendChild(mk);
+
+      // もう動かせないように
+      el.style.pointerEvents='none';
+    } else {
+      // 誤り → 盤面に戻して並び直し
+      allCorrect = false;
+      el.classList.add('wrong');
+      el.dataset.attempts = (Number(el.dataset.attempts)||0)+1;
+
+      setTimeout(()=>{
+        el.classList.remove('wrong');
+        board.appendChild(el);
+        snapBackToHome(el); // Common側でホーム座標へ戻す
+        updateMainButton(); // 状態再判定
+      }, 600);
+    }
+  });
+
+  if (allCorrect){
+    // 全問OK
+    window.MainAction?.setMode('next');  // ▶ つぎのもんだい
+  } else {
+    // 間違いがあった → 再チャレンジ
+    window.MainAction?.setMode('check');
+  }
+}
+
+// main-actions.full.js側(共通ボタン)が押したときに呼ぶ対象
+window.AppActions = window.AppActions || {};
+window.AppActions.primary = () => { handleMainAction(); };
+window.AppActions.next    = () => { handleMainAction(); };
+
+// ====== 出題生成・レイアウト ======
+
+// 新しい問題（10個の図形をランダムで盤面に並べる）
+function generateProblem(){
+  // 既存の図形・マーカーを全クリア
+  [...board.querySelectorAll('.shape')].forEach(n=>n.remove());
+  [...zones.triangle.querySelectorAll('.shape')].forEach(n=>n.remove());
+  [...zones.square.querySelectorAll('.shape')].forEach(n=>n.remove());
+  document.querySelectorAll('.marker').forEach(m=>m.remove());
+
+  // 出題順をシャッフル
+  const order = shuffle([...SPECS]);
+
+  // 1つずつDOMを作る
+  order.forEach(spec=>{
+    const el = document.createElement('div');
+    el.className = 'shape';
+    el.draggable = true;
+    el.dataset.type = spec.type;
+
+    // SVG生成（色つき）＋拡大率反映
+    const col = pickColor();
+    el.innerHTML = makeSVGByKey(spec.k, col);
+    el.querySelector('svg').dataset.color = col;
+
+    const size = scaleFor(spec.k);
+    el.style.width  = (86 * size) + 'px';
+    el.style.height = (86 * size) + 'px';
+
+    // 盤面に配置
+    board.appendChild(el);
+  });
+
+  // ドラッグ動作をセット
+  hookDrag();
+
+  // 整列して"ホーム座標"を記録
+  layoutBoardGrid();
+
+  // ← generateProblem() の末尾にこれを追加
+  updateMainButton(false);
+}
+
+/* ===============================
+   ボタン制御（共通MainAction対応版）
+   =============================== */
+
+// 盤面上の図形をきれいに整列させ、ホーム座標(homeLeft/homeTop)を覚えさせる
+function layoutBoardGrid(){
+  const items = [...board.querySelectorAll('.shape')];
+  if (items.length === 0) return;
+
+  const W = board.clientWidth;
+  const H = board.clientHeight;
+
+  const maxW = Math.max(...items.map(el => el.offsetWidth));
+  const maxH = Math.max(...items.map(el => el.offsetHeight));
+
+  const MIN_COLS = 2, MAX_COLS = 5;
+  const SAFE_PAD = 20;
+
+  let cols = Math.floor((W + SAFE_PAD) / (maxW + SAFE_PAD));
+  cols = Math.max(MIN_COLS, Math.min(MAX_COLS, cols));
+
+  let rows = Math.ceil(items.length / cols);
+
+  const GAP_MIN = 8, GAP_MAX = 24;
+
+  let hGap = (cols > 1) ? Math.floor((W - cols * maxW) / (cols - 1)) : 0;
+  hGap = Math.max(GAP_MIN, Math.min(GAP_MAX, hGap));
+
+  let vGap = (rows > 1) ? Math.floor((H - rows * maxH) / (rows - 1)) : 0;
+  vGap = Math.max(GAP_MIN, Math.min(GAP_MAX, vGap));
+
+  const cellW = (W - (cols - 1) * hGap) / cols;
+  const cellH = (H - (rows - 1) * vGap) / rows;
+
+  items.forEach((el, i)=>{
+    // 必要なら一時的に縮小（拡大はしない）
+    const fit = Math.min(
+      cellW / el.offsetWidth,
+      cellH / el.offsetHeight,
+      1
+    );
+    if (fit < 1){
+      el.style.width  = (el.offsetWidth  * fit) + 'px';
+      el.style.height = (el.offsetHeight * fit) + 'px';
+    }
+
+    const r = Math.floor(i / cols);
+    const c = i % cols;
+
+    const nx = c * (cellW + hGap) + (cellW - el.offsetWidth ) / 2;
+    const ny = r * (cellH + vGap) + (cellH - el.offsetHeight) / 2;
+
+    // 盤面からはみ出さないようガードしつつ配置
+    el.style.left = Math.floor(Math.max(0, Math.min(nx, W - el.offsetWidth - 1))) + 'px';
+    el.style.top  = Math.max(0, Math.min(ny, H - el.offsetHeight)) + 'px';
+
+    // ホーム座標を記録（Common.snapBackToHome用）
+    el.dataset.homeLeft = Math.round(nx);
+    el.dataset.homeTop  = Math.round(ny);
+  });
+}
+
+// ====== ドラッグ＆ドロップ ======
+let dragged = null;
+
+function hookDrag(){
+  document.querySelectorAll('.shape').forEach(el=>{
+    el.addEventListener('dragstart', ()=>{
+      dragged = el;
+    });
+    el.addEventListener('dragend', ()=>{
+      dragged = null;
+    });
+  });
+}
+
+// ドロップ可能領域にイベントを設定
+function enableDrop(container){
+  container.addEventListener('dragover', e=> e.preventDefault());
+  container.addEventListener('drop', e=>{
+    e.preventDefault();
+    if(!dragged) return;
+
+    container.appendChild(dragged);
+
+    const rect = container.getBoundingClientRect();
+    let nx = e.clientX - rect.left - dragged.offsetWidth  / 2;
+    let ny = e.clientY - rect.top  - dragged.offsetHeight / 2;
+
+    // ドロップ先がゾーンならタイトル(h2)ぶんだけ下げる
+    const titleH = container.classList.contains('dropzone')
+      ? ((container.querySelector('h2')?.offsetHeight) || 0) + 6
+      : 0;
+
+    nx = Math.max(0, Math.min(nx, container.clientWidth  - dragged.offsetWidth ));
+    ny = Math.max(titleH, Math.min(ny, container.clientHeight - dragged.offsetHeight));
+
+    dragged.style.left = nx + 'px';
+    dragged.style.top  = ny + 'px';
+
+    // 毎回判定。全部並べ終わったらボタンを出す
+    updateMainButton();
+  });
+}
+
+// 盤面・三角形ゾーン・四角形ゾーンをドロップ可能に
+enableDrop(board);
+enableDrop(zones.triangle);
+enableDrop(zones.square);
+
+// ====== 初期起動 ======
+//
+// DOMが完全にできて、他のスクリプト（Shapesなど）も読まれたあとでスタートする。
+// DOMContentLoaded 待ちで安全に呼ぶ。
+window.addEventListener('DOMContentLoaded', () => {
+
+  // Common 側の自動リレイアウトが使えるならつないでおく
+  if (window.Common){
+    if (typeof Common.setupAutoRelayout === 'function'){
+      Common.setupAutoRelayout(board);
+    }
+    // layoutBoardGrid はこのあと generateProblem() 内で自前の整列をやるので必須ではない
+  }
+
+  // 最初の問題を生成
+  generateProblem();
+});
+</script>
+
+<!-- === トグルボタンを上部に追加　色ON/OFFトグル：図形に即時反映（app4準拠の安全な挿入） === -->
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  // ▼ ボタンを問題バー右スロットへ（ヘッダーの音声ボタンと同型）
+  const slot = document.getElementById("colorToggleSlot") || document.querySelector(".problem .problem-right");
+  const btn  = document.createElement("button");
+  btn.id = "colorToggleBtn";
+  btn.type = "button";
+  btn.className = "sound-btn is-active"; // 初期は色あり＝塗りあり
+  btn.setAttribute("aria-pressed", "true");
+  btn.textContent = "色あり";
+  slot?.appendChild(btn);
+
+  // ▼ 既存仕様：保存/復元（"1":色あり, "0":色なし）
+  const saved = localStorage.getItem("shapeColorOn");
+  const setUI = (on) => {
+    btn.classList.toggle("is-active", !!on);      // 塗り/白地の切替（共通CSSに任せる）
+    btn.setAttribute("aria-pressed", !!on);
+    btn.textContent = on ? "色あり" : "色なし";
+  };
+
+  // 既存の再着色処理（ロジックは変更しない）
+  function recolor(on){
+    document.querySelectorAll(".shape svg").forEach(svg=>{
+      const fillColor = svg.dataset.color;
+      const targets = svg.querySelectorAll("polygon, path, rect, circle, ellipse, polyline");
+      targets.forEach(el=>{
+        if(on){
+          el.setAttribute("fill", fillColor || "#f3f3f3");
+          if(!el.getAttribute("stroke")) el.setAttribute("stroke", "#000");
+        }else{
+          el.setAttribute("fill", "none");
+          if(!el.getAttribute("stroke")) el.setAttribute("stroke", "#000");
+        }
+      });
+    });
+  }
+
+  // 初期状態
+  const initOn = saved !== "0"; // 未保存 or "1" なら色あり
+  setUI(initOn);
+  recolor(initOn);
+
+  // クリックでトグル
+  btn.addEventListener("click", () => {
+    const nowOn = btn.getAttribute("aria-pressed") !== "true"; // 反転
+    setUI(nowOn);
+    localStorage.setItem("shapeColorOn", nowOn ? "1" : "0");
+    recolor(nowOn);
+  });
+});
+</script>
+
+  <!-- ▼ AppShell設定 -->
+  <script>
+    window.AppShellOptions = window.AppShellOptions || {};
+
+    // タイトル：A/B切替式（AppShellタイトルAB形式）
+    window.AppShellOptions.titleAB = {
+      prefix: '',
+      labelA: '三角形',
+      labelB: '四角形',
+      sep: ' と ',
+      tail: ' を 分けよう'
+    };
+
+    // 戻る先
+    window.AppShellOptions.backHref = './shapes_entry.html';
+  </script>
+
+  <!-- ▼ AppShellスロット構成 -->
+<script>
+  window.AppShellLayout = {
+    header:{ left:['backlink'], center:['title'], right:['voiceToggle'] },
+    pbar:{ left:[], center:[], right:[] },
+    main:{ bottomCenter:[] },
+    footer:{ left:[], center:[], right:[] } // footerは空のまま
+  };
+
+</script>
+
+<!-- ▼ 共通パーツ（controls/kit） -->
+<script src="../../../common/shell/kit.full.js" defer></script>
+<script src="../../../common/controls/kit.full.js" defer></script>
+<script src="../../../common/shell/main-actions.full.js" defer></script>
+
+  <!-- ▼ シェル枠（レゴ部品） -->
+  <script src="../../../common/shell/header.full.js" defer></script>
+  <script src="../../../common/shell/pbar.full.js" defer></script>
+  <script src="../../../common/shell/footer.full.js" defer></script>
+
+  <!-- ▼ 図形 共通JS（1本化） -->
+  <script src="../../../common/shell/shape.full.js"></script>
+
+  <!-- ▼ app 固有 -->
+  <script src="./shape2sort.js"></script>
+  <script src="../../../common/geometry/colors_shapes10.js"></script>
+  <script src="./shape2shapes.js"></script>
+</body>
+</html>

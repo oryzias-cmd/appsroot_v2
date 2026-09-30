@@ -1,0 +1,227 @@
+/* =========================================================
+   shape.full.css
+   図形アプリ共通CSS（1本化）
+   結合順：base.shape.css → app.css（= geometry/app.css）
+   方針：
+   - まず画面いっぱいを使う（余白予約しない）
+   - 余白/比率は必要なアプリだけ“足し算”
+   - デフォルト比率：board : zones = 50 : 50
+   ========================================================= */
+
+/* ===== from: common/base.shape.css ===== */
+:root{
+  --bg:#f7f7f7;
+  --panel:#ffffff;
+  --ink:#111;
+  --muted:#666;
+  --line:#e6e6e6;
+  --accent:#2f6fed;
+  --ok:#1b9a59;
+  --ng:#c62828;
+  --shadow:0 10px 24px rgba(0,0,0,.08);
+  --r:18px;
+  --pad:18px;
+
+  /* デフォルト比率（必要なアプリだけ上書きして“足し算”する） */
+  --shape-board-flex: 1;
+  --shape-zones-flex: 1;
+}
+
+/* --- shape系の土台（app-shell / file:// 共通の安全策） --- */
+html, body{
+  height: 100%;
+}
+body{
+  margin: 0;
+}
+
+/* AppShell（#slot-header/#slot-pbar/#slot-main）の縦配分：
+   main は「残り全部」を必ず使う（余白予約しない） */
+body.app-shell{
+  height: 100%;
+  display:flex;
+  flex-direction:column;
+  min-height:0;
+}
+
+#slot-header,
+#slot-pbar{
+  flex:0 0 auto;
+}
+
+#slot-main{
+  flex:1 1 auto;
+  min-height:0;
+  display:flex;
+  flex-direction:column;
+}
+
+/* 旧構造（wrap）互換：残しておく（過去アプリ向け） */
+.wrap{
+  height: 100%;
+  display:flex;
+  flex-direction:column;
+  min-height:0;
+}
+
+/* 1ページを縦に（上：header / 中：board）※footerは将来撤去前提 */
+main.board{
+  flex:1 1 auto;
+  display:flex;
+  flex-direction:column;
+  min-height:0;
+}
+
+.board-inner{
+  flex:1 1 auto;
+  display:flex;
+  flex-direction:column;
+  min-height:0;
+}
+
+/* 盤面：vh固定を廃止して「残り領域」を比率配分（デフォルト50:50） */
+#board{
+  flex: var(--shape-board-flex) 1 0;
+  position:relative;
+  width:100%;
+  max-width:none;
+  min-height:0;
+  margin:0;
+  overflow:hidden;
+  box-sizing:border-box;
+}
+
+/* 盤面の舞台（図形を置くレイヤ） */
+#boardStage{
+  position:absolute;
+  inset:0;
+}
+
+/* 仕分けゾーン（左右）：board と 50:50（デフォルト） */
+.zones{
+  flex: var(--shape-zones-flex) 1 0;
+  min-height:0;
+  width:100%;
+  max-width:none;
+  display:flex;
+  gap:0;
+  margin:0;
+}
+
+/* ドロップ枠：ゾーンの高さに合わせて縦いっぱいに伸ばす
+   min-height の vh予約を廃止（余白予約しない） */
+.dropzone{
+  flex:1 1 0;
+  height:100%;
+  min-height:0;
+  border:3px dashed #bdbdbd;
+  border-radius:16px;
+  background:#fff;
+  box-sizing:border-box;
+  padding:0;
+  position:relative;
+}
+
+.dropzone small{
+  display:block;
+  color:#666;
+  margin-top:2px;
+}
+
+/* 画面下（操作）：全幅 */
+.ctrl{
+  flex:0 0 auto;
+  width:100%;
+  max-width:none;
+  display:grid;
+  grid-template-columns:1fr auto 1fr;
+  align-items:center;
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
+
+.ctrl .left{ justify-self:start; }
+.ctrl .center{ justify-self:center; display:flex; align-items:center; gap:0; }
+.ctrl .right{ justify-self:end; }
+
+.btn{
+  appearance:none;
+  border:none;
+  border-radius:14px;
+  padding:10px 14px;
+  font-size:18px;
+  font-weight:700;
+  letter-spacing:.02em;
+  cursor:pointer;
+  user-select:none;
+  touch-action:manipulation;
+  background:#222;
+  color:#fff;
+}
+
+.btn:disabled{
+  opacity:.4;
+  cursor:default;
+}
+
+.btn--ghost{
+  background:transparent;
+  color:#111;
+  border:2px solid #111;
+}
+
+.btn--ok{ background:var(--ok); }
+.btn--ng{ background:var(--ng); }
+
+/* マーク（○×/花丸など） */
+#markLayer{
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:9999;
+}
+
+.mark{
+  width:min(40vw, 300px);
+  height:auto;
+  opacity:0;
+  transform:scale(.9);
+  transition:opacity .15s ease, transform .15s ease;
+}
+
+.mark.is-show{
+  opacity:1;
+  transform:scale(1);
+}
+
+/* トースト */
+#toast{
+  position:fixed;
+  left:50%;
+  bottom:18px;
+  transform:translateX(-50%);
+  background:#111;
+  color:#fff;
+  padding:10px 14px;
+  border-radius:14px;
+  font-size:16px;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .15s ease;
+  z-index:10000;
+}
+
+#toast.is-show{
+  opacity:1;
+}
+
+/* ===== app-specific moved out (B案) =====
+   ここから下はアプリ個別CSS（例: apps/shape2sort.css）へ外出し。
+   shape.full.css は「骨組み（共通レイアウト + 共通UI）」のみを保持する。
+*/
+
+/* （空） */

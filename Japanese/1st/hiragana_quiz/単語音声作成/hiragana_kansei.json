@@ -1,0 +1,235 @@
+{
+  "あ": {
+  "words": [ { "word": "あり", "romaji": "ari" },
+    { "word": "あさがお", "romaji": "asagao" },
+    { "word": "あじさい", "romaji": "azisai" },
+    { "word": "あめ", "romaji": "ame" } ]
+},
+  "い": {
+  "words": [ { "word": "いぬ", "romaji": "inu" },
+    { "word": "いか", "romaji": "ika" },
+    { "word": "いちご", "romaji": "itigo" },
+    { "word": "いす", "romaji": "isu" } ]
+},
+  "う": {
+  "words": [ { "word": "うま", "romaji": "uma" },
+    { "word": "うさぎ", "romaji": "usagi" },
+    { "word": "うめ", "romaji": "ume" },
+    { "word": "うちわ", "romaji": "utiwa" } ]
+},
+  "え": {
+  "words": [ { "word": "えび", "romaji": "ebi" },
+    { "word": "えだまめ", "romaji": "edamame" },
+    { "word": "えのぐ", "romaji": "enogu" },
+    { "word": "えんぴつ", "romaji": "enpitu" } ]
+},
+  "お": {
+  "words": [ { "word": "おおかみ", "romaji": "ookami" },
+    { "word": "おちば", "romaji": "otiba" },
+    { "word": "おにぎり", "romaji": "onigiri" },
+    { "word": "おりがみ", "romaji": "origami" } ]
+},
+  "か": {
+  "words": [ { "word": "かぶとむし", "romaji": "kabutomusi" },
+    { "word": "かたつむり", "romaji": "katatumuri" },
+    { "word": "かぼちゃ", "romaji": "kabotya" },
+    { "word": "かさ", "romaji": "kasa" } ]
+},
+  "き": {
+  "words": [ { "word": "きんぎょ", "romaji": "kingyo" },
+    { "word": "きりん", "romaji": "kirin" },
+    { "word": "きのこ", "romaji": "kinoko" },
+    { "word": "きゅうり", "romaji": "kyuuri" } ]
+},
+  "く": {
+  "words": [ { "word": "くじら", "romaji": "kuzira" },
+    { "word": "くわがた", "romaji": "kuwagata" },
+    { "word": "くり", "romaji": "kuri" },
+    { "word": "くるま", "romaji": "kuruma" } ]
+},
+  "け": {
+  "words": [ { "word": "けむし", "romaji": "kemusi" },
+    { "word": "けむり", "romaji": "kemuri" },
+    { "word": "けしごむ", "romaji": "kesigomu" },
+    { "word": "けんだま", "romaji": "kendama" } ]
+},
+  "こ": {
+  "words": [ { "word": "こいのぼり", "romaji": "koinobori" },
+    { "word": "こけ", "romaji": "koke" },
+    { "word": "こま", "romaji": "koma" },
+    { "word": "こおり", "romaji": "koori" } ]
+},
+  "た": {
+  "words": [ { "word": "たぬき", "romaji": "tanuki" },
+    { "word": "たまねぎ", "romaji": "tamanegi" },
+    { "word": "たんぽぽ", "romaji": "tanpopo" },
+    { "word": "たまご", "romaji": "tamago" } ]
+},
+  "ち": {
+  "words": [ { "word": "ちょう", "romaji": "tyou" },
+    { "word": "ちりとり", "romaji": "tiritori" },
+    { "word": "ちょうちん", "romaji": "tyoutin" },
+    { "word": "ちゅうしゃき", "romaji": "tyuusyaki" } ]
+},
+  "つ": {
+  "words": [ { "word": "つばめ", "romaji": "tubame" },
+    { "word": "つる", "romaji": "turu" },
+    { "word": "つくし", "romaji": "tukusi" },
+    { "word": "つくえ", "romaji": "tukue" } ]
+},
+  "て": {
+  "words": [ { "word": "てんとうむし", "romaji": "tentoumusi" },
+    { "word": "てぶくろ", "romaji": "tebukuro" },
+    { "word": "てがみ", "romaji": "tegami" },
+    { "word": "てるてるぼうず", "romaji": "teruterubouzu" } ]
+},
+  "と": {
+  "words": [ { "word": "とんぼ", "romaji": "tonbo" },
+    { "word": "とうもろこし", "romaji": "toumorokosi" },
+    { "word": "とまと", "romaji": "tomato" },
+    { "word": "とけい", "romaji": "tokei" } ]
+},
+  "な": {
+  "words": [ { "word": "なめくじ", "romaji": "namekuzi" },
+    { "word": "なす", "romaji": "nasu" },
+    { "word": "なし", "romaji": "nasi" },
+    { "word": "なべ", "romaji": "nabe" } ]
+},
+  "に": {
+  "words": [ { "word": "にわとり", "romaji": "niwatori" },
+    { "word": "にんじん", "romaji": "ninzin" },
+    { "word": "にく", "romaji": "niku" },
+    { "word": "にんぎょう", "romaji": "ningyou" } ]
+},
+  "ぬ": {
+  "words": [ { "word": "ぬいぐるみ", "romaji": "nuigurumi" },
+    { "word": "ぬの", "romaji": "nuno" },
+    { "word": "ぬりえ", "romaji": "nurie" } ]
+},
+  "ね": {
+  "words": [ { "word": "ねこ", "romaji": "neko" },
+    { "word": "ねずみ", "romaji": "nezumi" },
+    { "word": "ねぎ", "romaji": "negi" },
+    { "word": "ねじ", "romaji": "nezi" } ]
+},
+  "の": {
+  "words": [ { "word": "のり", "romaji": "nori" },
+    { "word": "のこぎり", "romaji": "nokogiri" },
+    { "word": "のり", "romaji": "nori" },
+    { "word": "のぼり", "romaji": "nobori" } ]
+},
+  "は": {
+  "words": [ { "word": "はくちょう", "romaji": "hakutyou" },
+    { "word": "はち", "romaji": "hati" },
+    { "word": "はす", "romaji": "hasu" },
+    { "word": "はさみ", "romaji": "hasami" } ]
+},
+  "ひ": {
+  "words": [ { "word": "ひつじ", "romaji": "hituzi" },
+    { "word": "ひまわり", "romaji": "himawari" },
+    { "word": "ひこうき", "romaji": "hikouki" },
+    { "word": "ひしゃく", "romaji": "hisyaku" } ]
+},
+  "ふ": {
+  "words": [ { "word": "ふくろう", "romaji": "hukurou" },
+    { "word": "ふきのとう", "romaji": "hukinotou" },
+    { "word": "ふとん", "romaji": "huton" },
+    { "word": "ふね", "romaji": "hune" } ]
+},
+  "へ": {
+  "words": [ { "word": "へび", "romaji": "hebi" },
+    { "word": "へちま", "romaji": "hetima" },
+    { "word": "へら", "romaji": "hera" },
+    { "word": "へそ", "romaji": "heso" } ]
+},
+  "ほ": {
+  "words": [ { "word": "ほたる", "romaji": "hotaru" },
+    { "word": "ほたて", "romaji": "hotate" },
+    { "word": "ほうれんそう", "romaji": "hourensou" },
+    { "word": "ほうき", "romaji": "houki" } ]
+},
+  "ま": {
+  "words": [ { "word": "まぐろ", "romaji": "maguro" },
+    { "word": "まんとひひ", "romaji": "mantohihi" },
+    { "word": "まめ", "romaji": "mame" },
+    { "word": "まくら", "romaji": "makura" } ]
+},
+  "み": {
+  "words": [ { "word": "みみず", "romaji": "mimizu" },
+    { "word": "みつばち", "romaji": "mitubati" },
+    { "word": "みかん", "romaji": "mikan" },
+    { "word": "みみかき", "romaji": "mimikaki" } ]
+},
+  "む": {
+  "words": [ { "word": "むかで", "romaji": "mukade" },
+    { "word": "むしめがね", "romaji": "musimegane" },
+    { "word": "むぎちゃ", "romaji": "mugitya" },
+    { "word": "むね", "romaji": "mune" } ]
+},
+  "め": {
+  "words": [ { "word": "めだか", "romaji": "medaka" },
+    { "word": "めがね", "romaji": "megane" },
+    { "word": "めだまやき", "romaji": "medamayaki" },
+    { "word": "めざましどけい", "romaji": "mezamasidokei" } ]
+},
+  "も": {
+  "words": [ { "word": "もんしろちょう", "romaji": "monsirotyou" },
+    { "word": "もも", "romaji": "momo" },
+    { "word": "もやし", "romaji": "moyasi" },
+    { "word": "ものさし", "romaji": "monosasi" } ]
+},
+  "や": {
+  "words": [ { "word": "やぎ", "romaji": "yagi" },
+    { "word": "やどかり", "romaji": "yadokari" },
+    { "word": "やつで", "romaji": "yatude" },
+    { "word": "やかん", "romaji": "yakan" } ]
+},
+  "ゆ": {
+  "words": [ { "word": "ゆり", "romaji": "yuri" },
+    { "word": "ゆうがお", "romaji": "yuugao" },
+    { "word": "ゆき", "romaji": "yuki" },
+    { "word": "ゆびわ", "romaji": "yubiwa" } ]
+},
+  "よ": {
+  "words": [ { "word": "よこえび", "romaji": "yokoebi" },
+    { "word": "よもぎ", "romaji": "yomogi" },
+    { "word": "よし", "romaji": "yosi" },
+    { "word": "よるがお", "romaji": "yorugao" } ]
+},
+  "ら": {
+  "words": [ { "word": "らくだ", "romaji": "rakuda" },
+    { "word": "らいおん", "romaji": "raion" },
+    { "word": "らっきょう", "romaji": "rakkyou" },
+    { "word": "らくがき", "romaji": "rakugaki" } ]
+},
+  "り": {
+  "words": [ { "word": "りす", "romaji": "risu" },
+    { "word": "りゅう", "romaji": "ryuu" },
+    { "word": "りんご", "romaji": "ringo" },
+    { "word": "りんどう", "romaji": "rindou" } ]
+},
+  "る": {
+  "words": [ { "word": "るりびたき", "romaji": "ruribitaki" },
+    { "word": "るりはこべ", "romaji": "rurihakobe" },
+    { "word": "るすばん", "romaji": "rusuban" },
+    { "word": "るすでん", "romaji": "rusuden" } ]
+},
+  "れ": {
+  "words": [ { "word": "れんこん", "romaji": "renkon" },
+    { "word": "れいぞうこ", "romaji": "reizouko" },
+    { "word": "れんげ", "romaji": "renge" },
+    { "word": "れんが", "romaji": "renga" } ]
+},
+  "ろ": {
+  "words": [ { "word": "ろば", "romaji": "roba" },
+    { "word": "ろうそく", "romaji": "rousoku" },
+    { "word": "ろうか", "romaji": "rouka" },
+    { "word": "ろてんぶろ", "romaji": "rotenburo" } ]
+},
+  "わ": {
+  "words": [ { "word": "わに", "romaji": "wani" },
+    { "word": "わさび", "romaji": "wasabi" },
+    { "word": "わた", "romaji": "wata" },
+    { "word": "わごむ", "romaji": "wagomu" } ]
+}
+}

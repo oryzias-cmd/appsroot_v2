@@ -1,0 +1,93 @@
+/* tri-quad-def.css：第1弾のトーンを踏襲しつつ最小差分 */
+
+.tri-quad-def .app-header{
+  display:flex; align-items:center; gap:12px;
+  padding:8px 12px;
+}
+.tri-quad-def .btn-back, .tri-quad-def .btn-help{
+  font-family: inherit; cursor:pointer;
+}
+.tri-quad-def .title{
+  font-size: clamp(18px, 2.2vw, 28px);
+  flex:1; text-align:center;
+}
+
+.tri-quad-def .prompt-area{
+  display:grid; grid-template-columns: 1fr auto; gap:12px;
+  align-items:start; padding:8px 12px;
+}
+.tri-quad-def .prompt-card{
+  border-top: 4px solid var(--line-color, #333);
+  border-bottom: 4px solid var(--line-color, #333);
+  padding:12px 16px; border-radius: 0; background:#fff;
+}
+.tri-quad-def .prompt-label{ font-size:0.9rem; opacity:.7; }
+.tri-quad-def .prompt-text{
+  font-size: clamp(18px, 2.2vw, 28px);
+  line-height:1.6;
+}
+
+.tri-quad-def .gallery-area{ padding: 8px 12px 0; }
+.tri-quad-def .shape-gallery{
+  display:grid;
+  grid-template-columns: repeat(5, minmax(120px, 1fr));
+  gap: 12px;
+}
+.tri-quad-def .shape-card{
+  position:relative; padding:8px; background:#fff;
+  border-top: 3px solid var(--line-color, #222);
+  border-bottom: 3px solid var(--line-color, #222);
+  cursor:pointer; user-select:none;
+}
+.tri-quad-def .shape-card:focus-visible{ outline: 3px solid #56a; }
+
+.tri-quad-def .shape-svg{
+  display:block; width:100%; height:120px;
+  overflow:hidden;              /* ← はみ出しを隠す */
+  position: relative;
+}
+.tri-quad-def .shape-svg svg{
+  width:100%; height:100%;      /* ← 枠いっぱいに収める */
+  display:block;
+}
+.tri-quad-def .badge{
+  position:absolute; right:6px; top:6px; font-weight:bold;
+  padding:2px 6px; border-radius:999px; background:#eee;
+  border-top:2px solid var(--line-color, #333);
+  border-bottom:2px solid var(--line-color, #333);
+}
+.tri-quad-def .badge.ok{ background:#e6ffe6; }
+.tri-quad-def .shape-card.ok{
+  box-shadow: 0 0 0 3px #9edaa5 inset;
+}
+.tri-quad-def .shape-card.wrong{
+  animation: flashWrong 0.8s;
+  box-shadow: 0 0 0 3px #ffb3b3 inset;
+}
+@keyframes flashWrong{
+  0%{ transform: translateY(0); }
+  20%{ transform: translateY(-2px); }
+  40%{ transform: translateY(2px); }
+  60%{ transform: translateY(-1px); }
+  80%{ transform: translateY(1px); }
+  100%{ transform: translateY(0); }
+}
+
+.tri-quad-def .app-footer{
+  display:flex; align-items:center; justify-content:space-between;
+  gap:12px; padding:10px 12px;
+}
+.tri-quad-def .btn{
+  padding:10px 14px; font-size:16px; cursor:pointer;
+  border-top: 4px solid var(--line-color, #333);
+  border-bottom: 4px solid var(--line-color, #333);
+  background:#fff;
+}
+.tri-quad-def .btn.emph{
+  background:#f6f9ff;
+}
+.tri-quad-def .scale-box select{
+  font-size:16px; padding:6px 10px;
+  border-top: 3px solid var(--line-color, #333);
+  border-bottom: 3px solid var(--line-color, #333);
+}

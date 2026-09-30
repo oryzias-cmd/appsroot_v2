@@ -1,0 +1,285 @@
+:root{
+  --mm: 3.78px;
+
+  /* 級数・寸法（縦書き側） */
+  --font-mm: 12;
+  --wakachi-mm: 10;
+  --btn-mm: 22;
+  --btn-radius-mm: 3;
+  --btn-font-mm: 16;
+  --slot-gap-mm: 2;
+  --slot-inline-mm: 10;  /* ←ご指定どおり */
+  --col-gap-mm: 80;      /* ←ご指定どおり */
+  --brace-pad-mm: 11;
+
+  --paper-pad: calc(8 * var(--mm));
+  --ink: #111;
+  --ink-weak: #555;
+  --accent: #2979ff;
+  --ok: #d40000;
+  --ok2: #0a6bff;
+  --select-bg: #e7f0ff;
+
+  --center-nudge-mm: 0;     /* 中央の微調整つまみ（必要なら ±） */
+  --header-btn-w: auto;     /* ヘッダーボタンの統一幅（JSで設定） */
+--line-vert: 1.55;   /* 縦書きの字間（好みで 1.50～1.60） */
+/* 自動改行用に、問題エリアの最大高さ(px)をJSから入れる */
+--qa-maxh: 60vh;         /* 初期値。JSで上書きされます */
+/* 文字だけの行（.phrase）の上下余白（mm） */
+--phrase-gap-mm: 3;      /* 好みで 2〜5 程度 */
+/* 文字だけの行（chunk-text）の左右余白：本文1文字ぶん */
+--text-row-inline-pad: calc(var(--font-mm) * var(--mm));
+}
+
+*{ box-sizing: border-box; }
+html{ scrollbar-gutter: stable both-edges; } /* スクロール有無での中央ずれ防止 */
+
+/* 画面の縦方向フレーム（親要素に高さを渡す） */
+html, body { height: 100%; }
+
+body{
+  margin: 0;
+  background: #fafafa;
+  color: var(--ink);
+  font-family: "UD Digi Kyokasho N-R","BIZ UDPGothic","Yu Mincho",serif;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* 用紙：右帯を除外してメインエリアを中央化（画面ごとに切り替え）
+#paper{
+  padding-right: calc(var(--paper-pad, 0px) + var(--reserve-right, 0px)) !important;
+  background-clip: content-box; 
+  max-width: 980px;
+  margin: 0 auto;
+  padding: var(--paper-pad);
+  flex: 1 1 auto;
+
+  display: grid;
+  grid-template-columns: 1fr var(--v-header-w); 
+  align-content: start;
+  justify-content: stretch;
+
+  min-height: 0;
+  width: 100%;
+  box-sizing: border-box;
+} */
+#paper{
+  /* 右帯除外は padding-right + background-clip で実施 */
+  padding-right: calc(var(--paper-pad, 0px) + var(--reserve-right, 0px)) !important;
+  background-clip: content-box; /* padding領域外へ背景を描かない */
+
+  max-width: 980px;
+  margin: 0 auto;
+  padding: var(--paper-pad);
+  flex: 1 1 auto;
+
+  /* ▼ ここを修正：gridは使わない（2列目＝青い帯の原因） */
+  display: block;             /* 既定に戻す */
+  /* grid-template-columns: 1fr var(--v-header-w);  ← 削除 */
+  /* align-content / justify-content は grid 用なので撤去 */
+  /* align-content: start; */
+  /* justify-content: stretch; */
+
+  min-height: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* メインエリア（footer直前まで／残り領域の中央に） */
+#questionArea{
+  grid-column: 1;          /* メイン列 */
+  justify-self: center;    /* 横中央寄せ */
+  align-self: start;       /* 上詰め */
+
+  margin: 0;
+  width: fit-content;
+  max-width: 100%;
+  caret-color: transparent;
+
+  flex: 1 1 auto;
+  height: calc(100vh - var(--footer-h));
+  min-height: 0;
+
+  display: flex;
+  flex-direction: column;
+}
+
+/* 各モードの書字方向だけ残す */
+#questionArea.vert{
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  line-height: var(--line-vert);
+  font-size: calc(var(--font-mm) * var(--mm));
+}
+#questionArea.hori{
+  writing-mode: horizontal-tb;
+  text-orientation: initial;
+  line-height: 1.6;
+  font-size: calc(5 * var(--mm));
+}
+#questionArea [data-stage="quiz"]{ user-select: none; }
+#questionArea [data-stage="quiz"] .choice{ user-select: auto; }
+
+/* 分かち／改行スペーサなど（縦書き時に効く） */
+.phrase{ display: inline-block; white-space: nowrap; vertical-align: middle; margin-block: calc(var(--phrase-gap-mm) * var(--mm));  /* ← 文字行の上下にゆとり */
+}
+.wakachi{ display: inline-block; inline-size: calc(var(--wakachi-mm) * var(--mm)); block-size: 1px; }
+.linebreak{ display: inline-block; inline-size: 0; margin-block: calc(var(--col-gap-mm) * var(--mm)); }
+/* 文節（/ で区切られたかたまり）＝箱の中では改行しない */
+.chunk{
+  display: inline-block;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+/* ★文字だけの文節（スロット無し）は左右にゆとりを付ける */
+.chunk-text{
+   margin-block: var(--text-row-inline-pad); 
+  }
+
+/* ── ホーム画面 ─────────────────────────── */
+.home{
+  display: grid;
+  gap: calc(8 * var(--mm));
+  justify-items: center;
+  align-content: start;
+  cursor: default;
+  user-select: none;
+  caret-color: transparent;          /* 余白クリック時の点滅カーソルを消す */
+}
+.home h1{ font-size: calc(8 * var(--mm)); margin: 0; }
+
+/* 大きな枠（3つとも同サイズに揃える。幅/高さはJSでCSS変数に入れる） */
+.home .group{
+  --group-base: #cfcfcf;   /* 既定（上書きされる） */
+  --group-bg:   #ffffff;
+  --group-act:  #888888;
+  --group-act-t:#ffffff;
+
+  border: 1.5px solid var(--group-base);
+  border-radius: 16px;
+  padding: calc(6 * var(--mm));
+  display: grid;
+  place-items: center;
+  width:  var(--group-w, auto);
+  height: var(--group-h, auto);
+  background: var(--group-bg);
+}
+
+/* 1行目＝種類（赤） */
+.group-course{
+  --group-base:#e84a4a;   /* 枠と未選択ボタンの線色 */
+  --group-bg:#ffe8e8;     /* 大きな枠の地色（薄い赤） */
+  --group-act:#e53935;    /* 選択ボタンの塗り（濃い赤） */
+  --group-act-t:#ffffff;  /* 選択ボタンの文字色 */
+}
+
+/* 2行目＝レベル（緑） */
+.group-level{
+  --group-base:#198f3a;
+  --group-bg:#eaf7ee;     /* 薄い緑 */
+  --group-act:#1a8f37;    /* 濃い緑 */
+  --group-act-t:#ffffff;
+}
+
+/* 3行目＝問題数（黄） */
+.group-count{
+  --group-base:#d4a000;
+  --group-bg:#fff7d6;     /* 薄い黄 */
+  --group-act:#ffd24d;    /* 濃い黄（見やすさのため文字は濃い茶） */
+  --group-act-t:#3a2e00;
+}
+
+.home .row{
+  display: flex;
+  gap: calc(4 * var(--mm));
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* 種類の行だけは必ず1列（折返しなし） */
+#rowCourse{ flex-wrap: nowrap; }
+
+/* 選択ボタン（共通） */
+.pick{
+  padding: calc(3 * var(--mm)) calc(5 * var(--mm));
+  border: 1.5px solid var(--group-base);   /* 行の基調色を使う */
+  border-radius: 12px;
+  background: #fff;
+  cursor: pointer;
+  font-size: calc(5 * var(--mm));
+  min-width: var(--pick-w, auto);
+  transition: background .12s ease, border-color .12s ease, color .12s ease;
+}
+.pick:focus,
+.pick:focus-visible{ outline: none; }  /* 青いフォーカス枠を消す */
+
+/* レベル無効化（まとめ選択時） */
+.pick.is-disabled,
+.pick:disabled{
+  opacity: .45;
+  cursor: not-allowed;
+  pointer-events: none;
+  background: #f5f5f5;
+  border-color: #e1e1e1;
+}
+
+/* はじめるボタン（そのまま・少し下げる） */
+.start{
+  padding: calc(4 * var(--mm)) calc(10 * var(--mm));
+  border: none;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #fff;
+  font-size: calc(6 * var(--mm));
+  cursor: pointer;
+  margin-top: calc(10 * var(--mm));
+}
+
+/* ── 結果画面 ─────────────────────────── */
+.result{
+  display: grid; gap: calc(6 * var(--mm)); justify-items: center; text-align: center;
+}
+.bigscore{ font-size: calc(16 * var(--mm)); font-weight: 700; letter-spacing: .05em; }
+.result .row{ display: flex; gap: calc(4 * var(--mm)); flex-wrap: wrap; justify-content: center; }
+
+/* ===== HOME 色指定（必ず最後に置く） ===== */
+.home .group-course{
+  background:#ffe8e8; border-color:#e84a4a;
+}
+.home .group-level{
+  background:#eaf7ee; border-color:#198f3a;
+}
+.home .group-count{
+  background:#fff7d6; border-color:#d4a000;
+}
+
+/* 行ごとの選択色（薄い塗りではなく“濃い色で塗る＋文字色”） */
+.home .group-course .pick[aria-pressed="true"]{
+  background:#e53935; border-color:#e53935; color:#fff;
+}
+.home .group-level .pick[aria-pressed="true"]{
+  background:#1a8f37; border-color:#1a8f37; color:#fff;
+}
+.home .group-count .pick[aria-pressed="true"]{
+  background:#ffd24d; border-color:#ffd24d; color:#3a2e00;
+}
+
+/* フォーカスの青枠は引き続き無効化 */
+.home .pick:focus,
+.home .pick:focus-visible{ outline:none; }
+/* ───── メニュー画面だけ：縦余白を少し詰めて「はじめる」を完全表示 ───── */
+body.screen-menu #questionArea .home {
+  row-gap: 16px;            /* 全体の行間を少しだけ詰める（従来より-8〜-12px相当） */
+}
+
+body.screen-menu #questionArea .home .group {
+  margin-bottom: 8px;       /* 各グループ下の余白を小さめに */
+}
+
+body.screen-menu #questionArea .home .start {
+  margin-top: 8px;          /* ボタン上の余白を控えめに（押し上げ効果） */
+}

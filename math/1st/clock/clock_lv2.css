@@ -1,0 +1,222 @@
+/* clock_lv2.css
+   時計②専用差分。基本部品（進行・歯車・時計・4ヒント・主操作ボタン）は clock.css を共用する。
+*/
+
+/* ①と同じ2カラム幅。②では左＝問題/判定、右＝操作時計。 */
+.lv2-layout{
+  grid-template-columns:minmax(0,420px) minmax(0,420px)!important;
+  align-items:stretch!important;
+  justify-content:center!important;
+  column-gap:32px!important;
+}
+
+.lv2-left-panel{
+  --right-column-width:min(420px,92vw);
+  width:100%;
+  max-width:var(--right-column-width);
+  margin:0 auto;
+  display:flex;
+  flex-direction:column;
+  align-items:stretch;
+  min-height:0;
+}
+
+.lv2-problem-card{
+  width:100%;
+  min-height:112px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:12px 10px;
+  background:#fff;
+  border-radius:20px;
+  box-shadow:var(--shadow-soft);
+}
+
+/* ①の回答欄と同じ部品をそのまま問題表示に使う。 */
+.lv2-target-time-row{
+  width:100%;
+}
+.lv2-target-time-row .answer-box input{
+  pointer-events:none;
+  caret-color:transparent;
+}
+.lv2-target-time-row .answer-box input[readonly]{
+  color:inherit;
+}
+
+/* コメントパネルは内容が収まる範囲で固定。余白を取りすぎない。 */
+.lv2-review-panel{
+  flex:0 0 360px;
+  height:360px;
+  min-height:360px;
+  margin-top:14px;
+  padding:0;
+  border-radius:20px;
+  background:#fff;
+  box-shadow:var(--shadow-soft);
+  overflow:hidden;
+  display:flex;
+}
+
+.lv2-review-panel .feedback-card{
+  width:100%;
+  height:100%!important;
+  min-height:0!important;
+  max-height:none!important;
+  margin:0!important;
+  padding:18px 22px!important;
+  box-shadow:none!important;
+  border-radius:20px!important;
+  overflow:auto;
+}
+
+.lv2-review-panel .feedback-card.hidden{
+  /* パネル自体の寸法は変えない。中身だけ空にする。 */
+  display:block!important;
+  visibility:hidden;
+}
+
+.lv2-review-panel .fb-title{
+  margin:2px 0 16px!important;
+  font-size:1.55rem!important;
+  text-align:center;
+  font-weight:700;
+}
+
+.lv2-review-panel .fb-explain-block{
+  margin:12px 0 0;
+}
+.lv2-review-panel .fb-explain-head{
+  font-size:1.18rem;
+  font-weight:700;
+  line-height:1.35;
+}
+.lv2-review-panel .fb-explain-text{
+  margin-top:3px;
+  padding-left:1.15em;
+  font-size:1.2rem;
+  line-height:1.55;
+}
+
+/* 「正解を見る／自分の答えを見る」は振り返り操作なのでコメントパネル内。 */
+.lv2-answer-toggle-wrap{
+  display:flex;
+  justify-content:center;
+  margin-top:18px;
+}
+.lv2-answer-toggle{
+  min-width:210px;
+  min-height:46px;
+  padding:8px 20px;
+  border:2px solid #81c784;
+  border-radius:999px;
+  background:#e8f5e9;
+  color:#2e7d32;
+  font:inherit;
+  font-size:1.02rem;
+  font-weight:700;
+  cursor:pointer;
+}
+.lv2-answer-toggle:hover{
+  background:#dff1e1;
+}
+.lv2-answer-toggle:active{
+  background:#d3ead6;
+  transform:translateY(1px);
+}
+
+/* 主操作は①と同じ下端。 */
+.lv2-left-panel > .check-next-btn{
+  width:100%!important;
+  max-width:none!important;
+  margin-top:14px!important;
+}
+
+/* 判定後は針を固定。表示切替はJSから setTime だけで行う。 */
+#clockContainer.is-locked .clock-svg{
+  pointer-events:none;
+}
+#clockContainer.is-locked{
+  cursor:default;
+}
+
+/* ②でも時計+4ヒントは①と同じ幅・サイズをそのまま使用。 */
+.lv2-clock-column{
+  width:100%;
+  max-width:min(420px,92vw);
+  margin:0 auto;
+}
+
+@media (max-width:760px){
+  .lv2-layout{
+    grid-template-columns:minmax(0,1fr)!important;
+    gap:16px!important;
+  }
+  .lv2-left-panel{order:1;max-width:min(420px,94vw)}
+  .lv2-clock-column{order:2;max-width:min(420px,94vw)}
+  .lv2-review-panel{flex-basis:330px;height:330px;min-height:330px}
+  .lv2-review-panel .feedback-card{min-height:0!important}
+}
+
+
+/* =========================================================
+   v2 revision15：時計② 仕上げ調整
+   1) 正解/自分の答えトグルをコメントパネル下部へ固定
+   2) 主操作ボタンの下端を右側ヒント下段の下端とそろえる
+   ========================================================= */
+
+/* コメント本文の量にかかわらず、比較トグルはパネル最下部の同じ位置。 */
+.lv2-review-panel .feedback-card{
+  display:flex!important;
+  flex-direction:column!important;
+}
+.lv2-answer-toggle-wrap{
+  margin-top:auto!important;
+  padding-top:14px;
+  flex:0 0 auto;
+}
+
+/* 左右カラムは同じグリッド行高を共有。
+   左の主操作ボタンを最下段へ押し下げることで、
+   右のヒント下段と下端を一致させる。 */
+@media (min-width:720px){
+  .lv2-layout{
+    align-items:stretch!important;
+  }
+  .lv2-left-panel,
+  .lv2-clock-column{
+    align-self:stretch!important;
+  }
+  .lv2-left-panel > .check-next-btn{
+    margin-top:auto!important;
+    margin-bottom:0!important;
+  }
+}
+
+
+/* =========================================================
+   v2 revision16：左右の下端を本当に同じ基準でそろえる
+   common側の grid-template-rows:minmax(0,1fr) を上書きし、
+   行高を右カラムの実寸（時計＋ヒント）で決める。
+   左カラムはその行高へ stretch し、主操作ボタンを最下端へ置く。
+   ========================================================= */
+@media (min-width:720px){
+  .lv2-layout{
+    grid-template-rows:auto!important;
+    align-items:stretch!important;
+    flex:0 0 auto!important;
+  }
+
+  .lv2-left-panel,
+  .lv2-clock-column{
+    height:auto!important;
+    min-height:0!important;
+    align-self:stretch!important;
+  }
+
+  .lv2-left-panel > .check-next-btn{
+    margin-top:auto!important;
+    margin-bottom:0!important;
+  }
+}

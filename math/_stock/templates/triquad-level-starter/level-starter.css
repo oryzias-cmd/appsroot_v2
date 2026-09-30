@@ -1,0 +1,8 @@
+/* 高さの保険（Lv1に既にある場合は上書き不要） */
+.board .board-inner { min-height: 520px; }
+#boardStage { position: relative; width: 100%; height: 100%; }
+#gridCanvas, #shapeLayer { position:absolute; inset:0; width:100%; height:100%; display:block; }
+
+/* モードボタンの反転（選択中） */
+.mode-btn.is-active,
+.mode-btn.is-active:focus { background:#111; color:#fff; border-color:#111; }

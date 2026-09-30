@@ -1,0 +1,321 @@
+/* ========================================
+   SetupCard Lego (A案)
+   - サクランボ Setup / Start ボタン完全一致版
+======================================== */
+
+/* wrapper */
+.setupcard-wrap{
+  /* ★共通サイズ変数
+     - 列幅
+     - ボタン幅
+  */
+--setupcard-col-w: 280px;
+
+/* ★列間隔 */
+--setupcard-col-gap: 20px;
+
+/* ★2列中央レイアウト余白 */
+--setupcard-col-gap-2: 56px;
+
+/* ★ボタン幅 */
+--setupcard-pill-w: 220px;
+
+  /* ★ボタン幅（entry / setup 共通） */
+  --setupcard-pill-w: 220px;
+
+  /* ★表示保証（どのmountでも「出てるのに見えない」を防ぐ） */
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0,0,0,0.35);
+
+  /* 既存レイアウト（そのまま） */
+  width:100%;
+  display:flex;
+  justify-content:center;
+  padding: 16px 10px 28px;
+
+  /* タブレット：選択事故を抑止（共通ルール） */
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  caret-color: transparent;
+}
+
+/* SetupCard内の入力系（チェック/ラジオ等）は操作できればOK。文字入力系の保険 */
+.setupcard-wrap input, .setupcard-wrap textarea{
+  -webkit-user-select: text;
+  user-select: text;
+  caret-color: auto;
+}
+
+/* 大カード */
+.setupcard-panel{
+  /* ★標準化：大パネル＝中身に追従して伸縮（はみ出し根治）
+     - 3列（例：280×3）でも自動で広がる
+     - ただし画面が狭い時は 96vw で頭打ち
+     - 最小幅は 700px を保証（狭い画面では 96vw）
+  */
+  width: fit-content;
+  max-width: 96vw;
+  min-width: min(700px, 96vw);
+
+  background:#ffffff;
+  border-radius:18px;
+  box-shadow:0 8px 24px rgba(0,0,0,0.15);
+  padding:24px 10px 28px;
+
+  /* ★本文フォントをここで統一（ラジオ/テンキー/ツールも全部そろう） */
+  font-family:"BIZ UDPGothic", sans-serif;
+}
+
+/* カラム */
+.setupcard-columns{
+  display:grid;
+  justify-content:center;
+
+  /* ★行gap / 列gap */
+  gap:16px var(--setupcard-col-gap,20px);
+
+  padding: 8px 10px 18px;
+}
+
+.setupcard-columns[data-cols="1"]{
+  grid-template-columns: 1fr;
+}
+
+/* ★列比率：未指定は 1fr にフォールバック */
+.setupcard-columns[data-cols="2"]{
+  /* 根治：2列は常に同幅で中央固定（左右余白がズレない） */
+  grid-template-columns: var(--setupcard-col-w, 280px) var(--setupcard-col-w, 280px);
+  justify-content: center;
+
+  /* 左右パネル間の距離（見た目安定） */
+column-gap: var(--setupcard-col-gap, 20px);
+padding-left: var(--setupcard-col-gap-2, 56px);
+padding-right: var(--setupcard-col-gap-2, 56px);
+  box-sizing: border-box;
+}
+
+/* ★列比率：未指定は 1fr にフォールバック */
+.setupcard-columns[data-cols="3"]{
+  /* ここでは固定しない。
+     setup.full.js が columns の weight から --setup-col1/2/3 を動的に入れる。 */
+  grid-template-columns:
+    var(--setup-col1, 1fr)
+    var(--setup-col2, 1fr)
+    var(--setup-col3, 1fr);
+}
+
+/* （列番号固定の拡張はしない：テンキーが中央とは限らないため） */
+
+@media (max-width: 860px){
+  .setupcard-columns[data-cols="3"]{ grid-template-columns: 1fr; }
+}
+@media (max-width: 720px){
+  .setupcard-columns[data-cols="2"]{ grid-template-columns: 1fr; }
+}
+
+/* 各カラム */
+.setupcard-col{
+  width: var(--setupcard-col-w, 280px);
+  min-width: var(--setupcard-col-w, 280px);
+  max-width: var(--setupcard-col-w, 280px);
+}
+
+/* 小カード */
+.setupcard-block{
+  padding:12px 16px 16px;
+  border-radius:16px;
+  border:1px solid #e5e5e5;
+}
+
+/* 列テーマ */
+.setupcard-col[data-col="1"] .setupcard-block{ background:#FFF4DE; }
+.setupcard-col[data-col="2"] .setupcard-block{ background:#E7F6E8; }
+.setupcard-col[data-col="3"] .setupcard-block{ background:#F1E9FF; }
+
+/* 小カード見出し */
+.setupcard-label{
+  margin: 6px 0 10px;
+  text-align:center;
+  font-size:1.35rem;
+  font-weight:700;
+  font-family:"BIZ UDPGothic", sans-serif;
+}
+
+/* 説明 */
+.setupcard-desc{
+  margin: 0 0 10px;
+  text-align:center;
+  font-size:1.05rem;
+  color:#444;
+}
+
+/* ラジオ群 */
+.setupcard-options{
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+  align-items:center;
+}
+
+/* 選択ピル（ラジオ/チェック共通）
+   - 将来のブレ防止：見た目はここ1か所で管理
+   - 互換のため .setupcard-pill も同じ定義に含める
+*/
+.select-pill,
+.setupcard-pill{
+  display:grid;
+  grid-template-columns: 24px 1fr 24px;
+  align-items:start;
+  column-gap:0.35rem;
+  padding:12px 14px;
+
+  /* ★ボタン幅（共通変数） */
+  min-width:var(--setupcard-pill-w, 220px);
+
+  border-radius:999px;
+  border:1px solid #bbb;
+  background:#ffffff;
+  font-size:1.2rem;
+  cursor:pointer;
+}
+
+.select-pill:hover,
+.setupcard-pill:hover{
+  box-shadow:0 4px 10px rgba(0,0,0,0.12);
+}
+
+.select-pill input[type="radio"],
+.select-pill input[type="checkbox"],
+.setupcard-pill input[type="radio"],
+.setupcard-pill input[type="checkbox"]{
+  grid-column:1;
+  justify-self:center;
+  align-self:center;   /* ★2行でも○/☑をピルの中央へ */
+}
+
+.select-pill span,
+.setupcard-pill span{
+  grid-column:2;
+  text-align:center;
+  white-space: pre-line;
+  line-height: 1.35;       /* ★2行の行間を広げる */
+}
+
+.select-pill-spacer,
+.setupcard-pill-spacer{
+  grid-column:3;
+}
+
+/* ===============================
+   Start ボタン（サクランボ完全一致）
+=============================== */
+
+.setupcard-actions{
+  display:flex;
+  justify-content:center;
+  padding-top: 14px;
+}
+
+/* ▶ 有効（サクランボと同色・同形） */
+.setupcard-start{
+  min-width: 300px;
+  padding: 18px 42px;
+
+  font-size:1.6rem;
+  font-family:"BIZ UDPGothic", sans-serif;
+  font-weight:700;
+
+  border-radius:999px;
+
+  background:#FF7A3D;          /* ← サクランボと同じ濃オレンジ */
+  border: none;
+  color:#ffffff;
+
+  box-shadow:
+    0 6px 0 #E35F23,
+    0 10px 18px rgba(0,0,0,0.25);
+
+  cursor:pointer;
+}
+
+/* ▶ 押下感（サクランボと同じ） */
+.setupcard-start:active{
+  transform: translateY(3px);
+  box-shadow:
+    0 3px 0 #E35F23,
+    0 6px 12px rgba(0,0,0,0.22);
+}
+
+/* ▶ 無効（未選択：ごく薄い） */
+.setupcard-start:disabled{
+  background:#FFF1E6;          /* 極薄オレンジ */
+  color:#C9B4A3;
+  box-shadow:none;
+  transform:none;
+  cursor:default;
+}
+
+/* ========================================
+   常設：漢字/ひら 丸トグル（B-2：CSS管理）
+   - 位置（left/top）と直径（width/height）は JS が設定
+   - 見た目だけを CSS に寄せる
+======================================== */
+.setupcard-wm-toggle{
+  position:absolute;
+  z-index:50;
+
+  display:inline-flex;
+  justify-content:center;
+  align-items:center;
+
+  box-sizing:border-box;
+  border-radius:999px;
+
+  /* ★算数kitの丸トグルと一致させる */
+  border:1px solid var(--wm-mini-border, #007AFF);
+  background: var(--wm-mini-bg, transparent);
+
+  box-shadow:none;
+  outline:none;
+
+  font-family:"BIZ UDPGothic", sans-serif;
+  font-weight:700;
+  letter-spacing:0.02em;
+
+  cursor:pointer;
+  user-select:none;
+  -webkit-user-select:none;
+  caret-color:transparent;
+}
+
+.setupcard-wm-toggle:active{
+  transform:none;
+}
+
+/* customカードの中身用（テンキーなど） */
+.setupcard-custom{
+  margin-top: 10px;
+}
+
+/* =========================================
+   SetupCard option disabled（B2）
+   - 見た目：薄く
+   - カーソル：禁止
+   - hover効果：なし
+   ========================================= */
+.setupcard-pill.is-disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.setupcard-pill.is-disabled:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+.setupcard-pill.is-disabled input {
+  cursor: not-allowed;
+}

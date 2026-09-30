@@ -1,0 +1,323 @@
+/* ===== sakura.css（全文）===== */
+:root{
+  --app-bg: #ffffff;
+  --panel-bg: #ffffff;
+  --border-soft: rgba(0,0,0,0.12);
+  --vside-w: 360px;
+  --vside-bg: #f7fbff;
+  --vside-border: rgba(0,0,0,0.08);
+
+  /* 数式の既定フォント（教科書体へ寄せる） */
+  --eq-font: "UD Digi Kyokasho N-R","UD Digi Kyokasho NK-R","YuKyokasho",system-ui,sans-serif;
+}
+
+/* ===== リセット系（最小） ===== */
+*{ box-sizing:border-box; }
+html,body{ height:100%; }
+
+/* hidden 属性は常に非表示（UA差異対策） */
+[hidden]{
+  display:none !important;
+}
+
+body{
+  margin:0;
+  background: var(--app-bg);
+  color:#111;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+}
+
+/* ===== ルート ===== */
+.app-root{
+  min-height:100%;
+  display:flex;
+  flex-direction:column;
+}
+
+/* ヘッダーは共通レゴが描く */
+#slot-header{
+  flex:0 0 auto;
+}
+
+/* メイン */
+.app-main{
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+/* ===== quiz（kuku系の骨格が残っている前提のスタイル） ===== */
+.quiz-inner{
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+}
+
+.timer-banner{
+  font-family: "UD Digi Kyokasho N-R","UD Digi Kyokasho NK-R","YuKyokasho",system-ui,sans-serif;
+  font-size: 18px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(0,0,0,0.10);
+  background: rgba(255,255,255,0.85);
+  position:absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 10;
+}
+
+/* 式（既存DOMが残っている前提） */
+.quiz-eq-wrapper{
+  display:flex;
+  justify-content:center;
+  padding-top: 16px;
+}
+.eq-panel{
+  width: min(860px, 96vw);
+}
+.quiz-grid{
+  display:block;
+}
+.reading-row{
+  display:grid;
+  grid-template-columns: 88px 1fr 120px;
+  gap: 10px;
+  align-items:center;
+  margin-bottom: 6px;
+}
+.reading-col{
+  min-height: 28px;
+}
+.reading-main, .reading-ans{
+  font-family: var(--eq-font);
+  font-size: 20px;
+  font-weight: 700;
+  text-align:center;
+  opacity: 0.8;
+}
+.reading-index{
+  opacity:0.6;
+}
+.equation-row{
+  display:grid;
+  grid-template-columns: 88px 1fr;
+  gap: 10px;
+  align-items:center;
+}
+.qindex-badge{
+  font-family: var(--eq-font);
+  font-size: 18px;
+  font-weight: 800;
+  opacity: 0.85;
+  text-align:center;
+}
+.equation-box{
+  font-family: var(--eq-font);
+  font-size: 30px;
+  font-weight: 800;
+  text-align:center;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(0,0,0,0.10);
+  background: rgba(255,255,255,0.85);
+}
+
+/* ○×（残っていてもJSで hidden にする想定） */
+.judge-row{
+  display:flex;
+  justify-content:center;
+  padding: 10px 0 12px;
+}
+.judge-buttons{
+  display:flex;
+  gap: 18px;
+}
+.ox-btn{
+  width: 82px;
+  height: 82px;
+  border-radius: 20px;
+  border: 2px solid rgba(0,0,0,0.12);
+  background:#fff;
+  display:grid;
+  place-items:center;
+}
+.ox-svg{
+  width: 64px;
+  height: 64px;
+}
+.ox-ok .ox-svg circle{
+  stroke:#2aa84a;
+}
+.ox-ng .ox-svg line{
+  stroke:#cc2b2b;
+}
+
+/* ===== さくら（盤面UI） ===== */
+.sakura-quiz{
+  width: min(980px, 96vw);
+  margin: 0 auto;
+  padding: 10px 12px 12px;
+
+  display:grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 12px;
+
+  align-items:start;
+}
+
+.sakura-left{
+  min-width: 0;
+}
+
+.sakura-gridWrap{
+  width: min(640px, 100%);
+  margin: 0 auto;
+  position: relative;
+}
+
+.sakura-grid{
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  display:grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+
+  border: 3px solid #111;
+  background:
+    linear-gradient(#7bb9ff 1px, transparent 1px) 0 0 / 33.333% 33.333%,
+    linear-gradient(90deg, #7bb9ff 1px, transparent 1px) 0 0 / 33.333% 33.333%,
+    #fff;
+}
+
+.sakura-cell{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-family: var(--eq-font);
+  font-size: 42px;
+  font-weight: 800;
+  color:#111;
+  user-select:none;
+}
+
+/* 枝（SVG） */
+.sakura-branch{
+  position:absolute;
+  inset: 0;
+  pointer-events:none;
+}
+.sakura-branchLine{
+  stroke:#111;
+  stroke-width: 3.2;
+  stroke-linecap: round;
+}
+
+/* ヒント○ */
+.sakura-hints{
+  width: min(640px, 100%);
+  margin: 10px auto 0;
+  display:flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content:center;
+}
+.sakura-hint{
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  border: 2px solid rgba(0,0,0,0.25);
+  background: #fff;
+}
+.sakura-hint.is-on{
+  background: #ff6ea8;
+  border-color: rgba(0,0,0,0.18);
+}
+
+/* 右：テンキー */
+.sakura-right{
+  border-left: 1px solid rgba(0,0,0,0.08);
+  padding-left: 12px;
+}
+
+.sakura-keypadPanel{
+  background: rgba(255,255,255,0.75);
+  border: 1px solid rgba(0,0,0,0.10);
+  border-radius: 16px;
+  padding: 10px 10px 12px;
+}
+
+.sakura-hintBtn{
+  width: 100%;
+  height: 46px;
+  border-radius: 999px;
+  border: 2px solid rgba(0,0,0,0.12);
+  background:#fff;
+  font-family: var(--eq-font);
+  font-size: 18px;
+  font-weight: 800;
+  margin-bottom: 10px;
+}
+
+.sakura-keypad{
+  display:grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.sakura-key{
+  height: 64px;
+  border-radius: 16px;
+  border: 2px solid rgba(0,0,0,0.12);
+  background:#fff;
+  font-family: var(--eq-font);
+  font-size: 22px;
+  font-weight: 900;
+}
+
+.sakura-next{
+  width: 100%;
+  height: 64px;
+  border-radius: 999px;
+  border: 2px solid rgba(0,0,0,0.12);
+  background:#fff;
+  font-family: var(--eq-font);
+  font-size: 22px;
+  font-weight: 900;
+  margin-top: 12px;
+}
+.sakura-next:disabled{
+  opacity: 0.45;
+}
+
+/* ○×表示（最小） */
+.sakura-mark{
+  margin-top: 10px;
+  text-align:center;
+  font-family: var(--eq-font);
+  font-size: 44px;
+  font-weight: 900;
+}
+
+/* ===== カウントダウンオーバーレイ ===== */
+.countdown-overlay{
+  position: fixed;
+  inset: 0;
+  background: rgba(255,255,255,0.65);
+  z-index: 9999;
+  display:block;
+}
+.countdown-number{
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%,-50%);
+  font-family: "UD Digi Kyokasho N-R","UD Digi Kyokasho NK-R","YuKyokasho",system-ui,sans-serif;
+  font-size: 120px;
+  font-weight: 700;
+  color:#111;
+  background: rgba(255,255,255,0.85);
+  border-radius: 18px;
+  padding: 12px 26px;
+  box-shadow: 0 10px 26px rgba(0,0,0,0.18);
+  z-index: 5;
+}

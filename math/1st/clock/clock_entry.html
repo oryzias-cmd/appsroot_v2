@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>とけい</title>
+  <link rel="stylesheet" href="../../../common/shell/setup.full.css" />
+  <link rel="stylesheet" href="./clock_entry.css" />
+  <link rel="stylesheet" href="./clock_settings.css" />
+</head>
+<body>
+  <button id="entryBack" class="entry-float entry-back" type="button">← もどる</button>
+  <button id="entrySettings" class="entry-float entry-gear" type="button" aria-label="せっていを ひらく">⚙</button>
+
+  <main class="entry-main">
+    <section class="setupcard-wrap">
+      <div class="setupcard-panel entry-panel">
+        <div class="setupcard-columns entry-columns" data-cols="2">
+          <div class="setupcard-col" data-col="1">
+            <div class="setupcard-block">
+              <h2 id="entryProblemTitle" class="setupcard-label">もんだい</h2>
+              <div class="setupcard-options">
+                <label class="setupcard-pill select-pill">
+                  <input type="radio" name="app" value="clock1" checked />
+                  <span id="entryReadLabel">とけい①<br>よむ</span><span class="setupcard-pill-spacer"></span>
+                </label>
+                <label class="setupcard-pill select-pill">
+                  <input type="radio" name="app" value="clock2" />
+                  <span id="entryMoveLabel">とけい②<br>うごかす</span><span class="setupcard-pill-spacer"></span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="setupcard-col" data-col="2">
+            <div class="setupcard-block">
+              <h2 id="entryCountTitle" class="setupcard-label">もんだいの かず</h2>
+              <div class="setupcard-options">
+                <label class="setupcard-pill select-pill">
+                  <input type="radio" name="qnum" value="3" checked />
+                  <span id="entryQ3">3もん</span><span class="setupcard-pill-spacer"></span>
+                </label>
+                <label class="setupcard-pill select-pill">
+                  <input type="radio" name="qnum" value="5" />
+                  <span id="entryQ5">5もん</span><span class="setupcard-pill-spacer"></span>
+                </label>
+                <label class="setupcard-pill select-pill">
+                  <input type="radio" name="qnum" value="10" />
+                  <span id="entryQ10">10もん</span><span class="setupcard-pill-spacer"></span>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="setupcard-actions">
+          <button id="entryStart" class="primary-btn setupcard-start" type="button">スタート</button>
+        </div>
+
+        <button id="entryWordMode" class="entry-word-mode" type="button">カタ→</button>
+      </div>
+    </section>
+  </main>
+
+  <div id="clockSettingsMount"></div>
+
+  <script src="./clock_text.js"></script>
+  <script src="./clock_settings.js"></script>
+  <script src="./clock_entry.js"></script>
+</body>
+</html>

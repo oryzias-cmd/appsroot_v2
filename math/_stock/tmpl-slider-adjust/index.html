@@ -1,0 +1,29 @@
+<!doctype html><html lang="ja"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>テンプレ：スライダー調整</title>
+<link rel="stylesheet" href="../../shared/css/base.css">
+<link rel="stylesheet" href="./css/app.css">
+<script src="../../shared/js/common.js" defer></script>
+<script src="./js/app.js" defer></script>
+</head><body>
+<header class="app-header">
+  <button class="btn btn-back" onclick="history.back()">{ もどる }</button>
+  <h1 class="title">値を合わせよう</h1>
+  <button class="btn btn-help" onclick="alert('スライダーを動かし、目標に合わせよう')">？</button>
+</header>
+
+<main class="adjust-main">
+  <div class="target">目標：<span id="targetVal">50</span><span id="unit">cm</span></div>
+  <div class="bar"><div id="barFill"></div></div>
+  <input id="slider" type="range" min="0" max="100" value="30">
+  <div class="now">現在：<span id="nowVal">30</span><span id="unit2">cm</span></div>
+  <div id="judge" class="judge"></div>
+</main>
+
+<footer class="app-footer">
+  <div class="main-controls">
+    <button class="btn" id="btnRetry">{ やり直し }</button>
+    <button class="btn" id="btnNext">{ つぎの問題 }</button>
+  </div>
+</footer>
+</body></html>

@@ -1,0 +1,32 @@
+<!doctype html><html lang="ja"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>テンプレ：クリック探索</title>
+<link rel="stylesheet" href="../../shared/css/base.css">
+<link rel="stylesheet" href="./css/app.css">
+<script src="./js/app.js" defer></script>
+</head><body>
+<header class="app-header">
+  <button class="btn btn-back" onclick="history.back()">{ もどる }</button>
+  <h1 class="title">見つけよう</h1>
+  <button class="btn btn-help" onclick="alert('絵の中の指定された部分をクリックしよう')">？</button>
+</header>
+
+<main class="spot">
+  <div class="prompt">お題：<span id="prompt">ひし形を見つけよう</span></div>
+  <svg id="scene" viewBox="0 0 400 240" class="scene" aria-label="探索図">
+    <!-- 背景（例） -->
+    <rect x="0" y="0" width="400" height="240" fill="#fafafa" stroke="#333" stroke-width="3"/>
+    <!-- クリック領域（例として3つ） -->
+    <polygon id="hit1" points="60,60 100,80 60,100 20,80" fill="#e8f3ff" stroke="#333" />
+    <polygon id="hit2" points="220,80 260,120 220,160 180,120" fill="#f9e8f1" stroke="#333" />
+    <polygon id="hit3" points="330,40 370,80 330,120 290,80" fill="#eef7d4" stroke="#333" />
+  </svg>
+  <div class="status">命中：<span id="hits">0</span> / 3</div>
+</main>
+
+<footer class="app-footer">
+  <div class="main-controls">
+    <button class="btn" id="btnRetry">{ やり直し }</button>
+  </div>
+</footer>
+</body></html>

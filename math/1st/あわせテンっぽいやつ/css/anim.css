@@ -1,0 +1,24 @@
+/* ==== 切替アニメ専用：カードは常に可視。choices だけを上下に動かす ==== */
+
+/* カード側の transform/opacity は一切使わない（過去CSSの影響を無効化） */
+.card { transform: none !important; opacity: 1 !important; }
+
+/* 過去の .pre-in / .slide-out が残っていても影響しないよう無効化（カードに限る） */
+.card.pre-in, .card.slide-out { transform: none !important; opacity: 1 !important; }
+
+/* 常に transition を有効化：切替フレームで確実にアニメ発火 */
+.choices {
+  will-change: transform;
+  transition: transform var(--slide-ms, 500ms) cubic-bezier(.4,0,.2,1);
+}
+
+/* 定位置／下待機／上退場（不透明度は使わない＝点滅しない） */
+.ch-at  { transform: translateY(0); }
+.ch-pre { transform: translateY(200vh); }   /* 画面外の下から入場 */
+.ch-out { transform: translateY(-350vh); }  /* 画面外の上へ退場 */
+
+/* 旧CSSのfade指定を完全に打ち消す（常に不透明で動かす） */
+.ch-at, .ch-pre, .ch-out { opacity: 1 !important; }
+
+/* hiddenのカードはクリック無効化のみ（表示は .choices が制御） */
+.card.hidden .choices { pointer-events: none; }

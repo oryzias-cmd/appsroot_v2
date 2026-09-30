@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>２年　算数（さんすう）</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- 共通スタイル（第3弾と同じ呼び方に揃える） -->
+<link rel="stylesheet" href="../common/base.css">
+<link rel="stylesheet" href="../common/cards/card-pill.css">
+<link rel="stylesheet" href="../common/shell/header.full.css">
+
+  <style>
+    /* ▼ 第3弾と同じ「シェル」思想
+       header / main / footer の3行グリッドにして高さを安定させる */
+    body.app-shell{
+      min-height: 100vh;
+      margin: 0;
+
+      /* ★白ベースに統一 */
+      background: #fff;
+
+      color: #000;
+      font-family: "KyokashoUD", system-ui, sans-serif;
+      line-height: 1.4;
+
+      display: grid;
+      grid-template-rows: auto 1fr auto; /* ヘッダーは高さauto / 真ん中が伸びる / フッターauto */
+    }
+
+    /* 中央エリアが潰れないように */
+    #slot-main{ min-height: 0; overflow-y: auto; }
+
+    /* ▼ タブ＋単元カードの舞台 */
+.units-stage{
+      position: relative;
+      box-sizing: border-box;
+
+      /* タブとカードの間に少しだけ余白 */
+      padding-top: 10px;
+
+      /* ★1年と同じ：下のもったいない空白を作らない */
+      padding-bottom: 0;
+    }
+
+/* タブボタン（上/下） */
+.term-btn{
+  background:#fff;
+
+  /* 正方形イメージに近づける方向のたたき台（横を短め・縦を広め）
+     ← ここはこのあとでさらに詰めます。今は位置優先。 */
+  padding:8px 10px;
+  text-align:center;
+
+  width:50px;
+  height:50px;
+  min-width:50px;
+  min-height:50px;
+
+  border:2px solid #000;
+  border-radius:6px;
+  background:transparent;     /* ← 常時の背景なし */
+  box-shadow:none;            /* ← 影なしでシンプルに */
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  font-family:"KyokashoUD", system-ui, sans-serif;
+  font-size:26px;             /* ← 約2段階拡大 */
+  line-height:1;
+  font-weight:600;
+  color:#000;
+  cursor:pointer;
+  user-select:none;
+
+  transition:background-color 0.15s, color 0.15s;
+}
+
+
+.term-tabs{
+  position:absolute;
+  top:0;
+  left:0;
+  right:0;
+
+  /* この中で左右にボタンを振り分ける */
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+
+  padding:4px 12px;            /* 左右端から少しだけ内側に */
+  box-sizing:border-box;
+  pointer-events:none;         /* デフォではクリック無効 */
+  height:0;                    /* レイアウトの邪魔をしない */
+}
+
+.term-tabs > div{
+  pointer-events:auto;         /* 個々のタブボタンは押せる */
+}
+/* ▼ カード全体のレイアウト（列ラップ） */
+.columns-wrap{
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-start;
+
+  /* 上余白を削除してボタン上端とそろえる */
+  margin-top: 0;
+  padding-top: 0;
+
+  /* ★1年と同じ：横に余裕を出す（縦は詰めすぎない） */
+  gap: 12px 36px;
+
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+/* ▼ 各ユニットカード */
+.unit-btn{
+  background: #fff;
+  border: 3px solid #444;
+  border-radius: 16px;
+  box-shadow: none;
+  color: #000;
+
+  min-height: 80px;
+
+  /* ★1年と同じ：ボタン全体の横幅を完全固定 */
+  width: calc(
+    2.0em          /* unit-no 本体 */
+    + 10px + 1px   /* unit-no の左右padding微調整 */
+    + 12em         /* unit-lines 本文エリア */
+    + 20px         /* unit-lines の左右padding (10px ×2) */
+  );
+
+  /* 番号エリア＋本文エリアを横並び */
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  position: relative;          /* ← 縦線(::before)の基準にする */
+
+  /* 内側の余白は左右だけ。上下は0で揃える */
+  padding: 0 10px;
+
+  cursor: pointer;
+  font-size: 20px;
+  line-height: 1.5;
+
+  /* ★外側余白は gap で管理 */
+  margin: 0;
+}
+
+.unit-btn:hover{
+  background: #eef5ff;
+}
+
+/* ===== 未配線（link:'#'）カード：グレーアウトして押せないのが一目で分かる ===== */
+.unit-btn.is-disabled{
+  opacity: 0.45;
+  cursor: default;
+  pointer-events: none;
+  border-color: #777;
+}
+.unit-btn.is-disabled:hover{
+  background: #fff; /* hoverで色が変わらない */
+}
+
+.unit-btn::before{
+  content: "";
+  position: absolute;
+
+  /* 番号エリアの右端に合わせて再計算した位置 */
+  left: calc(3px + 2em + 6px);
+
+  top: 0;
+  bottom: 0;
+
+  /* 線は細くてやさしいまま */
+  width: 1px;
+  background-color: #666;
+}
+
+/* 左側の「① |」みたいな番 */
+.unit-no{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 20px;
+  line-height: 1.4;
+  color: #000;
+
+  /* 左室の幅（今のままキープ） */
+  min-width: 2.0em;
+
+  /* 左右の余白を左右差つきで微調整し、数字が見た目中央に来るようにする */
+  padding-left: 1px;
+  padding-right: 9px;
+
+  box-sizing: border-box;
+}
+
+/* 右側の本文 */
+.unit-lines{
+  /* ★1年と同じ：本文エリア幅を固定して列幅を揃える */
+  flex: 0 0 auto;
+  width: 12em;
+  min-width: 12em;
+  max-width: 12em;
+
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+
+  padding: 2px 10px;
+
+  text-align: left;
+  color: #000;
+  font-size: 20px;
+  line-height: 1.5;
+
+  border: 0;
+}
+
+/* 各行テキスト */
+.unit-lines span{
+  overflow: visible;
+  /* ここは「自分で改行(\n)指定→<br>」方針 */
+  display: inline-block;
+}
+
+/* ==== レイアウト全体（ステージ3分割） ==== */
+.stage-grid{
+  display: flex;
+  flex-direction: row;
+
+  width: 100%;
+  max-width: 100%;
+
+  /* ← 上下の余白を完全にゼロにする */
+  padding: 0;
+  margin: 0;
+  padding-top: 0;
+  box-sizing: border-box;
+  background: none;
+}
+
+.stage-side {
+  width:70px;                /* ← 50→70 に拡大 */
+  min-width:70px;
+  display:flex;
+  align-items:flex-start;
+  justify-content:center;
+
+  padding-top:0;
+  padding-left:10px;         /* ← 左右に呼吸スペース */
+  padding-right:10px;
+
+  box-sizing:border-box;
+  background:none;           /* ← しま模様なし */
+
+  margin-top: 8px;
+  box-sizing: border-box;
+
+  /* サイド列自体をステージの最上端まで押し上げる */
+  align-self: flex-start;
+}
+
+.stage-main {
+  flex:1;
+  min-width:0;
+  padding:0;                 /* ← 左右余白0に */
+  box-sizing:border-box;
+
+  display:flex;
+  align-items:flex-start;
+  justify-content:center;
+}
+
+/* 1本の縦列（col-list） */
+.col-list{
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+
+  margin-top: 0;
+  padding-top: 0;
+
+  /* カード同士の縦すき間は gap で管理するのが安全 */
+  gap: 13px;
+
+  box-sizing: border-box;
+  padding-left: 0;
+  padding-right: 0;
+  margin-left: 0;
+  margin-right: 0;
+}
+
+/* カーソルが乗ったときだけ淡い算数ブルーで塗る */
+.term-btn:hover {
+  background:#e3f2ff;         /* 淡い青 */
+}
+
+/* アクティブ時：濃い算数ブルーで塗り、文字白 */
+.term-btn.is-active {
+  background:#0073d3;         /* やや濃い青（算数color） */
+  color:#fff;
+}
+
+</style>
+</head>
+
+<body class="app-shell" data-subject="math">
+  <!-- ▼ 第3弾と同じスロット構成を用意する -->
+<div id="slot-header" data-slot="header"></div>
+
+  <!-- ▼ 中央ゾーン：ここに 2年算数ランチャー本体 -->
+  <div id="slot-main">
+<section class="units-stage">
+  <div class="stage-grid">
+
+    <!-- 左カラム：上タブ -->
+    <aside class="stage-side stage-left">
+      <button class="term-btn is-active" data-term="upper">上</button>
+    </aside>
+
+    <!-- 中カラム：カード本体 -->
+    <main class="stage-main">
+      <div class="columns-wrap" id="columnsWrap">
+        <!-- JSが <div class="col-list">…</div> を注入します -->
+      </div>
+    </main>
+
+    <!-- 右カラム：下タブ -->
+    <aside class="stage-side stage-right">
+      <button class="term-btn" data-term="lower">下</button>
+    </aside>
+
+  </div>
+  </section>
+  </div>
+
+  <script>
+    // ==========
+    // データ定義
+    // ==========
+
+    // 上巻
+    const UNITS_UPPER = [
+      { no:'①', title:'わかりやすく \nあらわそう', link:'#' },
+      { no:'②', title:'たし算(ざん)の しかたを   \n考(かんが)えよう', link:'#' },
+      { no:'③', title:'ひき算(ざん)の しかたを \n考(かんが)えよう', link:'#' },
+      { no:'○', title:'どんな 計算(けいさん)に \nなるのかな', link:'#' },
+      { no:'④', title:'長(なが)さを はかって \nあらわそう', link:'#' },
+      { no:'⑤', title:'100より 大(おお)きい \n数(かず)を しらべよう', link:'#' },
+      { no:'⑥', title:'水(みず)の かさを \nはかって しらべよう', link:'#' },
+      { no:'⑦', title:'時計(とけい)を \n生活(せいかつ)に 生(い)かそう', link:'#' },
+      { no:'⑧', title:'計算(けいさん)の しかたを \nくふうしよう', link:'#' },
+      { no:'⑨', title:'ひっ算(さん)の しかたを \n考(かんが)えよう', link:'#' },
+      { no:'⑩', title:'さんかくや しかくの \n形(かたち)を しらべよう', link:'../math/2nd/shapes/shapes_entry.html' },
+    ];
+
+    // 下巻
+    const UNITS_LOWER = [
+      { no:'⑪', title:'かけ算(ざん)（１）', link:'../math/2nd/kuku/kuku_entry.html' },
+      { no:'⑫', title:'かけ算(ざん)（２）', link:'#' },
+      { no:'⑬', title:'４けたの数(かず)', link:'../math/2nd/kuraitable/entry.html' },
+      { no:'⑭', title:'長(なが)い　ものの \n長(なが)さの　たんい', link:'#' },
+      { no:'⑮', title:'たし算(ざん)と ひき算(ざん)', link:'#' },
+      { no:'⑯', title:'分数(ぶんすう)', link:'#' },
+      { no:'⑰', title:'はこの形(かたち)', link:'#' },
+    ];
+
+    // ==========
+    // コラム分割ロジック
+    // ==========
+    // 1列あたり最大5項目まで。列数はmin(3, ceil(total/5))。
+    // できるだけ均等になるよう配分する。
+    function splitIntoColumnsMax5(list){
+      const total = list.length;
+      const maxPerCol = 5;
+      let colCount = Math.ceil(total / maxPerCol);
+      if (colCount > 3) colCount = 3;
+
+      const baseSize = Math.floor(total / colCount);
+      let rem = total % colCount;
+
+      const columns = [];
+      let idx = 0;
+      for (let c = 0; c < colCount; c++){
+        const take = baseSize + (rem > 0 ? 1 : 0);
+        rem = Math.max(0, rem - 1);
+        const slice = list.slice(idx, idx + take);
+        columns.push(slice);
+        idx += take;
+      }
+      return columns;
+    }
+
+// 単元カードHTML
+function cardHTML(unit){
+  // 手動で入れた \n を <br> に変換してから表示する
+  // ★表示直前に（漢字(よみ)）フィルタを通す：JS正本
+  let titleRaw = (unit.title || "");
+  try{
+    if (window.AppWordFilter && window.AppGlobalWordMode){
+      titleRaw = window.AppWordFilter.applyParen(titleRaw, window.AppGlobalWordMode.load());
+    }
+  }catch(e){}
+  const safeTitle = String(titleRaw || "").replace(/\n/g, "<br>");
+  const safeLink = unit.link || "#";
+
+  // ★未配線判定（link が # のもの）
+  const clickable = (safeLink && safeLink !== "#");
+  const disabledClass = clickable ? "" : " is-disabled";
+  const ariaDisabled = clickable ? "false" : "true";
+  const tabIndex = clickable ? "0" : "-1";
+  const cursorStyle = clickable ? "cursor:pointer;" : "cursor:default;";
+
+  return `
+    <div class="unit-btn${disabledClass}"
+         data-link="${safeLink}"
+         aria-disabled="${ariaDisabled}"
+         tabindex="${tabIndex}"
+         style="${cursorStyle}">
+      <div class="unit-no"><span>${unit.no}</span></div>
+      <div class="unit-lines"><span>${safeTitle}</span></div>
+    </div>`;
+}
+
+// columnsWrap に描画
+function renderUnits(list){
+  const wrap = document.getElementById('columnsWrap');
+  const cols = splitIntoColumnsMax5(list);
+  wrap.innerHTML = cols.map(colItems=>{
+    return `
+      <div class="col-list">
+        ${colItems.map(cardHTML).join('')}
+      </div>
+    `;
+  }).join('');
+
+  // ★ここを追加：カードクリックでリンクに遷移
+  document.querySelectorAll('.unit-btn').forEach(btn=>{
+    const url = btn.getAttribute('data-link');
+    if (url && url !== '#') {
+      btn.addEventListener('click', ()=>{
+        location.href = url;
+      });
+    }
+  });
+}
+
+// タブ切り替え
+    let currentTerm = 'upper';
+
+    function setActiveTerm(term){
+      currentTerm = term;
+
+      document.querySelectorAll('.term-btn').forEach(btn=>{
+        const isMe = (btn.getAttribute('data-term') === term);
+        btn.classList.toggle('is-active', isMe);
+      });
+      renderUnits(term === 'upper' ? UNITS_UPPER : UNITS_LOWER);
+    }
+
+    function bindTabs(){
+      document.querySelectorAll('.term-btn').forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+          const term = btn.getAttribute('data-term');
+          setActiveTerm(term);
+        });
+      });
+    }
+
+// 初期表示：URLハッシュで upper / lower を選ぶ
+document.addEventListener('DOMContentLoaded', ()=>{
+  // ① タブ初期化
+  bindTabs();
+
+  // URLの #部分 を見て、下巻指定なら lower にする
+  const hash = (location.hash || '').replace('#','');
+  const initialTerm = (hash === 'lower') ? 'lower' : 'upper';
+  setActiveTerm(initialTerm);
+  // ★歯車（wordMode）切替で、今表示中のタブを再描画
+  window.addEventListener('global:wordMode-changed', ()=>{
+    setActiveTerm(currentTerm);
+  });
+  
+  // ② ヘッダーのタイトルをセット
+  document.dispatchEvent(new CustomEvent('header:set-title', {
+    detail: { text: "２年(ねん)　算数(さんすう)" }
+  }));
+});
+
+    // ▼ シェル用オプションを用意（第3弾と同じパターン）
+    //   header.full.js / footer.full.js が読む口
+    window.AppShellOptions = window.AppShellOptions || {};
+    window.AppShellOptions.titleAB = null; // 第3弾ではタイトルAB(三角形/四角形)を渡してたが今回は不要
+    window.AppShellOptions.backHref = "./index.html"; // ←戻したい場所に合わせて修正
+
+    // ★歯車の動作：漢字まじり ⇄ ひらがなのみ
+    window.AppShellOptions.gearAction = "wordMode";
+
+    // どの部品をどこに並べるか（第3弾のやり方を流用）
+    window.AppShellLayout = {
+      header:{ left:['backlink'], center:['title'], right:['settingsGear'] },
+      main:{ bottomCenter:[] },
+      footer:{ left:[], center:[], right:[] }
+    };
+
+    // 戻るボタンなどが参照する戻り先・タイトルなど
+    // 第3弾では data-title / data-back を使っていませんでしたが、
+    // 今回は header には「２年　算数（さんすう）」を出したいので、
+    // header.full.js 側が title をどう取っているかでここを調整します。
+    // もし header.full.js が AppShellLayout 経由で 'title' を描画するなら、
+    // window.AppShellOptions.titleText のようなプロパティを見ている可能性があります。
+    // 不明な場合は次ターンで header.full.js の中身を見せてください。
+  </script>
+
+  <!-- ▼ 共通パーツ群（第3弾と同じ順番で読む） -->
+  <script src="../common/shell/gear.full.js" defer></script>
+  <script src="../common/shell/kit.full.js" defer></script>
+
+  <!-- ▼ シェル（ヘッダー/フッター生成） -->
+  <script src="../common/shell/header.full.js" defer></script>
+</body>
+</html>

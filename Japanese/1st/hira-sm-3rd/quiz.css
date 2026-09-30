@@ -1,0 +1,141 @@
+/* ===== 中括弧スロット（2択/3択対応） ===== */
+
+.slot{
+  display: inline-block;
+  position: relative;
+  vertical-align: middle; /* 本文と芯を合わせる */
+  margin-inline: calc(8 * var(--mm)); /* ←横の重なり防止 */
+  margin-block: calc(10 * var(--mm));                      /* ←上下の当たり */
+}
+
+.slot-inner{
+  --btn-size: calc(var(--btn-mm) * var(--mm));
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr; /* 左・中央・右 */
+  width: calc( (var(--btn-size) * 3) + (calc(var(--slot-gap-mm) * var(--mm)) * 2) );
+  column-gap: calc(var(--slot-gap-mm) * var(--mm));
+  justify-items: center;
+  align-items: center;
+  padding-block: calc(8 * var(--mm)); /* 中括弧の張り出し分 */
+
+  /* ★スロット内だけ横グリッドに（本文は縦書きのまま） */
+  writing-mode: horizontal-tb;
+}
+
+/* 上下の中括弧を疑似要素で安定配置 */
+.slot-inner::before,
+.slot-inner::after{
+  content: "";
+  position: absolute;
+  left: 0; right: 0;
+  height: calc(var(--brace-pad-mm) * var(--mm));
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  pointer-events: none;
+  z-index: 0;
+}
+.slot-inner::before{
+  content: "";
+  position: absolute;
+  left: 0; right: 0;
+  height: calc(var(--brace-pad-mm) * var(--mm));
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  pointer-events: none;
+  z-index: 0;
+  /* 強い“{”上半分”風”カーブ（透明SVG：1行データURI） */
+background-image: url("./brace_top.png");
+  top: 0;
+  transform: translateY(-52%);
+}
+.slot-inner::after{
+  content: "";
+  position: absolute;
+  left: 0; right: 0;
+  height: calc(var(--brace-pad-mm) * var(--mm));
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  pointer-events: none;
+  z-index: 0;
+  background-image: url("./brace_bottom.png");
+  bottom: 0;
+  transform: translateY(52%); /* scaleY(-1) は削除 */
+}
+
+/* 目に見えない中央のガイド（等距離） */
+.slot-inner > .center-guide{
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 50%;
+  width: 0;
+  border-inline-start: 0 solid transparent;
+}
+
+/* === ボタン本体 === */
+.choice{
+  position: relative;
+  width: calc(var(--btn-mm) * var(--mm));
+  height: calc(var(--btn-mm) * var(--mm));
+  border-radius: calc(var(--btn-radius-mm) * var(--mm));
+  border: 1.6px solid var(--ink);
+  background: #fff;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  user-select: none;
+
+  /* 縦書きの1文字を読みやすく */
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+
+  /* 教科書体＆大きさ */
+  font-size: calc(var(--btn-font-mm) * var(--mm));
+  font-family: "UD Digi Kyokasho N-R","BIZ UDPGothic","Yu Mincho",serif;
+}
+
+.choice.selected{
+  background: var(--select-bg);
+}
+
+/* 候補が2文字以上のときは少し小さく */
+.choice[data-chars="2"]{ font-size: calc(12 * var(--mm)); }
+.choice[data-chars="3"]{ font-size: calc(10 * var(--mm)); }
+
+/* ○（赤/青）・✓ のオーバーレイ */
+.mark{ position: absolute; z-index: 2; pointer-events: none; }
+
+/* ▼置換：○リング（サイズはJS、太さはここで） */
+.mark.ok, .mark.okLater{
+  border: 6px solid var(--ok);       /* ← 太くする。JSのBWと一致させる */
+  border-radius: 9999px;
+  pointer-events: none;
+}
+.mark.okLater{ border-color: var(--ok2); }
+
+/* ▼置換：赤✓を大きく・白ふちで視認性UP */
+.mark.ng{
+  position: absolute;
+  right: -6px;
+  top: -8px;
+  font-size: calc(10 * var(--mm));   /* ← 目立つ大きさ */
+  color: var(--ok);
+  font-weight: 800;
+  text-shadow:
+    -1px -1px 0 #fff,
+     1px -1px 0 #fff,
+    -1px  1px 0 #fff,
+     1px  1px 0 #fff;
+}
+
+/* 列の割り当て：2択は両端、3択は中央も使う */
+.slot.two .col1{ grid-column: 1; }
+.slot.two .col3{ grid-column: 3; }
+.slot.two .col2{ display: none; }
+
+.slot.three .col1{ grid-column: 1; }
+.slot.three .col2{ grid-column: 2; }
+.slot.three .col3{ grid-column: 3; }

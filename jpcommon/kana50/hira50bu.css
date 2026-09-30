@@ -1,0 +1,334 @@
+/* ===== 50音コンポーネント（#openPage）共通CSS ===== */
+
+/* ボタンの基準フォントサイズ（行・段・クイックで共通） */
+#openPage{
+  --open-btn-font: 1.28rem;
+}
+
+/* レイアウト全体 */
+#openPage .layout{
+  /* 1行目：行パネル＋つぎボタン
+     2行目：グリッド＋段＋クイック をぴったり並べる */
+  display:grid;
+  grid-auto-rows:auto;
+  column-gap: 10px;  /* パネル間の横スキマを少しだけ詰める */
+  grid-template-columns: max-content max-content max-content max-content max-content;
+
+  /* ★ 行パネル⇔グリッドの上下スキマを少し狭く */
+  row-gap: 8px;
+
+  align-items:flex-start;
+  justify-content: center;     /* 全体を中央寄せ */
+}
+
+/* 左：行ボタンパネル（1行目の1〜3列ぶんを占有） */
+#openPage .rowpanel{
+  grid-column:1 / span 3;
+  grid-row:1;
+  background:#ecf9ee;
+  border:1px solid #d7eadc;
+  border-radius:14px;
+  padding:12px;
+  margin-bottom:10px;
+}
+
+#openPage .rowbar{
+  display:grid;
+  grid-template-columns: repeat(11, var(--cell));
+  grid-auto-rows: var(--cell);
+  gap: var(--gap);
+}
+#openPage .row-spacer{
+  width:var(--cell);
+  height:var(--cell);
+}
+
+#openPage .rowbtn{
+  width: var(--cell);
+  height: var(--cell);
+  border:1px solid #cfd5dd;
+  border-radius:12px;
+  background:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  white-space: nowrap;
+  font-size: var(--open-btn-font);
+  line-height:1;
+  user-select:none;
+
+  /* ★ 段ボタンと同じ細めゴシック体に統一 */
+  font-family: system-ui, -apple-system, BlinkMacSystemFont,
+               "Yu Gothic UI","Yu Gothic","Meiryo",sans-serif !important;
+  font-weight: 400;
+}
+#openPage .rowbtn[aria-pressed="true"],
+#openPage .rowbtn.is-selected{
+  background:#4caf50;
+  color:#fff;
+  border-color:#3b8b40;
+}
+
+/* 2行目：中央の50音グリッド（行パネルの下に来る） */
+#openPage .gridpanel{
+  grid-column:1 / span 3;
+  grid-row:2;
+  background:#fff;
+  border-radius:14px;
+  padding:12px;
+  border:1px solid #e5e5e5;
+}
+#openPage .grid{
+  /* ここをフレックスにして、何列あっても横に並べられるようにする */
+  display:flex;
+  align-items:flex-start;
+  gap: var(--gap);
+}
+
+#openPage .cell{
+  width: var(--cell);
+  height: var(--cell);
+  border-radius:12px;
+  border:1px solid #cfd5dd;
+  background:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size: 1.6rem;
+  line-height:1;
+  user-select:none;
+
+  /* ひらがな本体は教科書体で統一 */
+  font-family: "UD Digi Kyokasho N-R","UD Digi Kyokasho NK-R",
+               "Yu Kyokasho","Hiragino Maru Gothic ProN",
+               "Hiragino Kaku Gothic ProN","Meiryo",sans-serif !important;
+  font-weight: 400;
+}
+#openPage .cell.is-placeholder{
+  opacity:.2;
+  border-style:dashed;
+}
+#openPage .cell.is-selected{
+  background:#4caf50;
+  color:#fff;
+  border-color:#3b8b40;
+}
+
+/* 段（あいうえお）ボタン：2行目の右カラム */
+#openPage .danpanel{
+  /* grid-column: の値は今お使いのものに合わせてOKです */
+  grid-column:4;
+  background:#ecf3ff;
+  border-radius:14px;
+  border:1px solid #d4e1ff;
+
+  /* 左右の余白を少しだけにして、右側の空きを減らす */
+  padding:12px 10px;
+
+  /* パネルの幅をボタン列＋少しだけ余白に抑える */
+  width: calc(var(--cell) + 20px);
+}
+#openPage .dancol{
+  display:flex;
+  flex-direction:column;
+  gap: var(--gap);
+}
+#openPage .danbtn{
+  width: var(--cell);
+  min-width: var(--cell);
+  height: var(--cell);
+  border-radius:12px;
+  border:1px solid #cfd5dd;
+  background:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size: var(--open-btn-font);
+  line-height:1;
+  user-select:none;
+
+  /* 段名もゴシック体。さらに一段細めにする */
+  font-family: system-ui, -apple-system, BlinkMacSystemFont,
+               "Yu Gothic UI","Yu Gothic","Meiryo",sans-serif !important;
+  font-weight: 400;
+}
+#openPage .danbtn[aria-pressed="true"],
+#openPage .danbtn.is-selected{
+  background:#4da3ff;
+  color:#fff;
+  border-color:#1f7bda;
+}
+
+/* 右端カラム：クイック選択（段パネルの“右”に並べる） */
+#openPage #utilCol{
+  /* 段パネルの右隣に配置 */
+  grid-column:5;
+  display:flex;
+  flex-direction:column;
+  gap: var(--panel-gap);
+  align-items:flex-start;
+
+  /* ★ 段パネルとのあいだの隙間を少しだけ詰める */
+  margin-left: -6px;
+}
+
+/* クイックパネルの余計な余白をなくして、段パネルと上端をそろえる */
+#openPage #quickPanel{
+  margin-top:0;
+}
+
+#openPage .panel .center-title{
+  font-weight:800;
+  text-align:center;
+  margin:0 0 10px 0;
+}
+
+/* クイック選択：段ボタンと同じ高さ＆間隔にそろえる */
+#openPage .quick{
+  /* 段パネルと同じく縦並び＆gap=var(--gap) */
+  display:flex;
+  flex-direction:column;
+  gap: var(--gap);
+}
+
+/* 将来行を分ける場合も、縦方向のリズムをそろえる */
+#openPage .quick .qrow{
+  display:flex;
+  flex-direction:column;
+  gap: var(--gap);
+}
+
+/* クイックボタン：高さ・角丸・配置を段ボタンに合わせる */
+#openPage .quick .qbtn{
+  height: var(--cell);              /* 段ボタンと同じ高さ */
+  min-width: calc(var(--cell) * 2); /* ちょっと横長にして押しやすく */
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  border-radius:12px;               /* 段ボタンと同じ角丸 */
+  padding:0 1.4rem;                 /* 縦は0にして高さをvar(--cell)に固定 */
+  border:1px solid #cfd5dd;
+  background:#fff;
+  font-size:1rem;
+  white-space:nowrap;
+}
+
+#openPage .quick .qbtn[aria-pressed="true"],
+#openPage .quick .qbtn.is-selected{
+  background:#ffe0b2;
+  border-color:#ff9800;
+}
+
+/* 出題数パネル（10もん／15もんなど） */
+#openPage .course-panel{
+  margin-top:12px;
+}
+#openPage .course-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+}
+#openPage .course-btn{
+  min-width:5.5em;
+  border-radius:999px;
+  border:1px solid #cfd5dd;
+  background:#fff;
+  padding:.45rem 1rem;
+  font-size:1rem;
+}
+#openPage .course-btn[aria-pressed="true"]{
+  background:#4da3ff;
+  color:#fff;
+  border-color:#1f7bda;
+}
+
+/* スタートボタン＋もどるボタン */
+#openPage .start-hero{
+  margin-top:14px;
+  width:100%;
+  border-radius:999px;
+  border:none;
+  background:#ff7043;
+  color:#fff;
+  font-size:1.15rem;
+  padding:.7rem 1rem;
+  font-weight:800;
+}
+#openPage .start-hero:disabled{
+  background:#ddd;
+  color:#999;
+}
+#openPage .back-ghost{
+  margin-top:8px;
+  width:100%;
+  border-radius:999px;
+  border:1px solid #cfd5dd;
+  background:#fff;
+  font-size:1rem;
+  padding:.55rem 1rem;
+}
+
+/* ヘッダーまわり（タイトル＋えらんだもじバッジ） */
+#openPage .headgrid{
+  display:grid;
+  grid-template-columns: 1fr max-content max-content;
+  align-items:center;
+  gap:12px;
+  margin-bottom:14px;
+}
+#openPage .title{
+  font-size:1.2rem;
+  font-weight:800;
+}
+#openPage .picked-wrap{
+  justify-self:flex-end;
+}
+#openPage .badge{
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  padding:.4rem .7rem;
+  border-radius:999px;
+  background:#fff;
+  border:1px solid #cfd5dd;
+  font-size:.95rem;
+}
+#openPage .badge.big{
+  font-size:1.05rem;
+  padding:.45rem .9rem;
+}
+#openPage .badge .count{
+  font-weight:800;
+  font-variant-numeric: tabular-nums;
+}
+
+
+
+
+
+
+
+
+
+/* ───── 国語アプリ用の微調整 ───── */
+
+/* 1) 行ボタンだけゴシック体で細めにする（教科書体を上書き） */
+#openPage .rowpanel .rowbtn{
+  font-family: system-ui, -apple-system, BlinkMacSystemFont,
+               "Yu Gothic UI","Yu Gothic","Meiryo",sans-serif !important;
+  font-weight: 500;
+}
+
+/* 2) 段パネルとクイックパネルのあいだの横方向ギャップを少し詰める */
+#openPage #utilCol{
+  margin-left: -8px;  /* 数字を -4〜-10 の間で微調整してもOK */
+}
+
+/* 3) 行パネルと中央グリッドの縦方向のスキマを少しだけ狭くする */
+#openPage .layout{
+  row-gap: 8px;  /* もともと var(--panel-gap) ≒ 12px くらい → 少しだけ詰める */
+}

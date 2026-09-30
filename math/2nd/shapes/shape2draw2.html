@@ -1,0 +1,112 @@
+<script>
+  window.AppState = window.AppState || {};
+  window.AppState.level = 2;          // ここは lvX の番号
+  window.AppState.activity = "extend";  // 活動名（free/extend/copy）
+</script>
+
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>三角形と四角形をかこう（第４弾）</title>
+  <!-- ▼ 図形 共通CSS（1本化） -->
+<link rel="stylesheet" href="../../../common/shell/shape.full.css">
+
+<link rel="stylesheet" href="../../../common/shell/header.full.css">
+<link rel="stylesheet" href="../../../common/shell/pbar.full.css">
+<link rel="stylesheet" href="../../../common/shell/footer.full.css">
+
+<link rel="stylesheet" href="./shape2draw.full.css">
+
+</head>
+<body>
+<div class="wrap">
+  <!-- ▼ ヘッダー（第2弾そのまま） -->
+<header class="title">
+  <a class="backlink" href="./shapes_entry.html">← もどる</a>
+  <h1>
+    <button id="btnTri"  class="mode-btn mode-btn--xl is-active" type="button">三角形</button>
+     と
+    <button id="btnQuad" class="mode-btn mode-btn--xl" type="button">四角形</button>
+     をかこう
+  </h1>
+  <div class="header-right">
+    <button id="soundBtn" class="sound-btn" type="button">🔈 OFF</button>
+  </div>
+</header>
+
+<!-- ▼ 問題（共通 .problem-bar 構造） -->
+<section class="problem">
+  <div class="problem-bar">
+    <div class="problem-left">
+      <!-- レベル：少しリッチな枠＋左端から余白 -->
+      <select id="levelSel">
+        <option value="1">Lv1</option>
+        <option value="2">Lv2</option>
+        <option value="3">Lv3</option>
+      </select>
+    </div>
+    <div class="problem-center">
+      <p id="message"></p>
+    </div>
+    <div class="problem-right">
+      <!-- 右側に将来のボタン（音声/タイマー等）を置く想定 -->
+    </div>
+  </div>
+</section>
+
+  <!-- ▼ 本体（中身は既存の盤面をそのまま格納） -->
+  <main class="board">
+    <div class="board-inner">
+      <div id="boardStage">
+        <canvas id="gridCanvas"></canvas>
+        <svg id="shapeLayer" class="shape-layer"></svg>
+        <div id="centerDot" class="center-dot" title="まんなかの ひかる点の まわりをタップしたら けってい！"></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ▼ フッター（第2弾の .ctrl を踏襲。中身はapp4の操作を配置） -->
+<footer class="ctrl">
+  <div class="left">
+    <!-- ▲ズーム（controls.js: #zoomSel） -->
+    <select id="zoomSel" class="zoom-select">
+      <option value="0.8">80%</option>
+      <option value="0.9">90%</option>
+      <option value="1.0" selected>100%</option>
+      <option value="1.1">110%</option>
+      <option value="1.2">120%</option>
+    </select>
+  </div>
+  <div class="center">
+    <!-- ▲中央ボタン（IDは既存に合わせる） -->
+    <button class="btn" id="undoBtn">⟲ 一つもどる</button>
+    <button class="btn" id="clearBtn">🗑 ぜんぶけす</button>
+  </div>
+  <div class="right">
+    <button class="btn" id="nextBtn" style="display:none;">▶ つぎの問題</button>
+  </div>
+</footer>
+</div> <!-- end .wrap -->
+
+<!-- ▼ 共通パーツ（controls/kit） -->
+  <script src="../../../common/shell/kit.full.js" defer></script>
+
+  <!-- ▼ シェル枠（レゴ部品） -->
+  <script src="../../../common/shell/header.full.js" defer></script>
+  <script src="../../../common/shell/pbar.full.js" defer></script>
+  <script src="../../../common/shell/footer.full.js" defer></script>
+
+  <script src="../../../common/core.js"></script>
+  <script src="../../../common/marks.js"></script>
+  <script src="../../../common/geometry/controls.js"></script>
+  <script src="../../../common/geometry/grid.js"></script>
+  <script src="../../../common/geometry/judge.js"></script>
+
+<!-- app2 専用 -->
+  <script src="./shape2draw2.js"></script>
+
+<div class="toast" style="display:none;"></div>
+</body>
+</html>

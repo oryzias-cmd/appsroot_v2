@@ -1,0 +1,370 @@
+    "あ": {
+      words: [
+        { word:"あり",     romaji:"ari" },
+        { word:"あさがお", romaji:"asagao" },
+        { word:"あしか",   romaji:"ashika" }
+        { word:"", romaji:"" }
+      ]
+    },
+    "い": {
+      words: [
+        { word:"いちご",   romaji:"ichigo" },
+        { word:"いぬ",     romaji:"inu" },
+        { word:"", romaji:"" },
+        { word:"", romaji:"" }
+      ]
+    },
+    "う": {
+      words: [
+        { word:"うさぎ",   romaji:"usagi" },
+        { word:"うちわ",   romaji:"uchiwa" },
+        { word:"", romaji:"" },
+        { word:"", romaji:"" }
+      ]
+    },
+    "え": {
+      words: [
+        { word:"えんぴつ", romaji:"enpitsu" },
+        { word:"えだまめ", romaji:"edamame" },
+        { word:"えび", romaji:"ebi" },
+        { word:"", romaji:"" }
+      ]
+    },
+    "お": {
+      words: [
+        { word:"おりがみ", romaji:"origami" },
+        { word:"おにぎり", romaji:"onigiri" },
+        { word:"", romaji:"" },
+        { word:"", romaji:"" }
+      ]
+    },
+
+
+    "か": {
+      words:[
+        { word:"かたつむり",romaji:"katatsumuri"},
+        { word:"", romaji:"" },
+        { word:"", romaji:"" },
+        { word:"", romaji:"" }
+      ]
+    },
+    "き": {
+      words:[
+        { word:"きのこ",romaji:"kinoko"},
+        { word:"", romaji:"" },
+        { word:"", romaji:"" },
+        { word:"", romaji:"" }
+      ]
+    },
+    "く": {
+      words:[
+        { word:"くじら",romaji:"kujira"},
+        { word:"", romaji:"" },
+        { word:"", romaji:"" },
+        { word:"", romaji:"" }
+      ]
+    },
+    "け": {
+      words:[
+        {word:"けんだま",romaji:"kendama"},
+        { word:"", romaji:"" },
+        { word:"", romaji:"" },
+        { word:"", romaji:"" }
+      ]
+    },
+    "こ": {
+      words:[
+        { word:"こいのぼり",romaji:"koinobori"},
+        { word:"", romaji:"" },
+        { word:"", romaji:"" },
+        { word:"", romaji:"" }
+      ]
+    },
+    "さ": {
+      words:[
+        { word:"さつまいも",romaji:"satsumaimo"},
+        { word:"", romaji:"" },
+        { word:"", romaji:"" },
+        { word:"", romaji:"" }
+      ]
+    },
+    "し": {
+      words:[
+        { word:"しんごう",romaji:"shingou"},
+        { word:"", romaji:"" },
+        { word:"", romaji:"" },
+        { word:"", romaji:"" }
+      ]
+    },
+    "す": {
+      words:[
+        { word:"すいか",romaji:"suika"},
+        { word:"", romaji:"" },
+        { word:"", romaji:"" },
+        { word:"", romaji:"" }
+      ]
+    },
+    "せ": {
+      words:[
+        { word:"せんぷうき",romaji:"senpuuki"},
+        { word:"", romaji:"" },
+        { word:"", romaji:"" },
+        { word:"", romaji:"" }
+      ]
+    },
+    "そ": {
+      words:[
+        { word:"そらまめ",romaji:"soramame"},
+        { word:"", romaji:"" },
+        { word:"", romaji:"" },
+        { word:"", romaji:"" }
+      ]
+    },
+    "た": {
+      words:[
+        { word:"たいこ",romaji:"taiko"},
+        { word:"", romaji:"" },
+        { word:"", romaji:"" },
+        { word:"", romaji:"" }
+      ]
+    },
+    "ち": {
+      words:[
+        { word:"ちりとり",romaji:"chiritori"},
+        { word:"", romaji:"" },
+        { word:"", romaji:"" },
+        { word:"", romaji:"" }
+      ]
+    },
+    "つ": {
+      words:[
+        { word:"つき",romaji:"tsuki"},
+        { word:"", romaji:"" },
+        { word:"", romaji:"" },
+        { word:"", romaji:"" }
+      ]
+    },
+    "て": {
+      words:[
+        { word:"てぶくろ",romaji:"tebukuro"},
+        { word:"", romaji:"" },
+        { word:"", romaji:"" },
+        { word:"", romaji:"" }
+      ]
+    },
+    "と": {
+      words:[
+        { word:"とんぼ",romaji:"tonbo"},
+        { word:"", romaji:"" },
+        { word:"", romaji:"" },
+        { word:"", romaji:"" }
+      ]
+    },
+    "な": {
+      words:[
+        { word:"なわとび",romaji:"nawatobi"},
+        { word:"", romaji:"" },
+        { word:"", romaji:"" },
+        { word:"", romaji:"" }
+      ]
+    },
+    "に": {
+      words:[
+        { word:"にんじん",romaji:"ninjin"},
+        { word:"", romaji:"" },
+        { word:"", romaji:"" },
+        { word:"", romaji:"" }
+      ]
+    },
+    "ぬ": {
+      words:[
+        { word:"ぬいぐるみ",romaji:"nuigurumi"},
+        { word:"", romaji:"" },
+        { word:"", romaji:"" },
+        { word:"", romaji:"" }
+      ]
+    },
+    "ね": {
+      words:[
+        { word:"ねこ",romaji:"neko"},
+        { word:"", romaji:"" },
+        { word:"", romaji:"" },
+        { word:"", romaji:"" }
+      ]
+    },
+    "の": {
+      words:[
+        { word:"のこぎり",romaji:"nokogiri"},
+        { word:"", romaji:"" },
+        { word:"", romaji:"" },
+        { word:"", romaji:"" }
+      ]
+    },
+    "は": {
+      words:[
+        { word:"はさみ",romaji:"hasami"},
+        { word:"", romaji:"" },
+        { word:"", romaji:"" },,
+        { word:"", romaji:"" }
+      ]
+    },
+    "ひ": {
+      words:[
+        { word:"ひまわり",romaji:"himawari"},
+        { word:"", romaji:"" },
+        { word:"", romaji:"" },
+        { word:"", romaji:"" }
+      ]
+    },
+    "ふ": {
+      words:[
+        { word:"ふくろう",romaji:"fukurou"},
+        { word:"", romaji:"" },
+        { word:"", romaji:"" },
+        { word:"", romaji:"" }
+      ]
+    },
+    "へ": {
+      words:[
+        { word:"へちま",romaji:"hechima"},
+        { word:"", romaji:"" },
+        { word:"", romaji:"" },
+        { word:"", romaji:"" }
+      ]
+    },
+    "ほ": {
+      words:[
+        { word:"ほたる",romaji:"hotaru"},
+        { word:"", romaji:"" },
+        { word:"", romaji:"" },
+        { word:"", romaji:"" }
+      ]
+    },
+    "ま": {
+      words:[
+        { word:"まめ",romaji:"mame"},
+        { word:"", romaji:"" },
+        { word:"", romaji:"" },
+        { word:"", romaji:"" }
+      ]
+    },
+    "み": {
+      words:[
+        { word:"みかん",romaji:"mikan"},
+        { word:"", romaji:"" },
+        { word:"", romaji:"" },
+        { word:"", romaji:"" }
+      ]
+    },
+    "む": {
+      words:[
+        { word:"むしめがね",romaji:"mushimegane"},
+        { word:"", romaji:"" },
+        { word:"", romaji:"" },
+        { word:"", romaji:"" }
+      ]
+    },
+    "め": {
+      words:[
+        { word:"めだまやき",romaji:"medamayaki"},
+        { word:"", romaji:"" },
+        { word:"", romaji:"" },
+        { word:"", romaji:"" }
+      ]
+    },
+    "も": {
+      words:[
+        { word:"もも",romaji:"momo"},
+        { word:"", romaji:"" },
+        { word:"", romaji:"" },
+        { word:"", romaji:"" }
+      ]
+    },
+    "や": {
+      words:[
+        { word:"やかん",romaji:"yakan"},
+        { word:"", romaji:"" },
+        { word:"", romaji:"" },
+        { word:"", romaji:"" }
+      ]
+    },
+    "ゆ": {
+      words:[
+        { word:"ゆきだるま",romaji:"yukidaruma"},
+        { word:"", romaji:"" },
+        { word:"", romaji:"" },
+        { word:"", romaji:"" }
+      ]
+    },
+    "よ": {
+      words:[
+        { word:"ようふく",romaji:"youfuku"},
+        { word:"", romaji:"" },
+        { word:"", romaji:"" },
+        { word:"", romaji:"" }
+      ]
+    },
+    "ら": {
+      words:[
+        { word:"らくだ",romaji:"rakuda"},
+        { word:"", romaji:"" },
+        { word:"", romaji:"" },
+        { word:"", romaji:"" }
+      ]
+    },
+    "り": {
+      words:[
+        { word:"りんご",romaji:"ringo"},
+        { word:"", romaji:"" },
+        { word:"", romaji:"" },
+        { word:"", romaji:"" }
+      ]
+    },
+    "る": {
+      words:[
+        { word:"るすばん",romaji:"rusuban"},
+        { word:"", romaji:"" },
+        { word:"", romaji:"" },
+        { word:"", romaji:"" }
+      ]
+    },
+    "れ": {
+      words:[
+        { word:"れいぞうこ",romaji:"reizouko"},
+        { word:"", romaji:"" },
+        { word:"", romaji:"" },
+        { word:"", romaji:"" }
+      ]
+    },
+    "ろ": {
+      words:[
+        { word:"ろうそく",romaji:"rousoku"},
+        { word:"", romaji:"" },
+        { word:"", romaji:"" },
+        { word:"", romaji:"" }
+      ]
+    },
+    "わ": {
+      words:[
+        { word:"わりばし",romaji:"waribashi"},
+        { word:"", romaji:"" },
+        { word:"", romaji:"" },
+        { word:"", romaji:"" }
+      ]
+    },
+    "を": {
+      words:[
+        { word:"ほんをよむ",romaji:"honwoyomu"},
+        { word:"かおをあらう", romaji:"kaowoarau" },
+        { word:"くつをはく", romaji:"kutsuwohaku" },
+        { word:"ふくをぬぐ", romaji:"fukuwonugu" }
+      ]
+    },
+    "ん": {
+      words:[
+        { word:"きりん",romaji:"kirin"}
+        { word:"", romaji:"" },
+        { word:"", romaji:"" },
+        { word:"", romaji:"" }
+      ]
+    },

@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>ひらがな書字教材・安定版</title>
+<!-- ▲追記ここまで -->
+<link rel="stylesheet" href="../../../jpcommon/shell/jpbase.css">
+<link rel="stylesheet" href="./app.css">
+</head>
+<body data-phase="setup">
+
+<!-- ========== オープニング ========== -->
+<div id="openPage" class="page">
+  <div class="headgrid">
+    <div class="title">50おん から えらんで ください</div>
+    <div class="picked-wrap">
+      <span class="badge big">えらんだもじ：<span id="selCount" class="count">0</span></span>
+    </div>
+    <button id="openSettings" class="gear-btn" title="教師設定">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+          d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543-.89 3.31.877 2.42 2.42a1.724 1.724 0 0 0 1.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 0 0-1.066 2.573c.89 1.543-.877 3.31-2.42 2.42a1.724 1.724 0 0 0-2.573 1.066z"/>
+        <circle cx="12" cy="12" r="3" stroke-width="1.8"/>
+      </svg>
+      設定
+    </button>
+  </div>
+
+  <div class="layout">
+    <div class="rowpanel"><div id="rowBar" class="rowbar"></div></div>
+
+    <div class="start-float">
+      <button id="startBtnOpen" class="pill">つ　ぎ</button>
+    </div>
+
+    <div class="main">
+      <div class="grid" id="grid"></div>
+      <div></div>
+      <div class="dan-panel" id="danPanel"><div class="dancol" id="danCol"></div></div>
+      <div></div>
+      <div class="util" id="utilCol">
+        <div class="panel" id="quickPanel">
+          <div class="center-title">クイック</div>
+          <div class="quick">
+            <button id="allOn"  class="qbtn pill">すべてえらぶ</button>
+            <button id="allOff" class="qbtn pill">すべてはずす</button>
+            <button id="invert" class="qbtn pill">はんたいにする</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== コース選択 ========== -->
+<div id="coursePage" class="page hidden">
+  <div class="headgrid">
+    <div class="title">コースを えらんで ください</div>
+    <button id="openSettings2" class="gear-btn" title="教師設定">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543-.89 3.31.877 2.42 2.42a1.724 1.724 0 0 0 1.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 0 0-1.066 2.573c.89 1.543-.877 3.31-2.42 2.42.966.557 2.147.113 2.573-1.066z"/><circle cx="12" cy="12" r="3" stroke-width="1.8"/></svg>
+      設定
+    </button>
+  </div>
+  <div class="center">
+    <div class="card">
+      <div class="row">
+        <input id="studentName" class="name-input name-lg" type="text" placeholder="なまえ（れい：やまだ はなこ）" />
+        <label id="recordToggle" class="rect-btn" role="button" aria-pressed="false">きろく</label>
+      </div>
+
+      <div class="grid3">
+        <div class="left">
+          <button class="course-btn" id="course3" aria-pressed="false">3もん</button>
+        </div>
+        <div class="center">
+          <button class="course-btn" id="course5" aria-pressed="true">5もん</button>
+        </div>
+        <div class="right">
+          <button class="course-btn" id="course10" aria-pressed="false">10もん</button>
+        </div>
+      </div>
+
+      <button class="start-hero" id="startCourse" disabled>スタート</button>
+      <button class="back-ghost" id="backToOpen">もどる</button>
+      <div class="helper" style="text-align:center; margin-top:14px;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== 書字画面 ========== -->
+<div id="writePage" class="page hidden">
+  <!-- ヘッダ（安全な完成版） -->
+  <div class="headgrid">
+    <div class="title">れんしゅう</div>
+    <div class="picked-wrap">
+      <span class="badge">なんもんめ：<span id="qIndex" class="count">1</span>/<span id="qTotal">5</span></span>
+    </div>
+    <!-- 設定 -->
+    <button id="openSettings3" class="gear-btn" title="教師設定">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+          d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543-.89 3.31.877 2.42 2.42a1.724 1.724 0 0 0 1.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 0 0-1.066 2.573c.89 1.543-.877 3.31-2.42 2.42a1.724 1.724 0 0 0-2.573 1.066z"/>
+        <circle cx="12" cy="12" r="3" stroke-width="1.8"/>
+      </svg>
+      設定
+    </button>
+    <!-- 50音へ -->
+    <button id="backToOpenFromWrite" class="gear-btn">50おんへ</button>
+  </div>
+
+  <div class="stack-gap"></div>
+  <div class="workgrid" id="workarea">
+    <div id="sampleWrap" style="display:flex; flex-direction:column; gap:6px; align-items:center;">
+      <canvas id="sampleBox" class="box" width="1" height="1"></canvas>
+    </div>
+
+    <div id="writeWrap">
+      <canvas id="writeBox" class="box" width="1" height="1"></canvas>
+    </div>
+  </div>
+
+<div id="scoreBox" class="muted" role="status" aria-live="polite" aria-atomic="true"></div>
+<!-- 追加：筆順コメント欄 -->
+<div id="judgeComment" class="muted" style="text-align:center; min-height:1.6rem;" role="status" aria-live="polite" aria-atomic="true"></div>
+  <div class="toolbar-fixed">
+    <div class="slot slot-clear">
+      <button id="clearBtn" class="btn-lg">けす</button>
+    </div>
+    <div class="slot slot-hint">
+      <button id="hintBtn"  class="btn-lg">ヒント</button>
+    </div>
+    <div class="slot-stack">
+      <button id="scoreBtn" class="btn-lg btn-primary">さいてん</button>
+      <button id="nextBtn"  class="btn-lg btn-success" style="display:none;">つぎへ</button>
+    </div>
+    <div class="slot slot-retry">
+      <button id="retryBtn" class="btn-lg" style="display:none;">もういちど</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== ふりかえり（リザルト） ========== -->
+<div id="reviewPage" class="page hidden">
+  <div class="headgrid">
+    <div class="title">ふりかえり</div>
+    <button id="openSettings4" class="gear-btn" title="教師設定">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543-.89 3.31.877 2.42 2.42a1.724 1.724 0 0 0 1.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 0 0-1.066 2.573c.89 1.543-.877 3.31-2.42 2.42a1.724 1.724 0 0 0-2.573 1.066z"/><circle cx="12" cy="12" r="3" stroke-width="1.8"/></svg>
+      設定
+    </button>
+  </div>
+  <div class="review-wrap">
+    <div id="resultKanaRow" class="result-grid"></div>
+    <div class="avg-box">
+      <div class="avg-label">へいきん点</div>
+      <div id="avgValue" class="avg-value">0</div>
+    </div>
+    <div class="review-actions">
+      <button id="retryCourse" class="pill btn-success">おなじコース</button>
+      <button id="backOpenFromReview" class="pill">ひらがなをえらぶ</button>
+    </div>
+  </div>
+  <canvas id="fxCanvas" class="hidden"></canvas>
+</div>
+<!-- ===== 設定モーダル（最小構成） ===== -->
+<div id="settingsBackdrop" aria-hidden="true" style="display:none;">
+  <div class="settings-dialog" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+    <h2 id="settingsTitle">せってい</h2>
+
+    <!-- 採点の太らせ（px） -->
+    <section class="settings-section">
+      <label for="inflateRange" class="settings-label">せんの ふとさ（さいてん）</label>
+      <div class="settings-row">
+        <input id="inflateRange" type="range" min="0" max="12" step="1" value="3" />
+        <span class="settings-val" id="inflateVal">3</span><span> px</span>
+      </div>
+    </section>
+
+<!-- ▼追記ここから：さいてん表示（numeric / icon） -->
+<div class="form-row" style="margin-top:12px;">
+  <div class="label">さいてん ひょうじ</div>
+  <div class="controls">
+    <label style="margin-right:12px;">
+      <input type="radio" name="scoreMode" value="numeric"> すうじ（ぜんかく）
+    </label>
+    <label>
+      <input type="radio" name="scoreMode" value="icon"> アイコン＋すうじ
+    </label>
+  </div>
+</div>
+<!-- ▲追記ここまで -->
+
+    <!-- きき手 -->
+    <section class="settings-section">
+      <div class="settings-label">ききて</div>
+      <div class="settings-row">
+        <label class="radio">
+          <input type="radio" name="handedPref" value="right" checked /> みぎ
+        </label>
+        <label class="radio">
+          <input type="radio" name="handedPref" value="left" /> ひだり
+        </label>
+      </div>
+    </section>
+
+    <!-- オーバーレイ -->
+    <section class="settings-section">
+      <div class="settings-label">おおまかな ひょうか の いろ（オーバーレイ）</div>
+      <div class="settings-row">
+        <button id="toggleOverlay" class="toggle" aria-pressed="true">ON</button>
+      </div>
+    </section>
+
+    <!-- 実寸50mm 確認バー -->
+    <section class="settings-section">
+      <div class="settings-label">実寸 50mm の はば</div>
+      <div class="settings-row settings-calib">
+        <button id="calibMinusM" class="pill">−</button>
+        <div id="calibBarModal" class="calib-bar"></div>
+        <button id="calibPlusM" class="pill">＋</button>
+      </div>
+      <p class="settings-note">じっけん：じょうぎで はばが 50mm か かくにんしてね。</p>
+    </section>
+
+    <!-- 操作ボタン -->
+    <div class="settings-actions">
+      <button id="saveSettings" class="pill btn-primary">ほぞん</button>
+      <button id="closeSettings" class="pill">とじる</button>
+    </div>
+  </div>
+</div>
+
+<!-- ▼ sj-note: 下の教師設定モーダルは旧構成。ID衝突回避のため sj-legacy-* に改名（実運用は先の完成版を使用） -->
+<!-- ====== 教師設定モーダル ====== -->
+<div id="sj-legacy-settings" class="modal-backdrop" aria-hidden="true" style="display:none;">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="sj-settingsTitle-legacy">
+    <h3 id="sj-settingsTitle-legacy">教師設定</h3>
+    <div class="form-row">
+      <div>スコア表示</div>
+      <div class="row-inline">
+        <label><input type="radio" name="scoreMode" value="numeric"> 点数のみ</label>
+        <label><input type="radio" name="scoreMode" value="icon"> アイコン＋点数</label>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div>評価の甘さ（はみ出し許容）</div>
+      <div class="row-inline">
+        <input id="sj-legacy-inflateRange" type="range" min="1" max="6" step="1" style="width:240px;">
+        <span><span id="sj-legacy-inflateVal">3</span> px</span>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div>利き手</div>
+      <div class="row-inline">
+        <label><input type="radio" name="handedPref" value="left"> ひだり</label>
+        <label><input type="radio" name="handedPref" value="right"> みぎ</label>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div>キャリブ（50mm）</div>
+      <div class="row-inline">
+        <div class="calib-line" id="sj-legacy-calibBarModal" style="width:calc(var(--mm-scale) * 50px)"></div>
+        <button id="sj-legacy-calibMinusM">−</button>
+        <button id="sj-legacy-calibPlusM">＋</button>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div>見える化</div>
+      <div class="row-inline">
+        <button id="sj-legacy-toggleOverlay" class="chip" aria-pressed="false">OFF</button>
+        <span class="help">※ 採点後の表示に反映されます</span>
+      </div>
+    </div>
+
+    <div class="help">※ 設定はこの端末に保存され、次回も復元されます。</div>
+    <div class="modal-actions">
+      <button id="sj-legacy-closeSettings" class="pill">閉じる</button>
+      <button id="sj-legacy-saveSettings" class="pill primary">保存</button>
+    </div>
+  </div>
+</div>
+<script src="../../../jpcommon/shell/kit.js" defer></script>
+<script src="../../../jpcommon/shell/header.js" defer></script>
+<script src="../../../jpcommon/shell/problem.js" defer></script>
+<script src="../../../jpcommon/shell/footer.js" defer></script>
+
+<!-- ▼ アプリ側も defer を付けて、DOMContentLoaded 後に確実実行 -->
+<script src="./core.js" defer></script>
+<script src="./pages_open.js" defer></script>
+<script src="./app.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,251 @@
+/* ===== ベース ===== */
+:root{
+  --mm-scale: 3.78;
+  --box-mm: 50;     /* 書字ボックスの一辺(mm) */
+  --frame-mm: 1.2;
+  --guide-mm: 0.6;
+  --optical-shift: 0;
+}
+
+*{ box-sizing:border-box; }
+html,body{ margin:0; padding:0; background:#fafafa; color:#111; font-family: "UD Digi Kyokasho N-R","Hiragino Maru Gothic ProN","Yu Gothic","Meiryo","Hiragino Sans","Noto Sans JP",system-ui,sans-serif; }
+h1,h2,h3{ font-weight:700; letter-spacing:.04em; }
+.hidden{ display:none !important; }
+
+/* ===== レイアウト ===== */
+.container{ max-width: 1080px; margin: 16px auto; padding: 12px; }
+.panel{
+  background:#fff; border:1px solid #eee;
+  border-radius:16px; padding:16px 18px; box-shadow:0 2px 10px rgba(0,0,0,.05);
+}
+
+/* ===== バッジやボタン ===== */
+.badge{
+  display:inline-flex; align-items:center; gap:.5em;
+  padding:.4em .9em; border-radius:999px; background:#eef5ff; color:#2457d6; font-weight:700;
+}
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:.4em;
+  height:40px; padding:0 16px; border:1px solid #e5e5e5; border-radius:12px;
+  background:#fff; cursor:pointer; font-weight:600; letter-spacing:.03em;
+  box-shadow:0 1px 0 rgba(0,0,0,.03);
+}
+.btn:hover{ background:#f7f7f7; }
+.btn.primary{
+  background:#1e66ff; color:#fff; border-color:#1e66ff; box-shadow:0 6px 14px rgba(30,102,255,.22);
+}
+.btn.primary:hover{ filter:brightness(.98); }
+.btn.small{ height:32px; padding:0 12px; border-radius:10px; }
+
+/* ===== 50音：グリッド ===== */
+#grid{
+  display:grid;
+  grid-template-columns: repeat(11, minmax(34px, 1fr)); /* あ〜ん（11列） */
+  gap:6px;
+  margin-top:12px;
+}
+.cell{
+  display:flex; align-items:center; justify-content:center;
+  background:#fff; border:1px solid #e8e8e8; border-radius:12px;
+  height:48px; font-size:20px; cursor:pointer; user-select:none;
+  transition:transform .05s ease, background .15s ease, box-shadow .15s ease, border-color .15s ease;
+}
+.cell:hover{ background:#f8faff; }
+.cell.selected{
+  background:#1e66ff; color:#fff; border-color:#1e66ff;
+  box-shadow:0 6px 14px rgba(30,102,255,.22);
+}
+.cell.placeholder{
+  background:repeating-linear-gradient(45deg,#fafafa,#fafafa 6px,#f1f1f1 6px,#f1f1f1 12px);
+  color:#aaa; cursor:not-allowed;
+}
+.cell.empty{ visibility:hidden; }
+
+/* ===== 行・段ボタン列 ===== */
+#rowBar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 10px 0 6px;
+}
+
+.rowbtn,
+.danbtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 12px;
+  height: 34px;
+  border: 1px solid #e6e6e6;
+  border-radius: 10px;
+  background: #fff;
+  cursor: pointer;
+  font-weight: 600;
+}
+.rowbtn[aria-pressed="true"], .danbtn[aria-pressed="true"]{
+  background:#1e66ff; color:#fff; border-color:#1e66ff;
+}
+#danCol{ display:flex; flex-direction:column; gap:8px; }
+
+/* ===== サイドユーティリティ列 ===== */
+#utilCol{ display:flex; flex-direction:column; gap:12px; }
+
+/* ===== 書字ボックス ===== */
+#workarea{
+  display:grid; grid-template-columns: 1fr 1fr; align-items:start; column-gap: calc(25px * var(--mm-scale) / 3.78);
+}
+.hand-left #workarea{ grid-template-columns: 1fr 1fr; } /* 左右入替はJSがDOM順を置換 */
+
+#sampleWrap, #writeWrap{ display:flex; flex-direction:column; gap:10px; }
+#sampleBox, #writeBox{
+  width: calc(var(--box-mm) * var(--mm-scale) * 1px);
+  height: calc(var(--box-mm) * var(--mm-scale) * 1px);
+  border-radius:12px; background:#fff; box-shadow:0 2px 10px rgba(0,0,0,.05);
+}
+
+/* ===== 採点結果カード ===== */
+#resultKanaRow{
+  display:grid; gap:10px; margin-top:10px;
+  grid-template-columns: repeat(5, minmax(0,1fr));
+}
+#resultKanaRow.cols-3{ grid-template-columns: repeat(3, minmax(0,1fr)); }
+.kana-card{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:10px 12px; border:1px solid #eee; border-radius:12px; background:#fff;
+}
+.kana-char .glyph{ font-size:24px; }
+.kana-score{ font-weight:700; }
+
+/* ===== モーダル（設定） ===== */
+#settingsBackdrop{
+  position:fixed; inset:0; background:rgba(0,0,0,.25); display:none; align-items:center; justify-content:center; z-index:50;
+}
+#settingsPanel{
+  width:min(720px, calc(100vw - 32px));
+  background:#fff; border-radius:16px; padding:16px; box-shadow:0 10px 30px rgba(0,0,0,.2);
+}
+.toggle-on{ background:#1e66ff !important; color:#fff !important; border-color:#1e66ff !important; }
+
+/* ===== 読み専用：DOM間引き（第1段階：CSSで非表示） ===== */
+body[data-read-only="true"] #writePage,
+body[data-read-only="true"] #reviewPage,
+body[data-read-only="true"] #scoreBox,
+body[data-read-only="true"] #workarea,
+body[data-read-only="true"] .toolbar-fixed,
+body[data-read-only="true"] footer {
+  display: none !important;
+}
+/* ※ #coursePage は CSS で強制表示しない。表示/非表示は JS で制御する */
+
+/* ========= 読み専用A案：一時非表示（安全スリム化・第1段階） ========= */
+/* 設定まわりは全て隠す（ギアボタン＆モーダル） */
+#openSettings,
+#openSettings2,
+#openSettings3,
+#openSettings4,
+#settingsBackdrop{
+  display: none !important;
+}
+
+/* “書く”と“読む”のモード切替行をいったん隠す（読む固定運用のため） */
+#modeRow{
+  display: none !important;
+}
+
+/* もし他画面の補助UIが残ってチラつく場合に備えた保険 */
+.helper, .calib-bar, .settings-note{
+  display: none !important;
+}
+
+/* ▼ 読みミニUI：タップ状態の背景 */
+.tap-area{
+  /* 何も付いていないときは「まっ白」 */
+  background:#fff;
+  transition: background-color .2s ease, box-shadow .2s ease;
+}
+
+/* 録音中／判定中で待ってほしい状態（うすいグレー） */
+.tap-area.is-busy{
+  background:#f0f0f3;
+}
+
+/* コース終了後の状態（ごく薄い赤） */
+.tap-area.is-done{
+  background:#fff5f5;
+}
+
+/* ▼ ○×オーバーレイ */
+.mark-layer{
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  pointer-events:none;        /* タップ操作を邪魔しない */
+  opacity:0;
+  transition:opacity .15s ease;
+}
+
+/* SVG 自体のサイズをここで統一して制御 */
+.mark-layer svg{
+  width:82%;
+  height:82%;
+}
+
+/* ○表示中・×表示中で不透明になる（色はSVG側で指定） */
+.mark-layer.is-ok{
+  opacity:1;
+}
+
+.mark-layer.is-ng{
+  opacity:1;
+}
+
+/* ▼ 読みミニUI：○×オーバーレイ */
+.tap-area{
+  position:relative;          /* 子の .mark-layer をこの枠の中に重ねるため */
+}
+
+/* ▼ 読み：ミニUIの録音フィードバック */
+#r_tapArea{ cursor: pointer; }
+#r_tapArea.recording{
+  box-shadow: 0 0 0 4px rgba(0,120,255,.30) inset, 0 0 10px rgba(0,120,255,.45);
+  animation: rblink 1s infinite;
+}
+@keyframes rblink{
+  0%{ outline: 3px solid rgba(0,120,255,.0); }
+  50%{ outline: 3px solid rgba(0,120,255,.5); }
+  100%{ outline: 3px solid rgba(0,120,255,.0); }
+}
+/* ▼ 読みミニUI：録音中の視覚フィードバック */
+#r_tapArea{ cursor:pointer; transition: box-shadow .2s ease; }
+#r_tapArea.recording{
+  box-shadow: 0 0 0 4px rgba(46,123,246,.25) inset, 0 0 12px rgba(46,123,246,.45);
+  animation: rblink 1s infinite;
+}
+@keyframes rblink{
+  0%{ outline:3px solid rgba(46,123,246,0); }
+  50%{ outline:3px solid rgba(46,123,246,.6); }
+  100%{ outline:3px solid rgba(46,123,246,0); }
+}
+/* ▼ 読みミニUI：タップを確実に通す */
+#r_tapArea {
+  position: relative;
+  z-index: 10;
+  pointer-events: auto;
+  cursor: pointer;
+}
+#r_tapArea * {
+  pointer-events: none; /* 子要素でイベントを奪わない */
+}
+
+/* ▼ 読みアプリ用 footer 表示制御 */
+/* デフォルトでは常に隠す */
+#appFooterFixed{
+  display:none !important;
+}
+
+/* readPage が表示中（hidden が付いていない）ときだけ footer を出す */
+#readPage:not(.hidden) ~ #appFooterFixed{
+  display:flex !important;
+}

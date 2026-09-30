@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>ひらがなクイズ</title>
+<style>
+  :root{
+    --stack-gap: clamp(16px, 3vh, 28px);
+    --big-gap:   clamp(28px, 5.5vh, 52px);
+    --choice-size: clamp(84px, 10vw, 120px);
+    --choice-font: clamp(56px, 7.5vw, 84px);
+    --question-font: clamp(48px, 6.5vw, 84px);
+    --num-font: clamp(28px, 4vw, 42px);
+    --num-offset: 1.6;
+    --icon-size: clamp(64px, 7.5vw, 88px);
+    --question-box-w: clamp(360px, 40vw, 520px);
+    --image-max-h: 28vh;
+    --gap-ic: 28px;
+  }
+
+  *{ box-sizing:border-box; }
+  html,body{ height:100%; }
+  body{
+    font-family:"Yu Kyokasho","YuKyokasho","UD Digi Kyokasho N-R",sans-serif;
+    margin:0; padding:16px; text-align:center; background:#fff; color:#000;
+  }
+
+  .wrapper{
+    min-height:100svh;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:var(--stack-gap); position:relative;
+  }
+  .title{ position:absolute; top:10px; right:20px; font-size:18px; color:gray; }
+
+  .header-wrap{ display:flex; justify-content:center; width:100%; }
+  .header{
+    display:grid;
+    grid-template-columns: var(--icon-size) var(--gap-ic) var(--question-box-w) var(--gap-ic) var(--icon-size);
+    align-items:center; justify-content:center;
+    border-bottom: 4px solid blue;
+    padding-bottom: 4px;
+    margin-bottom: 60px;
+  }
+
+  .speed-btn{
+    width:var(--icon-size); height:var(--icon-size);
+    border:3px solid #888; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-size: calc(var(--icon-size)*0.6);
+    user-select:none; cursor:pointer; background:#fff;
+  }
+  .speed-btn:active{ transform:scale(0.98); }
+
+  .question-box{ width: var(--question-box-w); display:flex; align-items:center; justify-content:center; }
+  .question{ font-size:var(--question-font); line-height:1.1; margin:0; user-select:none; }
+
+  .choices{
+    display:grid; grid-template-columns: repeat(4, var(--choice-size));
+    justify-content:center; gap: clamp(16px, 3vw, 30px);
+    margin:0 auto;
+  }
+  .choice{
+    width:var(--choice-size); height:var(--choice-size);
+    border:3px solid gray; border-radius:0; background:#fff;
+    display:flex; align-items:center; justify-content:center;
+    position:relative; user-select:none;
+  }
+  .say{ font-size:var(--choice-font); line-height:1; color:#000; }
+  .number{
+    position:absolute;
+    top: calc(var(--num-font) * -1.2);
+    left:50%; transform:translateX(-50%);
+    font-size:var(--num-font); cursor:pointer; color:#000;
+  }
+
+  .circle-mark{
+    position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+    font-size: calc(var(--choice-size) * 1.35);
+    font-weight:bold; color:red;
+    font-family:"Arial Black","Yu Gothic UI",sans-serif; pointer-events:none;
+  }
+  .cross-mark{
+    position:absolute;
+    top: calc(var(--num-font) * (-1 * var(--num-offset) - 0.15));
+    left:50%; transform:translateX(-50%);
+    font-size: var(--num-font); font-weight:bold; color:blue;
+    font-family:"Arial Black","Yu Gothic UI",sans-serif; pointer-events:none;
+  }
+
+  img.hint{
+    max-width:90vw; max-height:var(--image-max-h);
+    width:auto; height:auto; margin:8px auto 0; display:block; object-fit:contain;
+    border-radius:8px;
+  }
+
+  .next-wrap{
+    position:absolute;
+    right: clamp(8px, 2vw, 24px);
+    bottom: clamp(16px, 4vh, 32px);
+  }
+  .next-btn{
+    padding: 10px 16px;
+    font-size: clamp(16px, 2.5vw, 20px);
+    border: 2px solid #444; background:#fff; cursor:pointer; border-radius:8px;
+  }
+
+  .overlay{
+    position:fixed; inset:0; background:#fff; display:flex; align-items:center; justify-content:center;
+    z-index: 10;
+  }
+  .menu{
+    display:flex; flex-direction:column; gap:16px; width:min(720px, 92vw);
+    padding: 16px;
+  }
+  .menu h1{ margin:0 0 8px; font-size: clamp(20px, 4vw, 28px); }
+  .menu .row{ display:grid; grid-template-columns: 1fr 1fr; gap:12px; }
+  .menu button{
+    padding: 16px; font-size: clamp(18px, 3vw, 22px); cursor:pointer;
+    border: 2px solid #333; border-radius: 12px; background:#f7f7f7;
+  }
+  .menu small{ color:#666; display:block; margin-top:4px; font-size: .9em; }
+</style>
+</head>
+<body>
+  <!-- トップ画面 -->
+  <div class="overlay" id="topOverlay" aria-label="コース選択">
+    <div class="menu">
+      <h1>コースをえらんでください</h1>
+      <div class="row">
+        <button type="button" onclick="startCourse('five')">
+          5問コース<small>ぜんぶからランダム5問</small>
+        </button>
+        <button type="button" onclick="startCourse('ten')">
+          10問コース<small>ぜんぶからランダム10問</small>
+        </button>
+      </div>
+      <div class="row">
+        <button type="button" onclick="startCourse('tate')">
+          たてコース（行ごと）<small>5問（ヤ＋ワ合成行もランダム）</small>
+        </button>
+        <button type="button" onclick="startCourse('yoko')">
+          よこコース（列ごと）<small>10問（イ段・エ段は「ん」を1回ふくむ。不足は再出題）</small>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrapper" id="app" hidden>
+    <div class="title">ひらがなクイズ</div>
+
+    <div class="header-wrap">
+      <div class="header" aria-label="速度選択と問題">
+        <div class="speed-btn" id="btn-fast">🐇</div>
+        <div aria-hidden="true"></div>
+        <div class="question-box"><p class="question" id="qText">○さがお</p></div>
+        <div aria-hidden="true"></div>
+        <div class="speed-btn" id="btn-slow">🐢</div>
+      </div>
+    </div>
+
+    <div class="choices" id="choices"></div>
+
+    <img id="hintImg" src="" alt="ヒント画像" class="hint" />
+
+    <div class="next-wrap" id="nextWrap" hidden>
+      <button class="next-btn" id="nextBtn">つぎへ ▶</button>
+    </div>
+  </div>
+
+<script>
+/* ===== マスタ ===== */
+const master = [
+  { hira:"あ", word:"あさがお", key:"asagao" },
+  { hira:"い", word:"いちご",   key:"ichigo" },
+  { hira:"う", word:"うさぎ",   key:"usagi" },
+  { hira:"え", word:"えんぴつ", key:"enpitsu" },
+  { hira:"お", word:"おりがみ", key:"origami" },
+
+  { hira:"か", word:"かたつむり", key:"katatsumuri" },
+  { hira:"き", word:"きのこ",     key:"kinoko" },
+  { hira:"く", word:"くじら",     key:"kujira" },
+  { hira:"け", word:"けんだま",   key:"kendama" },
+  { hira:"こ", word:"こいのぼり", key:"koinobori" },
+
+  { hira:"さ", word:"さつまいも", key:"satumaimo" },
+  { hira:"し", word:"しんごう",   key:"singou" },
+  { hira:"す", word:"すいか",     key:"suika" },
+  { hira:"せ", word:"せんぷうき", key:"senpuuki" },
+  { hira:"そ", word:"そらまめ",   key:"soramame" },
+
+  { hira:"た", word:"たいこ",     key:"taiko" },
+  { hira:"ち", word:"ちりとり",   key:"chiritori" },
+  { hira:"つ", word:"つき",       key:"tsuki" },
+  { hira:"て", word:"てぶくろ",   key:"tebukuro" },
+  { hira:"と", word:"とんぼ",     key:"tonbo" },
+
+  { hira:"な", word:"なわとび",   key:"nawatobi" },
+  { hira:"に", word:"にんじん",   key:"ninjin" },
+  { hira:"ぬ", word:"ぬいぐるみ", key:"nuigurumi" },
+  { hira:"ね", word:"ねこ",       key:"neko" },
+  { hira:"の", word:"のこぎり",   key:"nokogiri" },
+
+  { hira:"は", word:"はさみ",     key:"hasami" },
+  { hira:"ひ", word:"ひまわり",   key:"himawari" },
+  { hira:"ふ", word:"ふくろう",   key:"fukurou" },
+  { hira:"へ", word:"へちま",     key:"hechima" },
+  { hira:"ほ", word:"ほたる",     key:"hotaru" },
+
+  { hira:"ま", word:"まめ",       key:"mame" },
+  { hira:"み", word:"みかん",     key:"mikan" },
+  { hira:"む", word:"むしめがね", key:"mushimegane" },
+  { hira:"め", word:"めだまやき", key:"medamayaki" },
+  { hira:"も", word:"もも",       key:"momo" },
+
+  { hira:"や", word:"やかん",     key:"yakan" },
+  { hira:"ゆ", word:"ゆきだるま", key:"yukidaruma" },
+  { hira:"よ", word:"ようふく",   key:"youfuku" },
+
+  { hira:"ら", word:"らくだ",     key:"rakuda" },
+  { hira:"り", word:"りんご",     key:"rinngo" },
+  { hira:"る", word:"るすばん",   key:"rusuban" },
+  { hira:"れ", word:"れいぞうこ", key:"reizouko" },
+  { hira:"ろ", word:"ろうそく",   key:"rousoku" },
+
+  { hira:"わ", word:"わりばし",   key:"waribashi" },
+  { hira:"を", word:"ほんをよむ", key:"honwoyomu", targetIndex:2 },
+  { hira:"ん", word:"きりん",     key:"kirin",    targetIndex:2 }
+];
+
+const mistakeMap = {
+  "あ": ["お","め","ぬ"], "い": ["り","こ","し"], "う": ["る","ら","つ"],
+  "え": ["ろ","そ","ぬ"], "お": ["あ","め","を"],
+  "か": ["が","さ","ち"], "き": ["さ","に","ち"], "く": ["ぐ","て","へ"], "け": ["さ","は","ほ"], "こ": ["さ","よ","え"],
+  "さ": ["き","ち","は"], "し": ["つ","い","こ"], "す": ["ぬ","む","え"], "せ": ["そ","さ","え"], "そ": ["え","す","る"],
+  "た": ["な","ち","さ"], "ち": ["さ","き","つ"], "つ": ["し","す","く"], "て": ["く","へ","さ"], "と": ["し","り","そ"],
+  "な": ["め","ぬ","た"], "に": ["き","こ","け"], "ぬ": ["め","ね","る"], "ね": ["め","ぬ","れ"], "の": ["め","ぬ","ね"],
+  "は": ["ほ","け","さ"], "ひ": ["ぴ","に","り"], "ふ": ["す","ぬ","む"], "へ": ["て","く","ぬ"], "ほ": ["は","ま","も"],
+  "ま": ["ほ","は","も"], "み": ["に","す","さ"], "む": ["ぬ","め","す"], "め": ["ぬ","ね","ま"], "も": ["ほ","ま","は"],
+  "や": ["わ","ゆ","よ"], "ゆ": ["や","よ","わ"], "よ": ["ゆ","や","を"],
+  "ら": ["う","ろ","る"], "り": ["い","れ","こ"], "る": ["ろ","ら","う"], "れ": ["ね","り","ら"], "ろ": ["る","ら","え"],
+  "わ": ["や","ゆ","を"], "を": ["お","よ","わ"], "ん": ["る","れ","い"]
+};
+
+/* 行（5問） */
+const ROWS_5 = [
+  ["あ","い","う","え","お"],
+  ["か","き","く","け","こ"],
+  ["さ","し","す","せ","そ"],
+  ["た","ち","つ","て","と"],
+  ["な","に","ぬ","ね","の"],
+  ["は","ひ","ふ","へ","ほ"],
+  ["ま","み","む","め","も"],
+  ["ら","り","る","れ","ろ"],
+  "YA_WA"
+];
+
+/* 段（10問想定） */
+const COL_A = ["あ","か","さ","た","な","は","ま","や","ら","わ"];
+const COL_I = ["い","き","し","ち","に","ひ","み","り"];
+const COL_U = ["う","く","す","つ","ぬ","ふ","む","ゆ","る"];
+const COL_E = ["え","け","せ","て","ね","へ","れ"];
+const COL_O = ["お","こ","そ","と","の","ほ","も","よ","ろ","を"];
+const COLS = { A: COL_A, I: COL_I, U: COL_U, E: COL_E, O: COL_O };
+
+/* 要素参照 */
+const overlay = document.getElementById('topOverlay');
+const appEl   = document.getElementById('app');
+const qText   = document.getElementById('qText');
+const choicesWrap = document.getElementById('choices');
+const imgEl   = document.getElementById('hintImg');
+const nextWrap = document.getElementById('nextWrap');
+const nextBtn  = document.getElementById('nextBtn');
+const btnFast = document.getElementById('btn-fast');
+const btnSlow = document.getElementById('btn-slow');
+
+/* 画像プレースホルダー（必ず表示される） */
+const FALLBACK_IMG = 'data:image/svg+xml;utf8,' + encodeURIComponent(`
+  <svg xmlns="http://www.w3.org/2000/svg" width="640" height="360">
+    <rect width="100%" height="100%" fill="#eee"/>
+    <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle"
+          font-family="Yu Gothic UI, sans-serif" font-size="28" fill="#666">
+      写真がまだありません
+    </text>
+  </svg>`);
+
+/* 問題配列生成（🐢は _05.mp3 を参照） */
+function buildProblems(){
+  return master.map(it => {
+    let displayWord;
+    if(it.targetIndex !== undefined){
+      const chars = [...it.word];
+      chars[it.targetIndex] = "○";
+      displayWord = chars.join("");
+    }else{
+      displayWord = it.word.replace(it.hira, "○");
+    }
+    return {
+      hira: it.hira,
+      word: displayWord,
+      key:  it.key,
+      answer: it.hira,
+      baseChoices: [it.hira, ...(mistakeMap[it.hira] || [])],
+      image: `images/${it.key}.jpg`,
+      audio_normal: `audio/words/${it.key}_normal.mp3`,
+      audio_slow:   `audio/words/${it.key}_05.mp3`
+    };
+  });
+}
+
+const allProblems = buildProblems();
+let sessionProblems = [];
+let idx = 0;
+
+/* ユーティリティ */
+function shuffle(arr){
+  for(let i = arr.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+}
+
+/* コース開始 */
+function startCourse(type){
+  try{
+    let list = [...allProblems];
+
+    if(type === 'five'){
+      shuffle(list);
+      sessionProblems = list.slice(0,5);
+
+    }else if(type === 'ten'){
+      shuffle(list);
+      sessionProblems = list.slice(0,10);
+
+    }else if(type === 'tate'){
+      const pick = ROWS_5[Math.floor(Math.random()*ROWS_5.length)];
+      let row;
+      if (pick === "YA_WA") {
+        const fixed = ["や","ゆ","よ"];
+        const extras = ["わ","を","ん"];
+        shuffle(extras);
+        row = [...fixed, ...extras.slice(0,2)];
+      } else {
+        row = pick;
+      }
+      sessionProblems = list.filter(p => row.includes(p.answer));
+      shuffle(sessionProblems);
+
+    }else if(type === 'yoko'){
+      const colsKeys = ["A","I","U","E","O"];
+      const pick = colsKeys[Math.floor(Math.random()*colsKeys.length)];
+      const colSet = COLS[pick];
+      let colProblems = list.filter(p => colSet.includes(p.answer));
+      if(pick === "I" || pick === "E"){
+        const nProb = list.find(p => p.answer === "ん");
+        if(nProb) colProblems.push(nProb);
+      }
+      while(colProblems.length < 10){
+        const r = colProblems[Math.floor(Math.random()*colProblems.length)] || list[Math.floor(Math.random()*list.length)];
+        colProblems.push(r);
+      }
+      sessionProblems = colProblems.slice(0,10);
+      shuffle(sessionProblems);
+    }
+
+    idx = 0;
+    overlay.hidden = true;
+    appEl.hidden = false;
+    renderCurrent();
+  }catch(e){
+    console.error(e);
+    alert("はじめられませんでした。ページを再読み込みしてください。");
+  }
+}
+
+/* 現在の単語音声（通常・ゆっくり） */
+let wordFast = null;
+let wordSlow = null;
+
+/* 1問描画（画像は必ずプレースホルダーから始める） */
+function renderCurrent(){
+  nextWrap.hidden = true;
+  const p = sessionProblems[idx];
+
+  qText.textContent = p.word;
+
+  // 1) まずプレースホルダー表示
+  imgEl.src = FALLBACK_IMG;
+  imgEl.alt = p.key;
+
+  // 2) 本来の画像をバックグラウンドで試す（失敗しても止めない）
+  const tester = new Image();
+  tester.onload = () => { imgEl.src = p.image; };
+  tester.onerror = () => { console.warn(`画像なし: ${p.image}`); };
+  tester.src = p.image;
+
+  // 音声（存在しなくてもアプリは止めない）
+  wordFast = new Audio(p.audio_normal);
+  wordSlow = new Audio(p.audio_slow);
+  btnSlow.style.opacity = 1;
+  btnSlow.style.pointerEvents = 'auto';
+  btnSlow.title = "";
+
+  // 選択肢
+  choicesWrap.innerHTML = '';
+  let choices = [...p.baseChoices];
+  while(choices.length < 4){
+    const cand = allProblems[Math.floor(Math.random()*allProblems.length)].answer;
+    if(!choices.includes(cand)) choices.push(cand);
+  }
+  shuffle(choices);
+  const nums = ["①","②","③","④"];
+
+  choices.forEach((ch,i)=>{
+    const choice = document.createElement('div');
+    choice.className = 'choice';
+    choice.dataset.letter = ch;
+
+    const num = document.createElement('div');
+    num.className = 'number';
+    num.textContent = nums[i];
+
+    const say = document.createElement('div');
+    say.className = 'say';
+    say.textContent = ch;
+
+    // 単音：無ければ警告のみ
+    say.onclick = () => {
+      const map = {
+        "あ":"a","い":"i","う":"u","え":"e","お":"o",
+        "か":"ka","き":"ki","く":"ku","け":"ke","こ":"ko",
+        "さ":"sa","し":"shi","す":"su","せ":"se","そ":"so",
+        "た":"ta","ち":"chi","つ":"tsu","て":"te","と":"to",
+        "な":"na","に":"ni","ぬ":"nu","ね":"ne","の":"no",
+        "は":"ha","ひ":"hi","ふ":"fu","へ":"he","ほ":"ho",
+        "ま":"ma","み":"mi","む":"mu","め":"me","も":"mo",
+        "や":"ya","ゆ":"yu","よ":"yo",
+        "ら":"ra","り":"ri","る":"ru","れ":"re","ろ":"ro",
+        "わ":"wa","を":"wo","ん":"n"
+      };
+      const r = map[ch];
+      if(r){
+        const a = new Audio(`audio/letters/${r}.mp3`);
+        a.currentTime = 0;
+        const pr = a.play();
+        if (pr && pr.catch) pr.catch(()=>console.warn(`letters/${r}.mp3 の再生に失敗（未配置かも）`));
+      }
+    };
+
+    num.onclick = () => {
+      if(choice.querySelector('.circle-mark')) return;
+      if(ch === p.answer){
+        const mark = document.createElement('div');
+        mark.className = 'circle-mark';
+        mark.textContent = '◯';
+        choice.appendChild(mark);
+        nextWrap.hidden = false; // 正解時のみ「つぎへ」
+      }else{
+        if(!num.classList.contains('answered')){
+          const cross = document.createElement('div');
+          cross.className = 'cross-mark';
+          cross.textContent = '×';
+          num.replaceWith(cross);
+          num.classList.add('answered');
+        }
+      }
+    };
+
+    choice.appendChild(num);
+    choice.appendChild(say);
+    choicesWrap.appendChild(choice);
+  });
+}
+
+/* 再生制御 */
+const stopBoth = () => { try{wordFast.pause();}catch(e){} try{wordSlow.pause();}catch(e){} };
+
+/* 速い（通常） */
+btnFast.onclick = () => {
+  if(!wordFast) return;
+  stopBoth();
+  wordFast.currentTime=0;
+  const p = wordFast.play();
+  if(p && p.catch) p.catch(()=>console.warn('通常音声の再生に失敗'));
+};
+
+/* ゆっくり（0.5倍）—無ければ通常にフォールバック＆ボタン無効化 */
+btnSlow.onclick = () => {
+  if(!wordSlow){
+    if(wordFast){ stopBoth(); wordFast.currentTime=0; wordFast.play(); }
+    return;
+  }
+  stopBoth();
+  wordSlow.currentTime=0;
+  const pr = wordSlow.play();
+  if(pr && pr.catch){
+    pr.catch(()=>{
+      if(wordFast){ wordFast.currentTime=0; wordFast.play(); }
+      btnSlow.style.opacity = 0.4;
+      btnSlow.style.pointerEvents = 'none';
+      btnSlow.title = "ゆっくり音声が見つかりません";
+    });
+  }
+};
+
+/* 次へ */
+nextBtn.onclick = () => {
+  idx++;
+  if(idx >= sessionProblems.length){
+    appEl.hidden = true;
+    overlay.hidden = false;
+  }else{
+    renderCurrent();
+  }
+};
+</script>
+</body>
+</html>

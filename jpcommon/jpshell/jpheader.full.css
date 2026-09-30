@@ -1,0 +1,71 @@
+/* jpcommon/jpshell/jpheader.full.css
+   - 国語：右端ヘッダー帯（見た目）
+   - 役割：.v-header / #jpnHeaderMount / #jpnHeaderTitle の見た目だけ
+*/
+
+:root{
+  --color-header-jpn: #ffe5e5;
+  --color-ink: #111;
+}
+
+/* ヘッダー：薄赤・余白ゼロ */
+body.app-vertical-jpn:is(.entry-mode, .screen-quiz, .screen-catalog) .v-side-middle .v-header{
+  background: var(--color-header-jpn);
+  padding: 0;
+  margin: 0;
+  display: block;
+  overflow: hidden;
+  height: 100%;
+  width: var(--v-header-w);
+  overflow: hidden;
+}
+
+/* mount：帯幅いっぱいを使って、上詰め＆横中央 */
+#jpnHeaderMount{
+  width: 100%;
+  height: 100%;
+
+  display: grid;
+  place-items: start center;
+
+  padding: 0;
+  margin: 0;
+}
+
+/* タイトル：帯幅を削らず中央へ */
+#jpnHeaderTitle{
+  inline-size: auto;
+  box-sizing: border-box;
+
+  padding: 0;
+  margin: 0;
+
+  justify-self: center;
+
+  font-weight: 700;
+}
+
+/* 文字：教科書体＋縦書き */
+.v-header #jpnHeaderTitle{
+  color: var(--color-ink);
+  font-family:
+    "UD Digi Kyokasho N-R",
+    "UD Digi Kyokasho NK-R",
+    "UDデジタル教科書体N-R",
+    "UDデジタル教科書体NK-R",
+    "BIZ UDGothic",
+    system-ui,
+    sans-serif;
+
+  letter-spacing: 0.06em;
+
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+
+  white-space: pre-wrap;
+
+  font-size: 26px;
+  line-height: 1.05;
+
+  padding: 2px 0;
+}

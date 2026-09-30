@@ -1,0 +1,4 @@
+.puzzle{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:8px 12px}
+.goal,.tray{border:3px dashed #555;min-height:260px;position:relative;overflow:hidden}
+.piece{position:absolute;width:120px;cursor:grab}
+.snap{box-shadow:0 0 0 3px #9edaa5 inset}

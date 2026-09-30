@@ -1,0 +1,31 @@
+:root{
+  /* seed（最初の固定直線） */
+  --seed-line:  #26C6DA; /* 明るい水色 */
+  --seed-dot:   #1565C0; /* 端点の濃い青 */
+
+  /* 児童の線（作図中）と確定後 */
+  --user-line:    #777;  /* 見やすいグレー */
+  --user-line-ok: #000;  /* 正解で黒に固定 */
+
+  /* 児童の端点（作成順の色） */
+  --user-dot-1: #E53935; /* 赤 */
+  --user-dot-2: #43A047; /* 緑 */
+  --user-dot-3: #FB8C00; /* オレンジ（黄色は避け） */
+  --user-dot-4: #8E24AA; /* 紫 */
+  --user-dot-5: #6D4C41; /* ブラウン（赤と誤認されにくい） */
+}
+
+/* Lv2ではSVGルートを操作可能にする（Lv1には影響させない） */
+#shapeLayer { pointer-events: none; }
+
+/* seedはタップ不可（SVGはpointer-events: none;を基本に、必要部だけ可） */
+#shapeLayer .seed-line,
+#shapeLayer .seed-dot{
+  pointer-events: none;
+}
+
+/* 児童端点の見た目（サイズはJSでpx指定するが、保険で最小値を与える） */
+#shapeLayer .user-dot{
+  r: 5; /* fallback */
+}
+

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>ひらがな / カタカナ メニュー</title>
+
+<!-- 先読み：ページ本体 -->
+<link rel="prefetch" href="./hiragana.html">
+<link rel="prefetch" href="./katakana.html">
+<!-- 先読み：データJSON（HTTPで開いたとき有効 / file://では無視されます） -->
+<link rel="prefetch" href="./data/hiragana.json" as="fetch" crossorigin>
+<link rel="prefetch" href="./data/katakana.json" as="fetch" crossorigin>
+
+<style>
+:root{
+  --index-center-y: 46vh;
+  --index-title-offset: -140px;
+  --index-sub-offset: 120px;
+  --stack-gap: clamp(16px, 3vh, 28px);
+}
+*{ box-sizing:border-box; }
+html,body{ height:100%; }
+body{
+  font-family:"Yu Kyokasho","YuKyokasho","UD Digi Kyokasho N-R",sans-serif;
+  margin:0; padding:16px; text-align:center; background:#fff; color:#000;
+}
+.home{ min-height:100svh; position: relative; }
+.title{
+  position: absolute; top: var(--index-center-y); left: 50%;
+  transform: translate(-50%, calc(-50% + var(--index-title-offset)));
+  font-size: clamp(32px,5.5vw,48px); margin:0; line-height:1.2;
+}
+.btnrow{
+  position: absolute; top: var(--index-center-y); left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex; flex-wrap: wrap; gap: clamp(18px, 3vw, 28px); justify-content: center;
+  width: min(92vw, 900px);
+}
+.btn{
+  font-size: clamp(28px, 5.2vw, 48px);
+  padding: clamp(18px, 3.2vw, 34px) clamp(28px, 5vw, 40px);
+  border-radius: 9999px; border:3px solid #333; background:#fff; cursor:pointer;
+  min-width: clamp(240px, 36vw, 420px);
+  line-height: 1.15; transition: transform .05s ease, background-color .15s ease, border-color .15s ease;
+  font-family:"Yu Kyokasho","YuKyokasho","UD Digi Kyokasho N-R",sans-serif;
+}
+.btn:active{ transform: translateY(1px); }
+#btn-hira{ background:#ffe3e3; border-color:#c94a4a; color:#111; }
+#btn-hira:hover{ background:#ffd6d6; }
+#btn-hira:focus{ outline:4px solid rgba(201,74,74,.25); outline-offset:2px; }
+#btn-kata{ background:#e3f0ff; border-color:#3a66c5; color:#111; }
+#btn-kata:hover{ background:#d6e9ff; }
+#btn-kata:focus{ outline:4px solid rgba(58,102,197,.25); outline-offset:2px; }
+.sub{
+  position: absolute; top: var(--index-center-y); left: 50%;
+  transform: translate(-50%, calc(-50% + var(--index-sub-offset)));
+  font-size: clamp(18px,3.4vw,24px); color:#444; margin:0;
+}
+</style>
+</head>
+<body>
+<section class="home" aria-label="メインメニュー">
+  <h1 class="title">どっちで やる？</h1>
+  <div class="btnrow">
+    <button class="btn" id="btn-hira">ひらがな</button>
+    <button class="btn" id="btn-kata">カタカナ</button>
+  </div>
+  <p class="sub">はじめに えらんでね</p>
+</section>
+
+<script>
+  document.getElementById('btn-hira').onclick = () => { location.href = './hiragana.html'; };
+  document.getElementById('btn-kata').onclick = () => { location.href = './katakana.html'; };
+  // 便利ショートカット：1/2キー
+  document.addEventListener('keydown', (e) => {
+    if (e.key === '1') location.href = './hiragana.html';
+    if (e.key === '2') location.href = './katakana.html';
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>算数テンプレ（cleanQuiz）（せってい）</title>
+
+  <!-- 共通シェル（深さはkukuと同じ） -->
+  <link rel="stylesheet" href="../../../common/shell/header.full.css">
+  <link rel="stylesheet" href="../../../common/shell/setup.full.css">
+  <link rel="stylesheet" href="../../../common/shell/tenkeypad.full.css">
+  <link rel="stylesheet" href="../../../common/shell/entry.full.css">
+  <link rel="stylesheet" href="./sakura_entry.css?v=1">
+  <!-- clean_entry.css は今は作らない（衝突防止：必要になったら後で） -->
+<style>
+  /* header が他要素に潰されるのを防ぐ（kuku_entryと同じ保険） */
+  #slot-header { position: relative; z-index: 50; }
+  header.title { position: relative; z-index: 50; }
+</style>
+</head>
+
+<body data-appkey="sakura.entry" style="padding-top:0;">
+
+  <!-- kit が読むスロット -->
+  <div id="slot-header"
+       data-slot="header"
+       data-title="さくらんぼ　いくつと　いくつ？"
+       data-back="../../../catalog/math-1st.html#lower"></div>
+
+  <!-- EntryFull / SetupCard の mount 先 -->
+  <main id="mainArea"></main>
+
+  <!-- ★重要：kit.full.js が読む前に宣言（kuku_entryと同じ位置） -->
+  <script>
+    // entry は「設定画面」なので、歯車は表示のみ（操作なし）
+    window.AppShellOptions = window.AppShellOptions || {};
+    window.AppShellOptions.gearAction = "disabled";
+
+    window.AppShellLayout = {
+      header:{ left:['backlink'], center:['title'], right:['settingsGear'] },
+      pbar:{ left:[], center:[], right:[] },
+      main:{ bottomCenter:[] },
+      footer:{ left:[], center:[], right:[] }
+    };
+  </script>
+
+  <!-- 共通レゴ -->
+  <script src="../../../common/shell/gear.full.js"></script>
+  <script src="../../../common/shell/kit.full.js"></script>
+  <script src="../../../common/shell/header.full.js"></script>
+
+  <!-- SetupCard / EntryFull -->
+  <script src="../../../common/shell/tenkeypad.full.js"></script>
+  <script src="../../../common/shell/setup.full.js"></script>
+  <script src="../../../common/shell/entry.full.js"></script>
+
+  <!-- sakura entry（レゴ登録） -->
+  <script src="./sakura_entry.js"></script>
+</body>
+</html>

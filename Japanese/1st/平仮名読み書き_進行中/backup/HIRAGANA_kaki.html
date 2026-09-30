@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>ひらがな書字教材・安定版</title>
+<style>
+  :root{ --mm-scale:3.78; --box-mm:50; --gap-mm:10; --frame-mm:1.0; --guide-mm:0.3; --optical-shift:0; }
+  *{ box-sizing:border-box; } body{ margin:0; font-family: system-ui, -apple-system, "Segoe UI", "Hiragino Sans", "Noto Sans JP", "Yu Gothic", Meiryo, sans-serif; }
+  .hidden{ display:none !important; } h1{ margin:16px; font-size: clamp(20px,3.6vw,28px); }
+
+  /* Open */
+  #openPage{ padding:12px; }
+  #grid{ display:grid; grid-auto-flow: column; grid-auto-columns: minmax(48px,1fr); gap: 12px; margin: 12px; }
+  #grid > div{ display:grid; grid-auto-rows: 1fr; gap:6px; }
+  #grid button{ font-size: clamp(18px, 4.2vw, 28px); aspect-ratio:1/1; border:1px solid #ccc; border-radius:12px; background:#fff; }
+  #grid button.picked{ background:#e7f0ff; border-color:#cfe0ff; }
+  #rowBar, #danCol, #utilCol{ display:flex; flex-wrap:wrap; gap:6px; margin:8px 12px; }
+  #rowBar button, #danCol button, #utilCol button{ padding:8px 10px; border:1px solid #ddd; border-radius:999px; background:#f7f7f7; }
+  #toCourse{ margin: 12px; padding: 10px 16px; font-weight:700; }
+
+  /* Course */
+  #coursePage{ padding:12px; }
+  #coursePage button[data-n]{ padding:10px 14px; margin:8px; border:1px solid #ddd; border-radius:12px; }
+  #startCourse{ margin-left:8px; padding:10px 16px; font-weight:700; }
+
+  /* Write */
+  #writePage{ padding:12px; }
+  #workarea{ display:flex; gap: clamp(8px, 3vw, 24px); align-items:center; justify-content:center; margin:12px; flex-wrap:wrap; }
+  #sampleWrap, #writeWrap{ display:flex; }
+  canvas{ display:block; background:#fff; }
+  .hand-left #workarea{ flex-direction: row-reverse; }
+  #writePage .controls{ display:flex; gap:10px; justify-content:center; margin: 8px 12px; }
+  #writePage button{ padding:10px 14px; border:1px solid #ddd; border-radius:10px; background:#f7f7f7; }
+  #scoreBox{ text-align:center; font-weight:800; margin-top:8px; }
+  #judgeComment{ margin:8px 12px; min-height: 1.5em; }
+
+  /* Review */
+  #reviewPage{ padding:12px; }
+  #resultKanaRow{ display:grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap:10px; margin: 12px; }
+  .kana-card{ border:1px solid #e4e4e4; border-radius:12px; padding:10px; background:#fff; display:grid; gap:6px; justify-items:center; }
+  .kana-char .glyph{ font-size: clamp(28px, 7vw, 48px); }
+  .kana-score{ font-weight:700; }
+</style>
+
+<!-- 同じフォルダのJSを読み込み（順序は厳守） -->
+<script src="./core.js"></script>
+<script src="./pages_open.js"></script>
+<script src="./engine_write.js"></script>
+</head>
+<body>
+
+<!-- Open -->
+<section id="openPage">
+  <h1>50音から選んでね</h1>
+  <div id="grid"></div>
+  <div id="rowBar"></div>
+  <div id="danCol"></div>
+  <div id="utilCol"></div>
+  <div style="margin:8px 12px;">えらんだ文字数: <span id="selCount">0</span></div>
+  <button id="toCourse">つぎへ</button>
+</section>
+
+<!-- Course -->
+<section id="coursePage" class="hidden">
+  <h1>コースをえらんでね</h1>
+  <div>
+    <button data-n="3">3問</button>
+    <button data-n="5">5問</button>
+    <button data-n="10">10問</button>
+  </div>
+  <div style="margin-top:8px;">
+    <label><input type="checkbox" id="recSwitch"> 記録する</label>
+    <input type="text" id="studentName" placeholder="なまえ" disabled />
+    <button id="startCourse" disabled>スタート</button>
+  </div>
+</section>
+
+<!-- Write -->
+<section id="writePage" class="hidden">
+  <h1>書いてみよう</h1>
+  <div id="workarea">
+    <div id="sampleWrap"><canvas id="sampleBox"></canvas></div>
+    <div id="writeWrap"><canvas id="writeBox"></canvas></div>
+  </div>
+  <div class="controls">
+    <button id="hintBtn">ヒント</button>
+    <button id="scoreBtn">採点</button>
+    <button id="retryBtn">もういちど</button>
+    <button id="nextBtn">つぎへ</button>
+  </div>
+  <div id="scoreBox"></div>
+  <div id="judgeComment"></div>
+</section>
+
+<!-- Review -->
+<section id="reviewPage" class="hidden">
+  <h1>ふりかえり</h1>
+  <div id="resultKanaRow"></div>
+  <div style="margin:8px 12px;">平均点: <span id="avgValue"></span></div>
+  <button id="toOpen">はじめにもどる</button>
+</section>
+
+<script>
+/* ====== このHTMLに残すロジックは最小限（描画は engine_write.js） ====== */
+var questionQueue = [];
+var runResults = [];
+var totalQuestions = 0;
+var currentIndex = 0;
+var handed = localStorage.getItem("handedPref") || "right";
+var hintShown = false;
+var strokes = [];               // 第2バッチでエンジン側へ完全移管予定
+var overlayCanvas = null;
+var recordedForCurrent = false;
+var scoreMode = 'full';
+
+// 初期化（手本・枠の描画まで行う）
+function initWritePage(){
+  hintShown = false; strokes = []; overlayCanvas=null; recordedForCurrent=false;
+  document.getElementById('scoreBox').textContent = '';
+  document.getElementById('judgeComment').innerHTML = '';
+
+  if (!Number(totalQuestions)) {
+    const selCount = (window.AppState && AppState.selected) ? AppState.selected.size : 0;
+    totalQuestions = selCount>0 ? Math.min(10, selCount) : 5;
+  }
+  runResults = new Array(totalQuestions);
+  questionQueue = (typeof buildQuestionQueue==='function') ? buildQuestionQueue(totalQuestions) : ["あ","い","う","え","お"].slice(0,totalQuestions);
+  currentIndex = 1;
+
+  // 描画（engine_writeの公開関数を呼ぶ）
+  placeByHanded();
+  resizeBoxes();
+  drawSample(1);
+  drawWriteBox(false);
+}
+
+// 採点（第3バッチ予定のダミー）
+function evaluateAndShow(){ document.getElementById('scoreBox').textContent = '＊採点準備中（第3バッチで実装）'; }
+// 進行（第2バッチ予定のダミー）
+function nextQuestion(){
+  currentIndex++;
+  if (currentIndex>totalQuestions){ goReview(); return; }
+  hintShown=false; strokes=[]; overlayCanvas=null;
+  drawSample(1); drawWriteBox(false);
+}
+
+// 公開（engine_write.js が呼ぶ）
+window.initWritePage   = initWritePage;
+window.evaluateAndShow = evaluateAndShow;
+window.nextQuestion    = nextQuestion;
+
+// コース開始
+document.getElementById("startCourse").onclick = function(){
+  localStorage.setItem("handedPref", handed);
+  document.getElementById("coursePage").classList.add("hidden");
+  document.getElementById("writePage").classList.remove("hidden");
+  document.getElementById("reviewPage").classList.add("hidden");
+  if (window.WritePage && typeof window.WritePage.start === "function") window.WritePage.start();
+};
+
+// Writeページのボタン（最小動作）
+document.getElementById('hintBtn').onclick = ()=>{ hintShown=!hintShown; drawWriteBox(hintShown); };
+document.getElementById('retryBtn').onclick= ()=>{ strokes=[]; overlayCanvas=null; drawSample(1); drawWriteBox(hintShown); };
+document.getElementById('scoreBtn').onclick= ()=>{ evaluateAndShow(); };
+document.getElementById('nextBtn').onclick = ()=>{ nextQuestion(); };
+
+// レビュー
+const resultKanaRow = document.getElementById('resultKanaRow');
+const avgValue = document.getElementById('avgValue');
+function goReview(){
+  document.getElementById("writePage").classList.add("hidden");
+  document.getElementById("reviewPage").classList.remove("hidden");
+  resultKanaRow.innerHTML=''; let sum=0;
+  for(let i=0;i<totalQuestions;i++){
+    const kana = questionQueue[i] || '';
+    const r = runResults[i] || { kana, score:0 };
+    const s = (typeof r.score==='number')? r.score : 0; sum+=s;
+    const card = document.createElement('div'); card.className='kana-card';
+    const ch = document.createElement('div'); ch.className='kana-char';
+    const glyph = document.createElement('span'); glyph.className='glyph'; glyph.textContent = isKana(kana)? kana : '・';
+    ch.appendChild(glyph);
+    const sc = document.createElement('div'); sc.className='kana-score'; sc.textContent = String(s)+' てん';
+    card.append(ch, sc); resultKanaRow.appendChild(card);
+  }
+  avgValue.textContent = (totalQuestions>0)? String(Math.round(sum/totalQuestions))+'点' : '—';
+}
+document.getElementById('toOpen').onclick = ()=>{
+  document.getElementById("reviewPage").classList.add("hidden");
+  document.getElementById("openPage").classList.remove("hidden");
+};
+</script>
+</body>
+</html>

@@ -1,0 +1,45 @@
+/* TenKeypad Lego
+   - 3x3（1〜9）＋（任意）ぜんぶ/けす
+   - SetupCardの中に入れても崩れないよう、幅100%で伸縮
+*/
+
+.tenkeypad{
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.tenkeypad-grid{
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.tenkeypad-btn{
+  height: 68px;
+  border-radius: 14px;
+  border: 2px solid #3c7cff;
+  background: #eaf1ff;
+  font-size: 28px;
+  font-weight: 800;
+}
+
+.tenkeypad-btn.is-on{
+  background: #3c7cff;
+  color: #fff;
+}
+
+.tenkeypad-tools{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.tenkeypad-tool{
+  height: 52px;
+  border-radius: 999px;
+  border: 1px solid rgba(0,0,0,.18);
+  background: #fff;
+  font-size: 20px;
+  font-weight: 700;
+}

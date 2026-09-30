@@ -1,0 +1,34 @@
+<!doctype html><html lang="ja"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>テンプレ：盤面ドラッグ</title>
+<link rel="stylesheet" href="../../shared/css/base.css">
+<link rel="stylesheet" href="./css/app.css">
+<script src="../../shared/js/shapes.js" defer></script>
+<script src="../../shared/js/colors_shapes10.js" defer></script>
+<script src="../../shared/js/common.js" defer></script>
+<script src="./js/app.js" defer></script>
+</head><body>
+<header class="app-header">
+  <button class="btn btn-back" onclick="history.back()">{ もどる }</button>
+  <h1 class="title">仕分けテンプレ</h1>
+  <button class="btn btn-help" onclick="alert('お題に合わせてドラッグして分けよう')">？</button>
+</header>
+
+<main class="board-4">
+  <section class="panel" id="panelA" aria-label="左上">三角形</section>
+  <section class="panel" id="panelB" aria-label="右上">四角形</section>
+  <section class="panel" id="panelC" aria-label="左下"></section>
+  <section class="panel" id="panelD" aria-label="右下"></section>
+</main>
+
+<footer class="app-footer">
+  <div class="left-tools">
+    <label><input type="checkbox" id="toggleColor"> 色をつける</label>
+    <label>倍率 <select id="scaleSelect"></select></label>
+  </div>
+  <div class="main-controls">
+    <button class="btn" id="btnRetry">{ やり直し }</button>
+    <button class="btn" id="btnNext">{ つぎの問題 }</button>
+  </div>
+</footer>
+</body></html>

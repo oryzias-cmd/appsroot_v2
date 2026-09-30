@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>さくらんぼ計算ドリル（たしざん②）</title>
+
+<!-- ▼ レゴ共通CSS -->
+<link rel="stylesheet" href="../../../common/shell/header.full.css" />
+<link rel="stylesheet" href="../../../common/shell/pbar.full.css" />
+
+<!-- ▼ さくらんぼドリル専用 -->
+<link rel="stylesheet" href="./cherryeither.css" />
+</head>
+<body data-phase="app">
+
+  <!-- ▼ レゴ：ヘッダー用スロット -->
+  <div id="slot-header" data-slot="header"></div>
+
+  <!-- ▼ レゴ：問題バー用スロット -->
+  <div id="slot-pbar" data-slot="pbar"></div>
+
+  <!-- ▼ メインエリア -->
+  <main id="mainArea">
+    <div id="cherryApp" class="cherry-app">
+
+      <!-- ▽ セットアップ画面 -->
+      <section id="setupPage" class="page is-active">
+        <div class="setup-panel">
+
+          <div class="setup-panel-body">
+          <div class="setup-block">
+            <div class="setup-label">もんだい</div>
+            <div class="setup-options">
+              <label class="pill-option">
+                <input type="radio" name="mode" value="auto" checked />
+                <span>じどう</span>
+              </label>
+              <label class="pill-option">
+                <input type="radio" name="mode" value="teacher" />
+                <span>せんせい</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="setup-block">
+            <div class="setup-label">もんだいすう</div>
+              <div class="setup-options">
+              <label class="pill-option">
+                <input type="radio" name="qcount" value="3" checked />
+                <span>３もん</span>
+              </label>
+              <label class="pill-option">
+                <input type="radio" name="qcount" value="5" />
+                <span>５もん</span>
+              </label>
+              <label class="pill-option">
+                <input type="radio" name="qcount" value="10" />
+                <span>１０もん</span>
+              </label>
+            </div>
+          </div>
+          </div>
+
+          <div class="setup-actions">
+            <button id="btnStart" class="primary-btn">
+              スタート
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ▽ クイズ画面 -->
+      <section id="quizPage" class="page">
+        <div class="board">
+
+          <!-- 式の行 -->
+          <div class="eq-row">
+            <div class="eq-box eq-operand" data-role="A">
+              <div class="eq-value" data-bind="A"></div>
+            </div>
+            <div class="eq-sign">＋</div>
+            <div class="eq-box eq-operand" data-role="B">
+              <div class="eq-value" data-bind="B"></div>
+            </div>
+            <div class="eq-sign">＝</div>
+            <div class="eq-box eq-answer main-answer" data-role="ANS">
+              <div class="eq-value" data-bind="ANS"></div>
+            </div>
+          </div>
+
+          <!-- さくらんぼ＆１０ -->
+          <div class="cherry-row">
+            <!-- 斜めピル（A と 左さくらんぼをくるむ帯） -->
+            <div class="pill-wrap">
+              <div class="pill-shape"></div>
+            </div>
+
+            <!-- 10・さくらんぼ・枝をまとめたレイアウト枠 -->
+            <div class="cherry-layout">
+              <!-- １０の丸（入力欄） 左さくらんぼの左側 -->
+              <div class="ten-circle eq-circle" data-role="TEN">
+                <div class="circle-value" data-bind="TEN"></div>
+              </div>
+
+              <!-- さくらんぼ本体（どちらも加数から枝が出る） -->
+              <div class="cherries">
+                <div class="cherry cherry-left eq-circle" data-role="CL">
+                  <div class="circle-value" data-bind="CL"></div>
+                </div>
+                <div class="cherry cherry-right eq-circle" data-role="CR">
+                  <div class="circle-value" data-bind="CR"></div>
+                </div>
+              </div>
+
+              <!-- 加数からの枝（5 から 2つのさくらんぼへ） -->
+              <svg class="cherry-lines" viewBox="0 0 260 100" aria-hidden="true">
+                <!-- ★ 左の枝だけ少し下まで伸ばす（終点の y を 86 → 96 に） -->
+                <polyline class="line-left"  points="130,8 52,120" />
+                <!-- 右の枝は今のまま（位置バランス確認用） -->
+                <polyline class="line-right" points="130,8 208,120" />
+              </svg>
+            </div>
+          </div>
+
+<!-- 10 + □ = □ の小さな式（TEN / CR / ANS から自動生成） -->
+<div class="sub-eq-row">
+  <span class="sub-eq">
+    <span class="sub-eq-part" data-bind="SUB_L"></span>
+    <span class="sub-eq-part">＋</span>
+    <span class="sub-eq-part" data-bind="SUB_R"></span>
+    <span class="sub-eq-part">＝</span>
+    <span class="sub-eq-part" data-bind="ANS"></span>
+  </span>
+</div>
+
+          <!-- こたえあわせボタン（数字キーのすぐ上） -->
+          <div class="check-row">
+            <button id="btnCheck" class="primary-btn" disabled>こたえあわせ</button>
+          </div>
+
+          <!-- 数字キー -->
+          <div class="key-row">
+            <button class="num-key" data-key="0">0</button>
+            <button class="num-key" data-key="1">1</button>
+            <button class="num-key" data-key="2">2</button>
+            <button class="num-key" data-key="3">3</button>
+            <button class="num-key" data-key="4">4</button>
+            <button class="num-key" data-key="5">5</button>
+            <button class="num-key" data-key="6">6</button>
+            <button class="num-key" data-key="7">7</button>
+            <button class="num-key" data-key="8">8</button>
+            <button class="num-key" data-key="9">9</button>
+            <button class="num-key" data-key="10">10</button>
+            <button class="ctrl-key" data-action="undo">ひとつ<br>けす</button>
+            <button class="ctrl-key" data-action="clear">ぜんぶ<br>けす</button>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- ▼ レゴレイアウト宣言：さくらんぼ計算ドリル -->
+  <script>
+    window.AppShellLayout = {
+      header: {
+        left:   ['backlink'],   // 左：もどる
+        center: ['title'],      // 中央：タイトル（header:set-titleで更新）
+        right:  ['voiceToggle'] // 右：音声ON/OFF
+      },
+      pbar: {
+left: [
+  {
+    part: 'levelSelect',
+    id: 'opSelect',
+    items: [
+      { value: 'add_kasuu',   label: 'たしざん①' },
+      { value: 'add_hikasuu', label: 'たしざん②' },
+      { value: 'sub_higensuu', label: 'ひきざん' }
+    ],
+    event: 'pbar:op-change',
+    initialValue: 'add_hikasuu'
+  }
+],
+        center: [],
+        right: ['settingsGear'] // 右：⚙ 設定（レゴ共通ギアボタン）
+      }
+    };
+  </script>
+
+  <!-- ▼ リザルトカード（小さな結果表示） -->
+  <div id="resultOverlay" class="result-overlay is-hidden" aria-hidden="true">
+    <div class="result-card">
+<div class="result-title">【 け っ か 】</div>
+<hr class="result-sep">
+<div class="result-score" id="resultScore">３もんちゅう ２もん せいかい！</div>
+      <div class="result-message" id="resultMessage">よく がんばりました。</div>
+      <div class="result-actions">
+        <button
+          type="button"
+          class="secondary-btn retry-btn"
+          id="btnRetry"
+        >
+          おなじ もんだい
+        </button>
+        <button
+          type="button"
+          class="primary-btn setup-btn"
+          id="btnResultSetup"
+        >
+          もんだいを えらぶ
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ▼ レゴ共通JS -->
+<script src="../../../common/shell/kit.full.js"></script>
+<script src="../../../common/shell/header.full.js"></script>
+<script src="../../../common/shell/pbar.full.js"></script>
+
+<!-- ▼ ResultCard レゴ（リザルト共通部品） -->
+<script src="../../../common/shell/result.full.js"></script>
+
+<!-- ▼ さくらんぼドリル専用 JS -->
+<script src="./cherryeither.js"></script>
+</body>
+</html>

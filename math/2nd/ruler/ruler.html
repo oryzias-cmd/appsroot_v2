@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>ふでいれの なかの ものの ながさを はかろう</title>
+
+  <!-- ▼ レゴ共通CSS（共通ルール：../../../common/shell/） -->
+  <link rel="stylesheet" href="../../../common/shell/header.css" />
+  <link rel="stylesheet" href="../../../common/shell/setup.full.css" />
+
+  <!-- ▼ ruler専用CSS -->
+  <link rel="stylesheet" href="./ruler.css" />
+</head>
+
+<body data-phase="app">
+  <!-- ▼ レゴ：ヘッダー -->
+  <div id="slot-header" data-slot="header"></div>
+
+  <!-- ▼ メイン -->
+  <main id="mainArea">
+    <section id="rulerTop" aria-label="測定ゾーン">
+      <!-- ★ここが欠けていた：ruler.js は #rulerWrap を探す -->
+      <div id="rulerWrap" class="ruler-wrap">
+        <svg id="rulerSvg" aria-label="ものさし"></svg>
+
+        <!-- ★物（ドラッグ対象）レイヤ -->
+        <div id="itemLayer" class="item-layer" aria-hidden="true"></div>
+      </div>
+    </section>
+
+    <section id="rulerBottom" aria-label="操作ゾーン">
+      <!-- ★土台（大きいパネル）の上に、3つの小パネルを“乗せる” -->
+      <div class="bottom-tray">
+        <div class="bottom-grid">
+          <!-- 左：筆入れ -->
+          <aside class="col col-left" aria-label="筆入れ">
+            <div class="panel">
+              <div class="panel-body" id="caseList">
+                <button class="chip is-pencil" type="button" data-item="rect">もの（ながさ）</button>
+                <div class="case-stock" id="caseStock"></div>
+              </div>
+              <div class="panel-note">上のものさしに ドラッグして おきます</div>
+            </div>
+          </aside>
+
+          <!-- 中：入力＋テンキー -->
+          <section class="col col-center" aria-label="入力とテンキー">
+            <div class="panel">
+              <div class="panel-body">
+                <div class="answer-block" id="answerBlock">
+                  <div class="ans-row is-one">
+                    <label class="ans-field is-one">
+                      <span class="ans-unit" id="ansUnitLabel">cm</span>
+                      <input id="ansOne" inputmode="numeric" autocomplete="off" maxlength="3" />
+                    </label>
+
+                    <button class="check-round" id="btnCheck" type="button" aria-label="こたえあわせ">こたえ<br>あわせ</button>
+                  </div>
+
+                  <div class="ans-msg" id="ansMsg" aria-live="polite"></div>
+                </div>
+
+                <div class="keypad is-two-row" id="keypad">
+                  <button class="key" data-key="6" type="button">6</button>
+                  <button class="key" data-key="7" type="button">7</button>
+                  <button class="key" data-key="8" type="button">8</button>
+                  <button class="key" data-key="9" type="button">9</button>
+                  <button class="key" data-key="0" type="button">0</button>
+                  <span class="key-spacer" aria-hidden="true"></span>
+                  <button class="key is-fn" data-key="BS" type="button">←</button>
+
+                  <button class="key" data-key="1" type="button">1</button>
+                  <button class="key" data-key="2" type="button">2</button>
+                  <button class="key" data-key="3" type="button">3</button>
+                  <button class="key" data-key="4" type="button">4</button>
+                  <button class="key" data-key="5" type="button">5</button>
+                  <button class="key unit unit-mm" data-unit="mm" type="button">mm</button>
+                  <button class="key unit unit-cm is-on" data-unit="cm" type="button">cm</button>
+                </div>
+
+                <div class="below-row">
+                  <span class="mode-chip" id="measureModeChip" aria-hidden="true">よこ</span>
+                  <button class="rot hidden" id="btnRotate" type="button" aria-label="たてよこをきりかえ">↻</button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 右：筆立て（測り終わった物を入れる） -->
+          <aside class="col col-right" aria-label="筆立て">
+            <div class="panel">
+              <div class="panel-body" id="standList">
+                <div class="empty">（まだ ありません）</div>
+              </div>
+              <div class="panel-note">はかった ものが ここに はいります</div>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ▼ レゴレイアウト宣言（問題バーは使わない） -->
+  <script>
+    window.AppShellLayout = window.AppShellLayout || {};
+    window.AppShellLayout.header = { left:['backlink'], center:['title'], right:['settingsGear'] };
+  </script>
+
+  <!-- ▼ レゴ共通JS -->
+  <script src="../../../common/shell/kit.full.js"></script>
+  <script src="../../../common/shell/header.full.js"></script>
+  <script src="../../../common/shell/setup.full.js"></script>
+
+  <!-- ▼ ruler専用JS -->
+  <script src="./ruler.js"></script>
+</body>
+</html>

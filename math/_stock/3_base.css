@@ -1,0 +1,113 @@
+/* ============================================
+   共通スタイル：図形アプリシリーズ用 base.css
+   （フォント・色・レイアウトの基本指定）
+   ============================================ */
+
+/* === 教科書体を確実に掴むためのローカル名エイリアス === */
+@font-face{
+  font-family: "KyokashoUD";
+  src:
+    local("UDデジタル教科書体 N-R"),
+    local("UD デジタル 教科書体 N-R"),
+    local("UDデジタル教科書体N-R"),
+    local("UD Digi Kyokasho N-R"),
+    local("UDDigiKyokasho N-R"),
+    local("UDデジタル教科書体 NP-R"),   /* Windows版で稀にこれ */
+    local("UD Digi Kyokasho NP-R");
+  font-weight: 400;
+  font-style: normal;
+}
+@font-face{
+  font-family: "KyokashoUD";
+  src:
+    local("UDデジタル教科書体 N-B"),
+    local("UD デジタル 教科書体 N-B"),
+    local("UDデジタル教科書体N-B"),
+    local("UD Digi Kyokasho N-B"),
+    local("UDDigiKyokasho N-B"),
+    local("UDデジタル教科書体 NP-B"),
+    local("UD Digi Kyokasho NP-B");
+  font-weight: 700;
+  font-style: normal;
+}
+
+/* === 全ページ共通の既定フォント === */
+body{
+  font-family:
+    "KyokashoUD",                  /* ← まずこれ（上の別名で束ねた教科書体） */
+    "BIZ UDMincho Medium",
+    "BIZ UDMincho Regular",
+    "Yu Mincho",
+    "Hiragino Mincho ProN",
+    "Hiragino Kaku Gothic ProN",
+    "Yu Gothic",
+    "Noto Serif JP",
+    serif;
+  margin:0;
+  color:#222;
+  background:#fff;
+  text-align:center;
+  -webkit-text-size-adjust:100%;
+  font-synthesis-weight: none;     /* 足りないウェイトの疑似太字を抑止 */
+}
+
+/* 以下はそのまま（省略可） */
+
+/* ---- 見出し ---- */
+h1 {
+  margin: 18px 0 8px;
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+h2 {
+  margin: 8px 0 4px;
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+/* ---- ボタン ---- */
+button {
+  font-family: inherit;
+  font-size: 1rem;
+  padding: 8px 16px;
+  border-radius: 10px;
+  border: 2px solid #444;
+  background: #fff;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+}
+button:hover {
+  background: #f5f5f5;
+}
+button:active {
+  transform: translateY(1px);
+}
+
+/* ---- 枠線・エリア ---- */
+.dropzone {
+  border: 3px dashed #b6bcc3;
+  border-radius: 14px;
+  background: #fafafa;
+}
+
+/* ---- 盤面中央ボタン（共通デザイン） ---- */
+#centerCheck {
+  font-family: inherit;
+  font-size: 1.05rem;
+  padding: 10px 18px;
+  border-radius: 12px;
+  border: 2px solid #333;
+  background: #fff;
+}
+
+/* ---- マーカー共通設定 ---- */
+.marker.red  { filter: drop-shadow(0 0 2px rgba(255,0,0,0.3)); }
+.marker.blue { filter: drop-shadow(0 0 2px rgba(0,0,255,0.3)); }
+
+/* ---- 汎用余白 ---- */
+.container {
+  margin: 0 auto;
+  padding: 0 16px;
+  max-width: 1000px;
+}

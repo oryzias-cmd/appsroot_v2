@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>いくつと　いくつ？
+  </title>
+
+  <link rel="stylesheet" href="../../../common/shell/header.full.css">
+  <link rel="stylesheet" href="../../../common/shell/setup.full.css">
+  <link rel="stylesheet" href="./sakura.css" />
+</head>
+
+<body
+  data-appkey="sakura.quiz"
+  data-phase="quiz"
+  data-eq-size="m"
+  data-ox-size="m"
+  data-color-mode="color"
+>
+  <div class="app-root">
+
+    <!-- ヘッダー -->
+    <div id="slot-header"
+         data-slot="header"
+         data-title="いくつと　いくつ？"
+         data-back="./sakura_entry.html"></div>
+
+    <main class="app-main" id="mainArea">
+
+      <!-- =========================
+           quiz棚（完全に空）
+           ========================= -->
+      <section id="quizPage" class="page page-quiz">
+      <div id="quizShelf" class="quiz-shelf" aria-label="quiz shelf">
+        <div class="sakura-quiz" id="sakuraRoot">
+          <div class="sakura-left" aria-label="grid panel">
+            <div class="sakura-title" id="sakuraTitle"></div>
+
+            <div class="board-wrap" id="boardWrap" aria-label="board wrap">
+              <div class="sakura-hud" id="sakuraHud" aria-label="progress and timer">
+                <div class="hud-circle" id="hudCircle" aria-label="progress circle">
+                  <div class="hud-circle-inner">
+                    <span class="hud-cur" id="hudCur">1</span>
+                    <span class="hud-bar" id="hudBar" aria-hidden="true"></span>
+                    <span class="hud-total" id="hudTotal">10</span>
+                  </div>
+                </div>
+
+                <div class="hud-timer" id="hudTimer" hidden>
+                  <span class="digital-number" id="hudTimerNum">15</span>
+                </div>
+              </div>
+
+              <div class="sakura-grid" id="sakuraGrid" aria-label="3x3 grid">
+                <div class="gcell" data-cell="tl"></div>
+                <div class="gcell gcell-target" data-cell="tc">
+                  <div class="slot" id="slotTop">
+                    <span class="num" id="cellTop"></span>
+                    <img class="ox-mark" id="oxTop" hidden>
+                  </div>
+                </div>
+                <div class="gcell" data-cell="tr"></div>
+
+                <div class="gcell" data-cell="ml"></div>
+                <div class="gcell gcell-branch" data-cell="mc"></div>
+                <div class="gcell" data-cell="mr"></div>
+
+                <div class="gcell gcell-part" data-cell="bl">
+                  <div class="slot" id="slotLeft">
+                    <span class="num" id="cellLeft"></span>
+                    <img class="ox-mark" id="oxLeft" hidden>
+                  </div>
+                </div>
+                <div class="gcell" data-cell="bc"></div>
+                <div class="gcell gcell-part" data-cell="br">
+                  <div class="slot" id="slotRight">
+                    <span class="num" id="cellRight"></span>
+                    <img class="ox-mark" id="oxRight" hidden>
+                  </div>
+                </div>
+                <!-- 枝（方眼全体オーバーレイ）
+                     指定座標（%相当）：
+                     曲がり角＝中央マス上辺中央 → (50, 33.333)
+                     左端＝左下マス上辺中央 → (16.666, 66.666)
+                     右端＝右下マス上辺中央 → (83.333, 66.666)
+                -->
+                <svg class="branch branch-overlay" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
+                  <path d="M 50 33.333 L 16.666 64.666"></path>
+                  <path d="M 50 33.333 L 83.333 64.666"></path>
+                </svg>
+              </div>
+            </div>
+
+            <div class="hint-row-wrap">
+              <div class="hint-row" id="hintRow" aria-label="hint circles"></div>
+            </div>
+          </div>
+
+          <div class="sakura-right" aria-label="input panel">
+
+            <!-- ① ヒントボタン（テンキーの上／右カラムの中央＝8の真上） -->
+            <div class="hint-btn-wrap" aria-label="hint button area">
+              <button class="hint-btn" type="button" id="hintBtn" aria-label="hint toggle">ヒント</button>
+            </div>
+
+            <!-- ② テンキー（左上は空に戻す／10は今の位置のまま） -->
+            <div class="pad" id="pad" aria-label="number keypad">
+              <button class="pad-key pad-empty" type="button" disabled></button>
+              <button class="pad-key pad-empty" type="button" disabled></button>
+              <button class="pad-key" type="button" data-n="10">10</button>
+
+              <button class="pad-key" type="button" data-n="7">7</button>
+              <button class="pad-key" type="button" data-n="8">8</button>
+              <button class="pad-key" type="button" data-n="9">9</button>
+
+              <button class="pad-key" type="button" data-n="4">4</button>
+              <button class="pad-key" type="button" data-n="5">5</button>
+              <button class="pad-key" type="button" data-n="6">6</button>
+
+              <button class="pad-key" type="button" data-n="1">1</button>
+              <button class="pad-key" type="button" data-n="2">2</button>
+              <button class="pad-key" type="button" data-n="3">3</button>
+            </div>
+
+            <!-- ③ つぎへ（今のまま） -->
+            <div class="next-wrap">
+              <button type="button" class="next-btn" id="nextBtn" disabled>つぎへ</button>
+            </div>
+
+          </div>
+        </div>
+      </div>      </section>
+
+      <!-- =========================
+           result棚（フォールバックのみ）
+           実運用は ResultCard が使用される
+           ========================= -->
+      <section id="resultPage" class="page page-result" hidden>
+        <div class="result-inner">
+          <h2 class="result-title">けっか</h2>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ヘッダー構成 -->
+  <script>
+    window.AppShellOptions = window.AppShellOptions || {};
+    window.AppShellOptions.gearAction = "settings";
+
+    window.AppShellLayout = {
+      header:{ left:['backlink'], center:['title'], right:['settingsGear'] },
+      pbar:{ left:[], center:[], right:[] },
+      main:{ bottomCenter:[] },
+      footer:{ left:[], center:[], right:[] }
+    };
+  </script>
+
+  <!-- 共通レゴ -->
+  <script src="../../../common/shell/gear.full.js"></script>
+  <script src="../../../common/shell/kit.full.js"></script>
+  <script src="../../../common/shell/header.full.js"></script>
+  <script src="../../../common/shell/setup.full.js"></script>
+  <script src="../../../common/shell/result.full.js"></script>
+
+  <!-- sakura本体 -->
+  <script src="./sakura.js"></script>
+</body>
+</html>

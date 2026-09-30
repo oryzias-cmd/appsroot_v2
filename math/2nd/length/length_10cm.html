@@ -1,0 +1,72 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>ながさを あらわす（10cm）</title>
+
+  <!-- ▼ レゴ共通CSS -->
+  <link rel="stylesheet" href="../../../common/shell/header.css" />
+  <link rel="stylesheet" href="../../../common/shell/pbar.full.css" />
+  <link rel="stylesheet" href="../../../common/shell/setup.full.css" />
+
+  <!-- ▼ アプリCSS -->
+  <link rel="stylesheet" href="./length_10cm.css" />
+</head>
+
+<body data-appkey="length.10cm.quiz">
+  <div id="slot-header" data-slot="header"></div>
+  <div id="slot-pbar" data-slot="pbar"></div>
+  <main id="mainArea"></main>
+
+  <!-- stepPanelB（刻み選択パネル）はHTML側に出して管理する -->
+  <template id="tpl-stepPanelB">
+    <div class="step-panel" id="stepPanelB" aria-label="刻み選択パネル">
+      <div class="step-row mag" aria-label="倍率">
+        <button class="btn step-btn" data-mag="1"  id="btnMag1">１</button>
+        <button class="btn step-btn" data-mag="5"  id="btnMag5">５</button>
+        <button class="btn step-btn" data-mag="10" id="btnMag10">１０</button>
+      </div>
+
+      <div class="step-row unit" aria-label="単位">
+        <button class="btn step-btn" data-unit="mm" id="btnUnitMm">㎜</button>
+        <button class="btn step-btn" data-unit="cm" id="btnUnitCm">㎝</button>
+        <button class="btn step-btn" data-unit="m"  id="btnUnitM">ｍ</button>
+      </div>
+
+      <div class="step-row exec" aria-label="実行">
+        <button class="btn step-exec" id="btnStepPlus">すすむ</button>
+        <button class="btn step-exec" id="btnStepMinus">もどる</button>
+      </div>
+    </div>
+  </template>
+
+  <script>
+    // 戻り先（setup画面の「もどる」用）
+window.AppShellOptions = { backHref: '' };
+
+// ★「もどる」は新規遷移ではなく、履歴で戻る（前画面の選択状態を保持するため）
+window.AppActions = window.AppActions || {};
+
+    // レゴ配置：右の「色」ボタンは置かない（要望⑥）
+window.AppShellLayout = {
+      header: { left:['backlink'], center:['title'], right:['settingsGear'] },
+      pbar: {
+        left:   [],
+        center: ['message'],
+        right:  []
+      }
+    };
+  </script>
+
+  <!-- ▼ レゴ共通JS -->
+  <script src="../../../common/shell/kit.full.js"></script>
+  <script src="../../../common/shell/header.full.js"></script>
+  <script src="../../../common/shell/pbar.full.js"></script>
+  <script src="../../../common/shell/setup.full.js"></script>
+
+  <!-- ▼ アプリJS -->
+  <script src="./length_10cm.js"></script>
+</body>
+</html>

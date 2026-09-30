@@ -1,0 +1,272 @@
+/* 右帯の除外幅：画面ごとに切替（メニュー=50px / 問題=50+100px=150px） */
+:root{
+  --btn-rail-size: 36px;
+  --v-header-w:    50px;   /* 縦ヘッダー帯 */
+  --v-problem-w:  100px;   /* 問題バー */
+  --reserve-right: var(--v-header-w); /* 既定=メニュー(50px) */
+}
+
+/* entry-mode / quiz / catalog：右帯150px（問題+ヘッダー） */
+body.entry-mode{
+  --reserve-right: calc(var(--v-header-w) + var(--v-problem-w));
+}
+body.screen-quiz{
+  --reserve-right: calc(var(--v-header-w) + var(--v-problem-w)); /* 問題画面は150px */
+}
+body.screen-catalog{
+  --reserve-right: calc(var(--v-header-w) + var(--v-problem-w)); /* カタログも150px */
+}
+
+/* ================================
+   v-grid 骨組み（復元）
+   - screen-menu：右に縦ヘッダー(50px)
+   - screen-quiz：右に問題バー(100px)＋縦ヘッダー(50px)
+   - 縦スクロール無し（1画面固定）
+================================ */
+html, body{
+  height: 100%;
+}
+body.app-vertical-jpn{
+  margin: 0;
+  overflow: hidden;
+}
+
+/* v-grid：画面全体を grid にする */
+body.app-vertical-jpn .v-grid{
+  position: fixed;
+  inset: 0;
+  display: grid;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #fff;
+}
+
+/* メニュー画面：ヘッダー帯のみ（50px） */
+body.app-vertical-jpn.screen-menu .v-grid{
+  grid-template-columns: 1fr var(--v-header-w);
+  grid-template-rows: 1fr;
+}
+
+/* entry-mode：右サイド大箱（問題+ヘッダー=150px） */
+body.app-vertical-jpn.entry-mode .v-grid{
+  grid-template-columns: 1fr var(--reserve-right);
+  grid-template-rows: 1fr;
+}
+
+/* クイズ画面：右サイド大箱（問題+ヘッダー=150px） */
+body.app-vertical-jpn.screen-quiz .v-grid{
+  grid-template-columns: 1fr var(--reserve-right);
+  grid-template-rows: 1fr;
+}
+
+/* カタログ画面：クイズと同じ右サイド大箱（150px） */
+body.app-vertical-jpn.screen-catalog .v-grid{
+  grid-template-columns: 1fr var(--reserve-right);
+  grid-template-rows: 1fr;
+}
+
+/* メイン */
+body.app-vertical-jpn .v-board{
+  grid-row: 1;
+  grid-column: 1;
+  overflow: hidden;
+  background: #fff;
+}
+
+/* 右サイド大箱（v-side）
+   - 背景色は付けない（色は header だけに付ける）
+   - menu / quiz / catalog で “3兄弟” を同一骨格にする
+*/
+body.app-vertical-jpn:is(.screen-menu, .screen-quiz, .screen-catalog) .v-side{
+  grid-row: 1;
+  grid-column: 2;
+
+  display: grid;
+  grid-template-rows: 40px 1fr 40px;
+  height: 100%;
+  background: transparent;
+}
+
+/* menu：中（ヘッダー帯のみ 50px） */
+body.app-vertical-jpn.screen-menu .v-side-middle{
+  display: grid;
+  grid-template-columns: var(--v-header-w);
+  height: 100%;
+  padding: 0;
+  margin: 0;
+  gap: 0;
+  background: transparent;
+  position: relative;
+}
+
+/* entry-mode / quiz / catalog：中（左=問題 右=ヘッダー） */
+body.app-vertical-jpn:is(.entry-mode, .screen-quiz, .screen-catalog) .v-side-middle{
+  display: grid;
+  grid-template-columns: var(--v-problem-w) var(--v-header-w);
+  height: 100%;
+  padding: 0;
+  margin: 0;
+  gap: 0;
+  background: transparent;
+  position: relative;
+}
+
+/* 上：もどる（3兄弟共通） */
+body.app-vertical-jpn:is(.screen-menu, .screen-quiz, .screen-catalog) .v-side-top{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+}
+
+/* 下：menu/cat は空、quiz は歯車（配置だけ共通） */
+body.app-vertical-jpn:is(.screen-menu, .screen-quiz, .screen-catalog) .v-side-bottom{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+}
+
+/* ===== もどるボタン：ピル型（3兄弟 共通） ===== */
+body.app-vertical-jpn:is(.screen-menu, .screen-quiz, .screen-catalog) .v-side-top .backlink{
+  box-sizing: border-box; /* ★外寸を height/width に合わせる */
+
+  width: 100px;
+  height: 30px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+  line-height: 1;
+
+  font-family: "BIZ UDGothic", system-ui, sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+
+  color: #111;
+  text-decoration: none;
+
+  border: 2px solid #111;
+  border-radius: 999px;
+  background: #fff;
+
+  cursor: pointer;
+  user-select: none;
+}
+
+/* ★外寸を揃える（border込みで 30px に固定） */
+body.app-vertical-jpn.screen-quiz .v-side-bottom .btn-gear{
+  box-sizing: border-box;
+}
+
+/* ===== 歯車ボタン：ピル型・アイコンだけ ===== */
+body.app-vertical-jpn.screen-quiz .v-side-bottom .btn-gear{
+  width: 100px;
+  height: 30px;
+
+  font-family: "BIZ UDGothic", system-ui, sans-serif;
+  font-size: 18px;
+
+  border: 2px solid rgba(0,0,0,0.35);
+  border-radius: 999px;
+  background: rgba(255,255,255,0.85);
+  padding: 0;
+}
+
+/* ===== 歯車ボタン：無効（entry用 gearDisabled） =====
+   - グレーアウト
+   - hover無効
+   - カーソル反応なし
+*/
+body.app-vertical-jpn .btn-gear.is-disabled,
+body.app-vertical-jpn .btn-gear:disabled,
+body.app-vertical-jpn #btnGear.is-disabled,
+body.app-vertical-jpn #btnGear:disabled{
+  opacity: 0.35;
+  filter: grayscale(1);
+  cursor: default !important;
+  pointer-events: none; /* hover/click も殺す（保険） */
+}
+
+/* hoverが別で定義されている場合の打ち消し */
+body.app-vertical-jpn .btn-gear.is-disabled:hover,
+body.app-vertical-jpn .btn-gear:disabled:hover,
+body.app-vertical-jpn #btnGear.is-disabled:hover,
+body.app-vertical-jpn #btnGear:disabled:hover{
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+/* 上：もどる */
+body.app-vertical-jpn.screen-quiz .v-side-top{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+}
+
+/* 下：歯車 */
+body.app-vertical-jpn.screen-quiz .v-side-bottom{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+}
+
+/* v-header / v-problem は v-side-middle の中で全高 */
+body.app-vertical-jpn.screen-quiz .v-side-middle .v-header,
+body.app-vertical-jpn.screen-quiz .v-side-middle .v-problem{
+  height: 100%;
+}
+
+/* メニュー画面：ヘッダー帯のみ（従来どおり） */
+body.app-vertical-jpn.screen-menu .v-header{
+  grid-row: 1;
+  grid-column: 2;
+}
+
+/* v-tool：レール概念は廃止（空でも崩れないように非表示） */
+body.app-vertical-jpn .v-tool{
+  display: none !important;
+}
+
+/* ============================================
+   教室運用向け：選択/キャレット/スクロールバー抑止
+   - クリックで出る縦線キャレットを消す
+   - ドラッグ範囲選択（青いハイライト）を出さない
+   - スクロールバーは全画面で非表示（スクロール自体は殺さない）
+============================================ */
+
+html, body{
+  -webkit-tap-highlight-color: transparent;
+}
+
+body,
+body *{
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-user-drag: none;
+  caret-color: transparent;
+}
+
+body ::selection{
+  background: transparent;
+  color: inherit;
+}
+body ::-moz-selection{
+  background: transparent;
+  color: inherit;
+}
+
+/* スクロールバー非表示（スクロールは可能） */
+*{
+  scrollbar-width: none;     /* Firefox */
+  -ms-overflow-style: none;  /* IE/Edge(旧) */
+}
+*::-webkit-scrollbar{
+  width: 0;
+  height: 0;
+}

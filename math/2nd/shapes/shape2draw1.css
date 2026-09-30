@@ -1,0 +1,6 @@
+/* ▼ Lv1：SVGがクリックを奪わないように（canvasにタップを通す） */
+#shapeLayer { pointer-events: none; }
+
+/* 中央の小丸はクリックできるままにする（明示） */
+#centerDot { pointer-events: auto; }
+.center-dot { pointer-events: auto; }

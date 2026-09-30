@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>学年と教科を　えらんでください</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="../common/base.css">
+  <style>
+:root {
+  --color-japanese: #ff8888;
+  --color-math:     #77baff;
+  --color-life:     #b9d97a;
+  --color-science:  #8ede7d;
+  --color-social:   #ffdf66;
+  --color-english:  #d2b3ff;  /* 紫に変更 */
+  --color-other:    #ffbb66;  /* オレンジに変更 */
+}
+
+body {
+  margin: 0;
+  font-family: "KyokashoUD", system-ui, sans-serif;
+  background: #fafafa;
+
+  /* ★画面全体に広がる土台をつくる */
+  min-height: 100vh;
+
+  /* レイアウト方向は縦：上にヘッダー、下にmain */
+  display: flex;
+  flex-direction: column;
+}
+
+    header {
+      font-size: clamp(20px, 3vw, 28px);
+      font-weight: bold;
+      margin: 24px 0 16px;
+      line-height: 1.4;
+      text-align: center;
+    }
+
+/* main全体：横並び6学年、中央寄せ＆必要ならスクロール */
+main {
+  flex: 1 1 auto;
+
+  display: flex;
+  flex-wrap: nowrap;
+  /* ３）横に余裕があるときはセンタリング */
+  justify-content: center;
+  align-items: flex-start;
+
+  gap: 12px;
+  padding: 0 16px 24px;
+  width: 100%;
+  box-sizing: border-box;
+
+  /* 画面より幅が狭いとき→センタリングのまま
+     画面より広いとき→ブラウザが自動で横スクロールバーを出す */
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+/* 学年カード */
+.grade {
+  flex: 0 0 160px;  /* 先生が合わせた幅のまま */
+
+  background: #fff;
+  border: 2px solid #ccc;
+  border-radius: 12px;
+  box-shadow: 2px 3px 6px rgba(0,0,0,0.08);
+
+  display: flex;
+  flex-direction: column;
+  padding: 12px 12px 16px;
+  box-sizing: border-box;
+}
+
+/* 学年タイトル */
+.grade h2 {
+  text-align: center;
+  font-size: 1.2em;
+  margin: 0 0 10px;
+  border-bottom: 2px solid #eee;
+  padding-bottom: 4px;
+  line-height: 1.4;
+  letter-spacing: 0.05em;
+}
+
+/* 科目グループ */
+.subject-btn {
+  display: block;
+  text-align: center;
+  font-size: 1.15em;
+  font-weight: bold;
+  padding: 10px 4px;           /* ← 上下巻に余裕 */
+  margin: 15px 0;               /* ← ボタン間のスペース */
+  color: #000;
+  border-radius: 10px;
+  text-decoration: none;
+  line-height: 1.5;
+  border: 2px solid rgba(0,0,0,0.3);
+  box-shadow: 1px 2px 3px rgba(0,0,0,0.08);
+  background-color: var(--btn-bg, #fdfdfd);
+  white-space: nowrap;
+  transition: transform 0.12s;
+}
+.subject-btn:hover {
+  transform: scale(1.05);
+}
+
+/* ダミー（透明ボタン：低学年の空き用） */
+.subject-btn.dummy {
+  background: transparent;
+  color: transparent;
+  border: none;
+  box-shadow: none;
+  pointer-events: none;
+
+  /* ←ここ重要。普通のボタンと同じ上下paddingとmarginを残す */
+  padding: 10px 4px;
+  margin: 15px 0;
+}
+
+/* spacer はちょっと大きめにして「上巻/下巻」っぽい段落感を出す */
+.spacer {
+  flex: 0 0 24px;
+}
+
+/* 教科ボタン本体 */
+.subject-btn {
+  display: block;
+  text-align: center;
+
+  /* ４）フォント少し大きく */
+  font-size: 1.15em;
+  font-weight: bold;
+
+  padding: 8px 4px;
+  color: #000;
+  border-radius: 10px;
+  text-decoration: none;
+  line-height: 1.4;
+  border: 2px solid rgba(0,0,0,0.4); /* 枠 少し濃くするとくっきり */
+  box-shadow: 1px 2px 3px rgba(0,0,0,0.08);
+
+  white-space: nowrap;
+  transition: transform 0.12s;
+}
+.subject-btn:hover {
+  transform: scale(1.05);
+}
+
+/* spacerはもう使わないので、.spacer は削除してOK
+   もしCSS内に残っていたら .spacer { display:none; } にして大丈夫です */
+.spacer { display:none; }
+
+    /* 各教科の色（薄色） */
+    .japanese { background-color: var(--color-japanese); }
+    .math     { background-color: var(--color-math); }
+    .life     { background-color: var(--color-life); }
+    .science  { background-color: var(--color-science); }
+    .social   { background-color: var(--color-social); }
+    .english  { background-color: var(--color-english); }
+    .other    { background-color: var(--color-other); }
+  </style>
+</head>
+<body>
+  <header>学年（がくねん）と　教科（きょうか）を　えらんで　ください</header>
+
+  <main>
+
+    <!-- ▼ １年 -->
+    <div class="grade">
+      <h2>１ねん</h2>
+      <div class="subject-list">
+        <!-- ④ 2文字教科名は全角スペースを間に入れる：「こく ご」ではなく「こくご」はそのまま。
+                ただし漢字2文字の方で使う話なので1年は関係なし -->
+        <a href="japanese-1st.html" class="subject-btn japanese">こ く ご</a>
+        <a href="math-1st.html"      class="subject-btn math">さんすう</a>
+        <a href="life-1st.html"      class="subject-btn life">せいかつ</a>
+        <div class="subject-btn dummy">ダミー</div>
+        <div class="subject-btn dummy">ダミー</div>
+        <a href="other-1st.html"     class="subject-btn other">そ の た</a>
+      </div>
+    </div>
+
+    <!-- ▼ ２年 -->
+    <div class="grade">
+      <h2>２年</h2>
+      <div class="subject-list">
+        <!-- ④ ここから漢字教科名は2文字＋全角スペースで読みやすくそろえる
+             例：「国語」は「国　語」みたいに真ん中に全角スペースを入れる -->
+        <a href="japanese-2nd.html" class="subject-btn japanese">国　語</a>
+        <a href="math-2nd.html"     class="subject-btn math">算　数</a>
+        <a href="life-2nd.html"     class="subject-btn life">生　活</a>
+        <div class="subject-btn dummy">ダミー</div>
+        <div class="subject-btn dummy">ダミー</div>
+        <a href="other-2nd.html"    class="subject-btn other">そ の た</a>
+      </div>
+    </div>
+
+    <!-- ▼ ３年 -->
+    <div class="grade">
+      <h2>３年</h2>
+      <div class="subject-list">
+        <a href="japanese-3rd.html" class="subject-btn japanese">国　語</a>
+        <a href="math-3rd.html"     class="subject-btn math">算　数</a>
+        <!-- 生活科はなく、理科・社会スタート -->
+        <a href="science-3rd.html"  class="subject-btn science">理　科</a>
+        <a href="social-3rd.html"   class="subject-btn social">社　会</a>
+        <a href="english-3rd.html"  class="subject-btn english">英　語</a>
+
+        <div class="spacer"></div>
+        <a href="other-3rd.html"    class="subject-btn other">そ の 他</a>
+      </div>
+    </div>
+
+    <!-- ▼ ４年 -->
+    <div class="grade">
+      <h2>４年</h2>
+      <div class="subject-list">
+        <a href="japanese-4th.html" class="subject-btn japanese">国　語</a>
+        <a href="math-4th.html"     class="subject-btn math">算　数</a>
+        <a href="science-4th.html"  class="subject-btn science">理　科</a>
+        <a href="social-4th.html"   class="subject-btn social">社　会</a>
+        <a href="english-4th.html"  class="subject-btn english">英　語</a>
+
+        <div class="spacer"></div>
+        <a href="other-4th.html"    class="subject-btn other">そ の 他</a>
+      </div>
+    </div>
+
+    <!-- ▼ ５年 -->
+    <div class="grade">
+      <h2>５年</h2>
+      <div class="subject-list">
+        <a href="japanese-5th.html" class="subject-btn japanese">国　語</a>
+        <a href="math-5th.html"     class="subject-btn math">算　数</a>
+        <a href="science-5th.html"  class="subject-btn science">理　科</a>
+        <a href="social-5th.html"   class="subject-btn social">社　会</a>
+        <a href="english-5th.html"  class="subject-btn english">英　語</a>
+
+        <div class="spacer"></div>
+        <a href="other-5th.html"    class="subject-btn other">そ の 他</a>
+      </div>
+    </div>
+
+    <!-- ▼ ６年 -->
+    <div class="grade">
+      <h2>６年</h2>
+      <div class="subject-list">
+        <a href="japanese-6th.html" class="subject-btn japanese">国　語</a>
+        <a href="math-6th.html"     class="subject-btn math">算　数</a>
+        <a href="science-6th.html"  class="subject-btn science">理　科</a>
+        <a href="social-6th.html"   class="subject-btn social">社　会</a>
+        <a href="english-6th.html"  class="subject-btn english">英　語</a>
+
+        <div class="spacer"></div>
+        <a href="other-6th.html"    class="subject-btn other">そ の 他</a>
+      </div>
+    </div>
+
+  </main>
+</body>
+</html>

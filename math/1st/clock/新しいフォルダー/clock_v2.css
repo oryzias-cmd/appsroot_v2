@@ -1,0 +1,1136 @@
+:root {
+  --bg-page: #f5f5f5;
+  --bg-panel: #ffffff;
+  --bg-header: #1e88e5;
+  --bg-bar: #e3f2fd;
+  --fg-header: #ffffff;
+
+  --fg-main: #222;
+  --fg-sub: #555;
+
+  --accent: #1976d2;
+  --accent-strong: #0d47a1;
+
+  --btn-radius: 999px;
+  --panel-radius: 18px;
+
+  --shadow-soft: 0 6px 14px rgba(0, 0, 0, 0.12);
+  --shadow-modal: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-page);
+  color: var(--fg-main);
+  font-family: "UD Digi Kyokasho N-R", "BIZ UD Gothic", system-ui, -apple-system,
+    BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+/* =========================
+   ヘッダー
+   ========================= */
+
+.app-header {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: var(--bg-header);
+  color: var(--fg-header);
+}
+
+.hdr-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.hdr-btn {
+  min-width: 72px;
+  height: 36px;
+  padding: 4px 10px;
+  border: none;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+  color: var(--fg-header);
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.hdr-btn:active {
+  background: rgba(255, 255, 255, 0.28);
+}
+
+/* =========================
+   問題バー（共通CSSレゴ版）
+   ========================= */
+
+/* 見た目のレイアウトや高さは pbar.full.css に任せる。
+   ここでは、このアプリ固有の文字まわりだけを調整 */
+#labelMode{
+  font-weight:600;
+}
+
+#labelProgress{
+  color:var(--fg-sub);
+}
+
+/* =========================
+   メイン
+   ========================= */
+
+.app-main {
+  flex: 1 1 auto;
+  display: flex;
+  min-height: 0;
+}
+
+.page {
+  display: none;
+  width: 100%;
+  padding: 12px;
+}
+
+body[data-phase="setup"] #setupPage {
+  display: flex;
+}
+
+body[data-phase="quiz"] #quizPage {
+  display: flex;
+}
+
+body[data-phase="result"] #resultPage {
+  display: flex;
+}
+
+/* セットアップページ */
+
+.page-setup {
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.panel {
+  width: min(800px, 100%);
+  margin: 8px auto;
+  padding: 16px 16px 20px;
+  background: var(--bg-panel);
+  border-radius: var(--panel-radius);
+  box-shadow: var(--shadow-soft);
+}
+
+.panel-title {
+  margin: 0 0 12px;
+  font-size: 1.2rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.panel-subtitle {
+  margin: 0 0 6px;
+  font-size: 1rem;
+}
+
+.panel-group + .panel-group {
+  margin-top: 12px;
+}
+
+.mode-list,
+.course-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.mode-btn,
+.course-btn {
+  flex: 1 1 calc(50% - 6px);
+  min-width: 0;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid #b0bec5;
+  background: #ffffff;
+  font-size: 0.86rem;
+  text-align: center;
+  cursor: pointer;
+}
+
+.mode-btn.is-selected,
+.course-btn.is-selected {
+  border-color: var(--accent);
+  background: #e3f2fd;
+  color: var(--accent-strong);
+  font-weight: 600;
+}
+
+.mode-btn.is-disabled,
+.course-btn.is-disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.mode-btn.is-disabled:active,
+.course-btn.is-disabled:active {
+  background: #ffffff;
+}
+
+.note-small {
+  margin: 4px 0 0;
+  font-size: 0.78rem;
+  color: var(--fg-sub);
+}
+
+.panel-actions {
+  margin-top: 16px;
+  text-align: center;
+}
+
+/* ボタン共通 */
+
+.btn-primary,
+.btn-secondary {
+  min-width: 140px;
+  padding: 8px 24px;
+  border-radius: var(--btn-radius);
+  border: none;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: white;
+}
+
+.btn-primary:active {
+  background: var(--accent-strong);
+}
+
+.btn-secondary {
+  background: #eceff1;
+  color: #37474f;
+}
+
+.btn-secondary:active {
+  background: #cfd8dc;
+}
+
+/* =========================
+   クイズページ
+   ========================= */
+
+/* ページ全体（クイズ画面） */
+.page-quiz {
+  flex-direction: column;
+  gap: 4px;              /* 少しだけ詰める */
+}
+
+/* メインレイアウト：時計カラム＋入力カラム */
+.quiz-layout {
+  flex: 1 1 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);  /* 狭い画面は1カラム */
+  grid-auto-rows: auto;
+  gap: 8px;
+}
+
+/* 左カラム：とけい＋おたすけボタン */
+.quiz-left {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 時計カードまわり */
+.clock-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 4px 4px 0;
+}
+
+.clock-container {
+  width: min(360px, 80vw);
+  aspect-ratio: 1 / 1;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: var(--shadow-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 時計の文字がドラッグで青く選択されないようにする */
+.clock-container,
+.clock-container * {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* 質問テキスト（今後バー側に移す予定だが残しておく） */
+.question-text {
+  margin-bottom: 6px;
+  font-size: 0.98rem;
+  font-weight: 500;
+}
+
+/* フィードバックメッセージ */
+.feedback {
+  /* 空欄のときにカードを押し下げないよう、確保する高さを小さくする */
+  min-height: 0.4em;   /* ほぼゼロ〜ごく薄い行だけ確保 */
+  font-size: 0.88rem;
+  color: var(--fg-sub);
+}
+
+/* テンキー */
+
+.keypad-wrap {
+  margin-top: 8px;
+  /* 右パディングを少し削り、左を増やして見た目の中心を右寄せ */
+  padding: 10px 12px 14px 20px;  /* 上 右 下 左 */
+  border-radius: 20px;
+  background: #ffffff;
+  box-shadow: var(--shadow-soft);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+
+  /* メッセージカードを重ねるため */
+  position: relative;
+}
+/* テンキー本体（上の数字＋なんじ／なんふん＋消す） */
+.keypad-body {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* メッセージ用オーバーレイカード */
+.keypad-overlay {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  right: 8px;
+  /* 下をあけておいて「つぎのもんだい」ボタンが見えるようにする */
+  bottom: 78px;  /* ボタンの線は見えず、上下バランスも確保 */
+
+  padding: 12px 18px 14px;
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: var(--shadow-soft);
+
+  font-size: 1.05rem;
+  line-height: 1.7;
+  overflow-y: auto;
+
+  z-index: 2;
+}
+
+/* テキストがないときは非表示 */
+.keypad-overlay:empty {
+  display: none;
+}
+
+/* タイトル：○／×（中央・大きめ） */
+.keypad-overlay .fb-title {
+  margin: 0 0 6px;
+  font-size: 1.4rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+/* 本文段落：教科書的な「１字」下げ＋少し大きめフォント */
+.keypad-overlay .fb-body {
+  margin: 0.3em 0;
+  text-indent: 0em;     /* 教科書体でほぼ「１文字分」に見える下げ幅 */
+  font-size: 1.3rem;     /* １年生でも読みやすい、ひと回り大きい文字 */
+  line-height: 1.7;
+}
+
+/* ○×マークの色づけ */
+.keypad-overlay .fb-mark {
+  display: inline-block;
+  margin-right: 0.25em;
+}
+
+/* ○を赤、×を青 に変更 */
+.keypad-overlay .fb-mark-ok {
+  color: #e53935;   /* 赤 ○ */
+}
+.keypad-overlay .fb-mark-ng {
+  color: #1976d2;   /* 青 × */
+}
+
+.keypad-row {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  gap: 8px;
+}
+
+/* 7・8・9・0 の横4つを均等にする */
+.keypad-row-wide button {
+  flex: 0 0 auto;   /* 伸び縮みさせない（他の数字と同じ振る舞い） */
+}
+
+.keypad-row + .keypad-row {
+  margin-top: 4px;
+}
+
+/* 数字行そろえ用の透明ダミーボタン
+   （1〜3行目で 4列目の「空きスペース」役だけする） */
+.keypad-dummy {
+  min-width: 64px;
+  height: 56px;
+  border-radius: 14px;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  cursor: default;
+  pointer-events: none;   /* 完全に無反応 */
+}
+
+/* 下の行（なんじ／なんふん・１つけす／ぜんぶけす・こたえあわせ） */
+.keypad-row-mode button,
+.keypad-row-edit button,
+.keypad-row-main .key-main {
+  flex: 1 1 0;
+  height: 56px;              /* 数字キーと同じ高さに */
+  border-radius: 20px;
+  border: 1px solid #b0bec5;
+  background: #ffffff;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+/* こたえあわせは少し強調 */
+.keypad-row-main .key-main {
+  font-weight: 600;
+}
+
+/* 押したときの共通エフェクト */
+.keypad-wrap button:active {
+  background: #e3f2fd;
+  transform: translateY(1px);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.18);
+}
+
+/* 幅を広めにしたいボタン用 */
+.keypad-wrap .key-wide {
+  flex: 1 1 0;
+}
+
+/* クイズフッター */
+
+/* クイズフッター */
+
+.quiz-footer {
+  flex: 0 0 auto;
+  padding: 4px 12px 6px;  /* 少し薄くして高さを節約 */
+  text-align: center;
+  border-top: 1px solid #cfd8dc;
+  background: #ffffff;
+}
+
+/* =========================
+   リザルトページ
+   ========================= */
+
+.page-result {
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.result-score {
+  margin: 8px 0 6px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.result-message {
+  margin: 0 0 10px;
+  font-size: 0.95rem;
+  text-align: center;
+}
+
+/* =========================
+   モーダル
+   ========================= */
+
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+.modal.hidden {
+  display: none;
+}
+
+.modal-inner {
+  width: min(360px, 90vw);
+  padding: 14px 16px 16px;
+  background: #ffffff;
+  border-radius: 14px;
+  box-shadow: var(--shadow-modal);
+}
+
+.modal-inner h2 {
+  margin: 0 0 10px;
+  font-size: 1.05rem;
+}
+
+.modal-group {
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+}
+
+.modal-group label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.modal-actions {
+  margin-top: 10px;
+  text-align: right;
+}
+
+/* =========================
+   小さめ画面調整
+   ========================= */
+
+@media (min-width: 720px) {
+  .clock-wrap {
+    align-items: stretch;
+  }
+
+  .clock-container {
+    width: min(420px, 70vh);
+  }
+}
+
+/* ================================
+   かんたん おたすけボタン（時計カードの下）
+================================ */
+.assist-buttons {
+  margin: 12px auto 0;
+  width: min(420px, 88vw);        /* 時計カードと同じ基準幅 */
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 12px;
+}
+
+.assist-btn {
+  width: 100%;
+  justify-content: center;
+  background: #ffffff;
+  border: 2px solid #ccc;
+  padding: 10px 16px;
+  min-height: 50px;
+  font-size: 15px;
+  border-radius: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.12);
+  transition: 0.15s;
+}
+
+.assist-btn:hover {
+  background: #f2f2f2;
+}
+
+.assist-btn.is-active {
+  border-color: #1976d2;
+  background: #e3f2fd;
+  box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.15);
+}
+
+.assist-icon {
+  min-width: 24px;
+  font-size: 19px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.assist-icon-red {
+  color: #d32f2f;   /* 💡を赤っぽく見せる */
+}
+
+
+@media (max-width: 430px) {
+  .assist-buttons {
+    width: min(360px, 92vw);
+    gap: 8px;
+  }
+
+  .assist-btn {
+    min-height: 48px;
+    padding: 8px 10px;
+    font-size: 14px;
+  }
+}
+
+/* =========================================
+   右カラム（こたえ欄＋テンキー）最終レイアウト調整
+   ※ 既存ルールを上書きするため、CSSのいちばん下に置く
+========================================= */
+
+.answer-row {
+  display: flex;
+  justify-content: center;   /* カード内で中央寄せ */
+  gap: 20px;                 /* カード幅に収まりやすいように少しだけ狭く */
+  margin: 6px 12px 4px;      /* 上下マージンをほぼそろえつつ少しだけコンパクトに */
+}
+
+.answer-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  /* 数字とほぼ同じくらいの大きさにアップ */
+  font-size: 2rem;
+}
+
+/* 「じ」「ふん」のラベル */
+.answer-label {
+  white-space: nowrap;
+  /* ラベルも数字と同じくらいの大きさに */
+  font-size: 2rem;
+}
+
+/* 入力枠本体（縦長＋横幅を少し細く） */
+.answer-box {
+  position: relative;
+  padding: 8px 10px;
+  min-width: 95px;
+  border-radius: 18px;
+  border: 2px solid #90a4ae;
+  background: #ffffff;
+  box-sizing: border-box;
+}
+
+/* 中の数字を大きめ＆2桁でゆったり表示 */
+.answer-box input {
+  width: 100%;
+  border: none;                 /* 内側の黒い枠を消す */
+  background: transparent;      /* 背景も親の白を使う */
+  font-size: 2.4rem;
+  text-align: center;
+  letter-spacing: 0.25em;
+  padding: 2px 6px 0;
+  box-sizing: border-box;
+
+  /* ブラウザ標準の装飾を消す */
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* フォーカス中・選択中のハイライト（時分共通） */
+.answer-field:focus-within .answer-box,
+.answer-field.is-active .answer-box {
+  border-color: #1976d2;
+  box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.16);
+  background: #fffde7;
+}
+
+/* 入力エラー時（範囲外）の赤表示 */
+.answer-box.is-error {
+  border-color: #e53935;
+  box-shadow: 0 0 0 3px rgba(229, 57, 53, 0.18);
+}
+.answer-box.is-error input {
+  color: #e53935;
+}
+
+/* 数字ボタン自体のサイズ（タップしやすく）
+   ※ ダミー(.keypad-dummy) には適用しない */
+.keypad-wrap button:not(.keypad-dummy) {
+  min-width: 62px;
+  height: 52px;
+  border-radius: 14px;
+  border: 1px solid #b0bec5;
+  background: #ffffff;
+  font-size: 1.25rem;
+  cursor: pointer;
+}
+
+/* 数字行はダミーボタン込みで中央寄せ
+   （1〜3行目も 7・8・9・0 と同じ幅で真ん中に並べる） */
+.keypad-row-num {
+  justify-content: center;
+}
+
+/* 下段の「なんじ」「なんふん」「1つけす」「ぜんぶけす」など */
+.keypad-row-ops {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+}
+.keypad-row-ops .key-op {
+  flex: 1 1 0;
+  height: 40px;
+  border-radius: 20px;
+  font-size: 0.95rem;
+}
+
+/* 一番下の「こたえあわせ」用（青ボタンになる想定） */
+.keypad-row-main {
+  margin-top: 6px;
+  width: 100%;
+}
+.keypad-row-main .keypad-primary {
+  width: 100%;
+  height: 44px;
+  border-radius: 22px;
+}
+
+/* 押したときの軽いフィードバック */
+.keypad-wrap button:active {
+  background: #e3f2fd;
+  transform: translateY(1px);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.18);
+}
+
+/* ひろい画面では左右カラムの幅をそろえて中央に配置 */
+@media (min-width: 720px) {
+  .quiz-layout {
+    grid-template-columns: minmax(0, 420px) minmax(0, 420px);
+    grid-template-rows: minmax(0, 1fr);
+    justify-content: center;   /* 左右2枚のカードを全体中央に */
+    column-gap: 32px;          /* 時計と右カラムのあいだ */
+  }
+}
+
+/* =========================
+   クイズ右カラムのレイアウト調整
+   ========================= */
+
+/* 右カラム全体（こたえカード＋テンキーカードを上下に積む） */
+.quiz-right {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 8px 8px 8px;  /* ← 上だけ 0 にする */
+  gap: 10px;                 /* 2枚のカードのすきま */
+}
+
+/* じ・ふんカード と テンキーカード を同じ幅にして中央寄せ */
+.qa-wrap,
+.keypad-wrap {
+  width: 100%;
+  max-width: 360px;            /* 右カラムのパネル幅の上限 */
+  margin: 0 auto;              /* 横方向センタリング */
+}
+
+/* じ・ふん入力カード（白い板） */
+.qa-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  padding: 10px 16px 4px;   /* ← 下パディング 12px → 4px に */
+  margin-bottom: 4px;       /* ← カード下の余白をぎゅっと縮める */
+  background: #ffffff;
+  border-radius: 20px;
+  box-shadow: var(--shadow-soft);
+  box-sizing: border-box;
+}
+
+/* テンキーパネル（白い板） */
+.keypad-wrap {
+  /* 上 右 下 左 で少しだけ右側を詰め、全体の見た目の中心を調整 */
+  padding: 10px 12px 16px 20px;
+  background: #ffffff;
+  border-radius: 20px;
+  box-shadow: var(--shadow-soft);
+  box-sizing: border-box;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ================================
+   設定モーダル：2カラムレイアウト
+   - 文字をさらに大きめに
+   - モーダルを画面いっぱい近くまでワイドに
+   - 左右に地の色＋中央のうっすら縦線
+================================ */
+#settingsOverlay .modal-inner {
+  /* 画面幅に応じて広がる。最大 900px くらいまで */
+  width: min(900px, 95vw);   /* ← 幅そのものを指定して共通CSSを上書き */
+}
+
+#settingsOverlay .modal-layout {
+  position: relative;         /* 中央の縦線用 */
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  column-gap: 24px;
+  row-gap: 12px;
+  margin-top: 12px;
+  margin-bottom: 16px;
+}
+
+/* 中央のうっすら縦線 */
+#settingsOverlay .modal-layout::before {
+  content: "";
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 50%;
+  width: 1px;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.06);
+  pointer-events: none;
+}
+
+/* ベース文字サイズ：左右どちらも同じ大きさに */
+#settingsOverlay .modal-column {
+  font-size: 1.18rem;         /* ← さらに一段階アップ */
+  line-height: 1.7;
+}
+
+/* 左右で地の色を変える */
+#settingsOverlay .modal-column-helpers {
+  background: #f5f9ff;
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+
+#settingsOverlay .modal-column-modes {
+  background: #fff9f2;
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+
+#settingsOverlay .modal-subtitle {
+  margin: 0 0 8px;
+  font-size: 1.25rem;         /* ← 見出しも少し大きく */
+  font-weight: 600;
+}
+
+/* 各行の余白 */
+#settingsOverlay .modal-group {
+  margin-bottom: 8px;
+}
+
+#settingsOverlay .modal-group-inline {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* 左カラムのラベル文字サイズも明示してそろえる */
+#settingsOverlay .modal-group label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 1.18rem;
+}
+
+#settingsOverlay .modal-note {
+  margin: 0 0 6px;
+  line-height: 1.7;
+}
+
+#settingsOverlay .modal-note-list {
+  margin: 0 0 6px 1.2em;
+  padding: 0;
+}
+
+#settingsOverlay .modal-note-list li {
+  margin-bottom: 2px;
+}
+
+/* 備考は少しだけ小さく */
+#settingsOverlay .modal-note.is-muted {
+  font-size: 1.0rem;
+  opacity: 0.8;
+}
+
+/* まだ使わない設定ブロックはグレーアウト表示 */
+#settingsOverlay .modal-group.is-disabled{
+  opacity:0.45;
+}
+
+#settingsOverlay .modal-group.is-disabled input[disabled]{
+  cursor:default;
+}
+
+#settingsOverlay .modal-subtitle.is-muted{
+  color:#999;
+}
+
+/* 24じかん ひょうじの【12】ラベル */
+#settingsOverlay .hour-notation-badge{
+  margin-left: 0.6em;
+  font-size: 0.9rem;
+  font-family: "UD Digi Kyokasho N-R","UD Digi Kyokasho NK-R","BIZ UD Gothic",system-ui,sans-serif;
+  letter-spacing: 0.08em;
+}
+
+/* インラインのラベル配置用 */
+#settingsOverlay .modal-inline{
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+}
+
+/* せまい画面では1カラムに自動で折りたたみ＋装飾をシンプルに */
+@media (max-width: 640px) {
+  #settingsOverlay .modal-layout {
+    grid-template-columns: 1fr;
+  }
+
+  #settingsOverlay .modal-layout::before {
+    display: none;            /* 中央線は消す */
+  }
+
+  #settingsOverlay .modal-column-helpers,
+  #settingsOverlay .modal-column-modes {
+    background: transparent;  /* 地の色もフラットに */
+    padding: 0;
+  }
+}
+
+/* ================================
+   30ぷんきざみモード用「はん」表示
+================================ */
+#fieldMinute .half-display{
+  display: none;
+}
+
+/* 30ぷんモードのときの見た目 */
+#fieldMinute.is-half-mode .answer-box{
+  position: relative;
+}
+
+/* 中の数字は見せず、内部値だけに使う */
+#fieldMinute.is-half-mode input{
+  opacity: 0;
+}
+
+/* ★ 30ぷんモード中はラベルを隠す → よけいな「はん」を消す */
+#fieldMinute.is-half-mode .answer-label{
+  display: none;
+}
+
+/* 枠のまんなかに「はん」を表示 */
+#fieldMinute.is-half-mode .half-display{
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ================================
+   じ／はん のフォントを教科書体＋大きめに統一
+================================ */
+/* じ／はん のフォントを教科書体＋さらに一回り大きく */
+#fieldHour .answer-box input,
+#fieldMinute .answer-box input,
+#fieldMinute .half-display{
+  font-family: "UD Digi Kyokasho N-R","UD Digi Kyokasho N", serif !important;
+  font-size: 2.5rem;
+  font-weight: 500;
+  letter-spacing: 0.03em;  /* ← ほんの少しだけ広げて見やすく */
+}
+
+
+/* =========================================================
+   v2: 固定ヘッダー／問題バーを廃止した全画面寄りレイアウト
+   ========================================================= */
+
+body {
+  position: relative;
+  overflow: hidden;
+}
+
+.floating-gear {
+  position: fixed;
+  top: max(10px, env(safe-area-inset-top));
+  right: max(12px, env(safe-area-inset-right));
+  z-index: 50;
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #b0bec5;
+  border-radius: 14px;
+  background: rgba(255,255,255,.94);
+  box-shadow: 0 4px 12px rgba(0,0,0,.14);
+  font-size: 1.45rem;
+  cursor: pointer;
+}
+
+.floating-gear:active {
+  transform: translateY(1px);
+  background: #e3f2fd;
+}
+
+.app-main {
+  min-height: 100dvh;
+}
+
+.page {
+  padding: 10px 12px;
+}
+
+.page-quiz {
+  padding-top: 10px;
+}
+
+.quiz-topline {
+  flex: 0 0 auto;
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  padding: 2px 64px 6px 12px; /* 右上の歯車と重ならない */
+  font-size: clamp(1rem, 2.1vw, 1.35rem);
+  line-height: 1.2;
+}
+
+.quiz-topline #labelMode {
+  font-weight: 700;
+}
+
+.quiz-topline #labelProgress {
+  color: var(--fg-sub);
+  font-weight: 500;
+}
+
+/* v2設定：左＝共通、右＝教材固有 */
+#settingsOverlay .modal-inner {
+  width: min(980px, calc(100vw - 28px));
+  max-height: min(90dvh, 720px);
+  overflow: auto;
+}
+
+#settingsOverlay .modal-layout-v2 {
+  display: grid;
+  grid-template-columns: minmax(180px, .72fr) minmax(0, 1.8fr);
+  gap: 0;
+  position: relative;
+}
+
+#settingsOverlay .modal-layout-v2::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 28%;
+  width: 1px;
+  background: #d6dde2;
+}
+
+#settingsOverlay .modal-column-common {
+  padding-right: 24px;
+}
+
+#settingsOverlay .modal-column-clock {
+  padding-left: 28px;
+}
+
+.common-setting-actions {
+  display: grid;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.common-setting-btn {
+  width: 100%;
+  min-height: 46px;
+  font-size: 1rem;
+}
+
+.clock-settings-grid {
+  display: grid;
+  grid-template-columns: minmax(0,1.25fr) minmax(0,1fr);
+  gap: 26px;
+}
+
+.modal-mini-title {
+  margin: 8px 0 10px;
+  font-size: 1rem;
+}
+
+.modal-mini-title.is-muted {
+  margin-top: 20px;
+  color: #90a4ae;
+}
+
+@media (max-width: 760px) {
+  body {
+    overflow: auto;
+  }
+
+  .floating-gear {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+  }
+
+  .quiz-topline {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 4px 12px;
+    min-height: 46px;
+  }
+
+  #settingsOverlay .modal-layout-v2,
+  .clock-settings-grid {
+    grid-template-columns: 1fr;
+  }
+
+  #settingsOverlay .modal-layout-v2::before {
+    display: none;
+  }
+
+  #settingsOverlay .modal-column-common,
+  #settingsOverlay .modal-column-clock {
+    padding: 0;
+  }
+
+  #settingsOverlay .modal-column-clock {
+    margin-top: 18px;
+    padding-top: 18px;
+    border-top: 1px solid #d6dde2;
+  }
+}
+
+
+/* v2 stage2：教師用設定から「おたすけ」を外し、時計固有設定を1列化 */
+#settingsOverlay .clock-settings-grid-single {
+  grid-template-columns: minmax(0, 1fr);
+}

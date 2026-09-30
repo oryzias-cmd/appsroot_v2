@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>HTML内のSVG抽出ツール（個別保存・名称編集）</title>
+<style>
+  :root{
+    --pad: 6;    /* 標準化時の外枠マージン（％） */
+    --stroke: 1.5; /* 標準化時の線幅(px) 推奨シリーズ標準 */
+  }
+  html,body{margin:0; font-family: system-ui, sans-serif; background:#fafafa; color:#111;}
+  header{ background:#fff; border-bottom:1px solid #e5e5e5; padding:12px 16px; position:sticky; top:0; z-index:2;}
+  h1{ font-size:18px; margin:0 0 6px; }
+  .bar{ display:flex; flex-wrap:wrap; align-items:center; gap:12px; }
+  .bar .opt{ display:flex; gap:8px; align-items:center; }
+  .note{ font-size:12px; color:#666; }
+  main{ padding:16px; }
+  .drop{
+    border:2px dashed #999; background:#fff; border-radius:12px; padding:24px; text-align:center;
+    color:#666; margin-bottom:16px;
+  }
+  .grid{ display:grid; grid-template-columns: repeat(auto-fill, minmax(320px,1fr)); gap:12px; }
+  .card{ background:#fff; border:1px solid #e5e5e5; border-radius:10px; padding:10px; display:flex; flex-direction:column; gap:10px; }
+  .thumb{ display:flex; align-items:center; justify-content:center; background:#f7f7f7; border-radius:8px; height:220px; overflow:hidden; }
+  .thumb svg{ width:200px; height:200px; }
+  .row{ display:flex; gap:8px; align-items:center; justify-content:space-between; }
+  input.name{ flex:1; padding:8px; border:1px solid #ccc; border-radius:8px; }
+  button{ padding:8px 12px; border:1px solid #111; background:#f6f6f6; border-radius:8px; cursor:pointer; }
+  button:disabled{ opacity:.6; cursor:not-allowed; }
+  .small{ font-size:12px; color:#666; }
+  .badgev{ font-size:11px; padding:2px 6px; border:1px solid #ccc; border-radius:999px; background:#fff; }
+</style>
+</head>
+<body>
+<header>
+  <h1>HTML内のSVG抽出ツール（個別保存・名称編集）</h1>
+  <div class="bar">
+    <input id="file" type="file" accept=".html,.htm,.xhtml,text/html" />
+    <button id="pick">HTMLをえらぶ</button>
+
+    <span class="opt">
+      <label><input id="normalize" type="checkbox"> 標準化（viewBox=0 0 100 100 / 余白 / 線幅）</label>
+      <label>余白％ <input id="pad" type="number" min="0" max="15" step="1" value="6" style="width:72px"></label>
+      <label>線幅(px) <input id="stroke" type="number" min="0.5" max="5" step="0.1" value="1.5" style="width:72px"></label>
+    </span>
+
+    <span class="note">※ 初期状態では「元のSVGを尊重」。標準化をONにするとシリーズ規格に合わせて整形します。</span>
+  </div>
+</header>
+
+<main>
+  <div id="drop" class="drop">ここに第1弾のHTML（または教材HTML）をドラッグ＆ドロップ<br>または「HTMLをえらぶ」ボタンから選択</div>
+  <div id="meta" class="small"></div>
+  <div id="grid" class="grid"></div>
+</main>
+
+<script>
+(function(){
+  "use strict";
+  const q = s => document.querySelector(s);
+  const fileInput = q('#file');
+  const pickBtn = q('#pick');
+  const drop = q('#drop');
+  const grid = q('#grid');
+  const meta = q('#meta');
+  const normalizeEl = q('#normalize');
+  const padEl = q('#pad');
+  const strokeEl = q('#stroke');
+
+  pickBtn.onclick = ()=> fileInput.click();
+  fileInput.onchange = ()=> handleFiles(fileInput.files);
+
+  ;['dragenter','dragover'].forEach(ev=>{
+    drop.addEventListener(ev, e=>{ e.preventDefault(); drop.style.background='#eef7ff'; });
+  });
+  ;['dragleave','drop'].forEach(ev=>{
+    drop.addEventListener(ev, e=>{ e.preventDefault(); drop.style.background='#fff'; if(ev==='drop'){ handleFiles(e.dataTransfer.files);} });
+  });
+
+  function handleFiles(files){
+    grid.innerHTML = "";
+    meta.textContent = "";
+    if(!files || !files.length) return;
+    [...files].forEach(file=>{
+      const reader = new FileReader();
+      reader.onload = ()=> processHTML(reader.result, file.name);
+      reader.readAsText(file, 'utf-8');
+    });
+  }
+
+  function processHTML(html, filename){
+    grid.innerHTML = "";
+
+    // 1) DOM探索（静的直置きの<svg>）
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
+    const domSvgs = [...doc.querySelectorAll('svg')].map(n => ({ kind:'dom', node: n, raw: n.outerHTML }));
+
+    // 2) 正規表現でテキスト抽出（<svg … </svg> をすべて）
+    const regex = /<svg[\s\S]*?<\/svg>/gi;
+    const textBlocks = [];
+    let m;
+    while((m = regex.exec(html)) !== null){
+      textBlocks.push({ kind:'text', raw: m[0] });
+    }
+
+    // 3) data URI からの抽出（img/srcなど）
+    const dataUriRegex = /data:image\/svg\+xml(?:;base64)?,([^"'()\s>]+)/gi;
+    const dataBlocks = [];
+    let d;
+    while((d = dataUriRegex.exec(html)) !== null){
+      try{
+        const enc = d[0].includes(';base64') ? atob(decodeURIComponent(d[1])) : decodeURIComponent(d[1]);
+        const svgMatch = enc.match(/<svg[\s\S]*?<\/svg>/i);
+        if(svgMatch){ dataBlocks.push({ kind:'datauri', raw: svgMatch[0] }); }
+      }catch(e){}
+    }
+
+    // 重複排除（raw文字列で簡易）
+    const all = [];
+    const seen = new Set();
+    [...domSvgs, ...textBlocks, ...dataBlocks].forEach(it=>{
+      const key = it.raw.slice(0,200);
+      if(!seen.has(key)){ seen.add(key); all.push(it); }
+    });
+
+    meta.innerHTML = `<span class="badgev">ファイル</span> ${escapeHtml(filename)}　/　<span class="badgev">抽出SVG</span> ${all.length} 件（DOM:${domSvgs.length} / TEXT:${textBlocks.length} / DATA:${dataBlocks.length})`;
+
+    if(!all.length){
+      grid.innerHTML = `<div class="small">SVGブロックが見つかりませんでした。動的生成型（JSで後から挿入）の場合は、ビルド後HTMLやテンプレート元のファイルをご用意ください。</div>`;
+      return;
+    }
+
+    // カードを並べる
+    all.forEach((it, idx)=>{
+      const original = it.raw;
+      const out = normalizeEl.checked ? normalizeSVG(original) : sanitizeOriginalSVG(original);
+
+      // 名前（DOMのid/classがある場合は優先）
+      let suggested = `extracted_${String(idx+1).padStart(2,'0')}.svg`;
+      if(it.kind==='dom'){ suggested = suggestName(it.node, idx); }
+
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.innerHTML = `
+        <div class="thumb">${out.svg}</div>
+        <div class="row">
+          <input class="name" value="${suggested}" />
+          <button class="save">このSVGを保存</button>
+        </div>
+        <div class="row">
+          <span class="small">抽出源：${it.kind}</span>
+          <span class="small">${normalizeEl.checked ? '標準化済み' : '元を尊重'}</span>
+        </div>
+      `;
+
+      card.querySelector('.save').onclick = ()=>{
+        const nm = (card.querySelector('.name').value || suggested).replace(/\s+/g,'_').replace(/\.svg$/i,'') + '.svg';
+        const blob = new Blob([out.svg], {type:'image/svg+xml;charset=utf-8'});
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = nm;
+        document.body.appendChild(a);
+        a.click();
+        URL.revokeObjectURL(a.href);
+        a.remove();
+      };
+
+      grid.appendChild(card);
+    });
+  }
+
+  // 元のSVGを軽く整える（余計なwidth/heightを外して可変に）
+  function sanitizeOriginalSVG(svgText){
+    const doc = new DOMParser().parseFromString(svgText, 'image/svg+xml');
+    const svg = doc.querySelector('svg');
+    if(!svg) return {svg: svgText};
+
+    svg.removeAttribute('width'); svg.removeAttribute('height');
+    if(!svg.getAttribute('viewBox')){
+      svg.setAttribute('viewBox','0 0 100 100');
+    }
+    return { svg: new XMLSerializer().serializeToString(doc) };
+  }
+
+  // 標準化：viewBox=0 0 100 100・余白・stroke幅統一・fill="none"
+  function normalizeSVG(svgText){
+    const pad = parseInt(padEl.value,10) || 6;
+    const strokeW = parseFloat(strokeEl.value) || 1.5;
+
+    const doc = new DOMParser().parseFromString(svgText, 'image/svg+xml');
+    const svg = doc.querySelector('svg');
+    if(!svg) return { svg: svgText };
+
+    let vb = (svg.getAttribute('viewBox') || '').trim();
+    let w = parseFloat(svg.getAttribute('width')||'');
+    let h = parseFloat(svg.getAttribute('height')||'');
+    if(vb){
+      const m = vb.split(/\s+/).map(Number);
+      if(m.length===4){ w = m[2]; h = m[3]; }
+    }
+    if(!w || !h){ w = 100; h = 100; }
+
+    svg.setAttribute('viewBox','0 0 100 100');
+    svg.removeAttribute('width'); svg.removeAttribute('height');
+
+    const inner = 100 - pad*2;
+    const scale = inner / Math.max(w,h);
+    const tx = (100 - w*scale)/2;
+    const ty = (100 - h*scale)/2;
+
+    const g = doc.createElementNS('http://www.w3.org/2000/svg','g');
+    const kids = [...svg.childNodes];
+    kids.forEach(k => g.appendChild(k));
+    g.setAttribute('transform', `translate(${tx.toFixed(3)},${ty.toFixed(3)}) scale(${scale.toFixed(6)})`);
+    svg.appendChild(g);
+
+    doc.querySelectorAll('path,polygon,polyline,circle,ellipse,line,rect').forEach(n=>{
+      n.setAttribute('fill','none');
+      n.setAttribute('stroke','#000');
+      n.setAttribute('stroke-width', String(strokeW));
+      if(!n.hasAttribute('stroke-linejoin')) n.setAttribute('stroke-linejoin','miter');
+      if(!n.hasAttribute('stroke-linecap'))  n.setAttribute('stroke-linecap','butt');
+    });
+
+    const out = new XMLSerializer().serializeToString(doc);
+    return { svg: out };
+  }
+
+  function suggestName(node, idx){
+    const id = (node.getAttribute('id')||'').trim();
+    const cls = (node.getAttribute('class')||'').trim().split(/\s+/).filter(Boolean)[0] || '';
+    const base = (id || cls || `extracted_${String(idx+1).padStart(2,'0')}`)
+      .toLowerCase().replace(/[^a-z0-9_-]+/g,'_').replace(/^_+|_+$/g,'');
+    return (base || `extracted_${String(idx+1).padStart(2,'0')}`) + '.svg';
+  }
+
+  function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,137 @@
+/* 九九 entry（左テンキー維持＋中央右はentry風） */
+
+#mainArea{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px 14px 22px;
+  box-sizing: border-box;
+}
+
+.kuku-entry-panel{
+  width: min(1100px, 96vw);
+  background: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.10);
+  padding: 22px 22px 18px;
+  box-sizing: border-box;
+}
+
+.kuku-entry-cols{
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 18px;
+  align-items: start;
+}
+
+.kuku-entry-card{
+  border: 1px solid rgba(0,0,0,.12);
+  border-radius: 14px;
+  padding: 16px 16px 14px;
+  box-sizing: border-box;
+  min-height: 290px;
+}
+
+.kuku-entry-title{
+  margin: 0 0 12px;
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: .06em;
+  text-align: center;
+}
+
+.kuku-dan-grid{
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.kuku-dan-grid button{
+  height: 70px;
+  border-radius: 14px;
+  border: 2px solid #3c7cff;
+  background: #eaf1ff;
+  font-size: 28px;
+  font-weight: 800;
+}
+
+.kuku-dan-grid button.is-on{
+  background: #3c7cff;
+  color: #fff;
+}
+
+.kuku-dan-tools{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.kuku-dan-tools button{
+  height: 52px;
+  border-radius: 999px;
+  border: 1px solid rgba(0,0,0,.18);
+  background: #ffffff;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.kuku-entry-pills{
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.kuku-entry-pills button{
+  height: 54px;
+  border-radius: 12px;
+  border: 1px solid rgba(0,0,0,.18);
+  background: #f4f4f4;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.kuku-entry-pills button.is-on{
+  background: #dff4de;
+  border-color: #4aa34a;
+}
+
+#levelButtons button.is-on{
+  background: #fff3d6;
+  border-color: #d7a33b;
+}
+
+.kuku-entry-start-row{
+  display: flex;
+  justify-content: center;
+  margin-top: 18px;
+}
+
+.kuku-entry-start{
+  width: min(520px, 72vw);
+  height: 78px;
+  border-radius: 999px;
+  border: none;
+  font-size: 34px;
+  font-weight: 900;
+  background: #f2b2b2;
+  color: #ffffff;
+  box-shadow: 0 8px 18px rgba(0,0,0,.18);
+}
+
+.kuku-entry-start:disabled{
+  opacity: .55;
+  box-shadow: none;
+}
+
+/* 画面が狭いときだけ縦積み */
+@media (max-width: 900px){
+  .kuku-entry-cols{
+    grid-template-columns: 1fr;
+  }
+  .kuku-entry-card{
+    min-height: auto;
+  }
+}

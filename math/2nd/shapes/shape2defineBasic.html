@@ -1,0 +1,87 @@
+<!-- head（第4弾と同じ見た目にする構成） -->
+<link rel="stylesheet" href="../../../common/shell/shape.full.css">
+
+<link rel="stylesheet" href="../../../common/shell/header.full.css">
+<link rel="stylesheet" href="../../../common/shell/pbar.full.css">
+<link rel="stylesheet" href="../../../common/shell/footer.full.css">
+
+<body class="app-shell">
+  <div id="slot-header"></div>
+  <!--<div id="slot-pbar"></div>-->
+
+  <!-- ★中央メイン（ここにM-Defineが注入されます） -->
+  <div id="slot-main"></div>
+
+  <div id="slot-footer"></div>
+
+<script>
+  window.AppShellOptions = window.AppShellOptions || {};
+  window.AppShellOptions.titleAB = {
+    // prefix は任意。今回使わないなら空でもOK。使うときは例のコメントを外して書き換え。
+    // prefix: 'みつけよう、',
+    prefix: '',
+    labelA: '三角形',
+    labelB: '四角形',
+    sep: ' と ',
+    tail: ' の きまり',
+    // 任意：モードキー。既定 tri/quad のままでOK
+    // modeKeys: { A:'tri', B:'quad' },
+    // 任意：モード切替時に追加処理したい場合
+    // onChange: (mode) => { console.log('[titleAB] mode ->', mode); }
+  };
+</script>
+  
+<!-- ▼ 共通ボタン庫 → 先に読み込んで ready を受け取れるようにする -->
+<script src="../../../common/controls/kit.full.js" defer></script>
+
+<!-- ★第3弾専用の配置宣言（短いのでHTML内でOK） -->
+<script>
+window.AppShellLayout = {
+  header:{ left:['backlink'], center:['title'], right:['voiceToggle'] },
+  pbar:{ left:[], center:[], right:[] },
+  main:{ bottomCenter:[] },
+  footer:{ left:[], center:['primary','next'], right:[] }
+};
+</script>
+<script>
+  window.AppActions = window.AppActions || {};
+  window.AppActions.primary = () => (window.lv1?.checkAnswer?.());
+</script>
+
+
+  <!-- ▼ シェル枠（レゴ部品） -->
+<script src="../../../common/shell/header.full.js" defer></script>
+<script src="../../../common/shell/footer.full.js" defer></script>
+
+<!-- ▼ データ（必ず本体より前）
+     ★defer を外して「この場で」QUESTIONS を確実に作る -->
+<script src="./shape2defineBasicQ.js"></script>
+<script>
+  window.QUESTIONS = window.QUESTIONS || window.APP_QUESTIONS || window.Q_TRIQUAD_DEFINE || [];
+
+  // ★出題順ランダム化：表示(M-Define)より前に1回だけ実行
+  (function(){
+    const qs = window.QUESTIONS;
+    if (!Array.isArray(qs) || qs.length <= 1 || qs.__shuffled) return;
+    for (let i = qs.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [qs[i], qs[j]] = [qs[j], qs[i]];
+    }
+    Object.defineProperty(qs, "__shuffled", { value:true, enumerable:false });
+  })();
+</script>
+
+  <!-- ▼ 第4弾準拠 JavaScript 読み込み順 -->
+  <script src="../../../common/core.js"></script>
+  <script src="../../../common/marks.js"></script>
+  <script src="../../../common/geometry/controls.js"></script>
+  <script src="../../../common/geometry/grid.js"></script>
+  <!-- 幾何検証が必要な場合のみ有効化：下の1行のコメントを外す
+  <script src="../../common/geometry/judge.js"></script>
+  -->
+
+<!-- ▼ 本体 -->
+<script src="../../../common/shell/M-Define.full.js" defer></script>
+<script src="./shape2defineBasic.js" defer></script>
+
+</body>

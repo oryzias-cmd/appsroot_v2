@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>10（テン）ぴたっ！</title>
+
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/anim.css"> <!-- アニメ専用（上書き用に後ろ） -->
+
+</head>
+<body>
+  <div class="app">
+    <header id="header" class="hide">
+      <!-- 小型ロゴ：問題ページ用 -->
+      <div class="brandWrap brandWrap--sm" aria-hidden="true">
+        <h2 class="brandTitle brandTitle--sm">
+          <ruby><span class="ten">10</span><rt>テン</rt></ruby><span class="pita">ぴたっ！</span>
+        </h2>
+      </div>
+      <h1>10 は</h1>
+      <div class="progress" id="progress" aria-live="polite"></div>
+    </header>
+
+    <main class="center">
+      <div class="viewport" id="viewport">
+        <!-- 二重カード：A/B を差し替え -->
+        <div class="card" id="cardA">
+          <div class="choices ch-at">
+            <button class="choice" id="aLeft"  type="button"><span class="num" id="aL1"></span><span class="num" id="aL2"></span></button>
+            <button class="choice" id="aRight" type="button"><span class="num" id="aR1"></span><span class="num" id="aR2"></span></button>
+          </div>
+        </div>
+        <div class="card hidden" id="cardB">
+          <div class="choices ch-pre">
+            <button class="choice" id="bLeft"  type="button"><span class="num" id="bL1"></span><span class="num" id="bL2"></span></button>
+            <button class="choice" id="bRight" type="button"><span class="num" id="bR1"></span><span class="num" id="bR2"></span></button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <div class="footer-spacer" aria-hidden="true"></div>
+  </div>
+
+  <!-- スタート：なまえ -->
+  <div class="overlay" id="startOverlay">
+    <!-- タイトル（大） -->
+    <div class="brandWrap">
+      <h1 class="brandTitle">
+        <ruby><span class="ten">10</span><rt>テン</rt></ruby><span class="pita">ぴたっ！</span>
+      </h1>
+    </div>
+
+    <div class="startPanel">
+      <h2>なまえ を おしえてください</h2>
+      <div class="nameRow">
+        <div class="flex">
+          <input id="nameInput" type="text" placeholder="なまえ（きろくよう）" />
+          <button class="gearBtn" id="gearBtn" aria-label="せってい">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M12 8.5a3.5 3.5 0 1 1 0 7 3.5 3.5 0 0 1 0-7Zm8.94 3.12-.94-.54.17-1.09a2 2 0 0 0-1.63-2.3l-1.1-.2-.53-.95a2 2 0 0 0-2.73-.73l-.97.55-.97-.55a2 2 0 0 0-2.73.73l-.53.95-1.1.2a2 2 0 0 0-1.63 2.3l.17 1.09-.94.54a2 2 0 0 0 .73 2.73l-.55.97-.55.97a2 2 0 0 0 .73 2.73l.94.54-.17 1.09a2 2 0 0 0 1.63 2.3l1.1.2.53.95a2 2 0 0 0 2.73.73l.97-.55.97.55a2 2 0 0 0 2.73-.73l.53-.95 1.1-.2a2 2 0 0 0 1.63-2.3l-.17-1.09.94-.54a2 2 0 0 0 .73-2.73l-.55-.97.55-.97a2 2 0 0 0-.73-2.73Zm-4.07 5.01a4.99 4.99 0 1 1 0-9.98 4.99 4.99 0 0 1 0 9.98Z"/>
+            </svg>
+          </button>
+        </div>
+        <button id="startBtn" type="button">つぎへ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 名前選択 -->
+  <div class="settings" id="settings">
+    <div class="settingsPanel">
+      <div class="settingsHeader">
+        <div><strong>なまえ を えらぶ</strong>（あたらしい じゅん）</div>
+        <button class="closeBtn" id="settingsClose" type="button">とじる</button>
+      </div>
+      <div class="chips" id="nameChips"></div>
+    </div>
+  </div>
+
+  <!-- コース選択 -->
+  <div class="selectOverlay" id="courseOverlay">
+    <div class="selTitle">コース を えらんでね</div>
+    <div class="courseGrid" id="courseGrid">
+      <button class="courseBtn" data-course="10"><span>10</span></button>
+      <button class="courseBtn" data-course="9"><span>9</span></button>
+      <button class="courseBtn" data-course="8"><span>8</span></button>
+      <button class="courseBtn" data-course="7"><span>7</span></button>
+      <button class="courseBtn" data-course="6"><span>6</span></button>
+      <button class="courseBtn" data-course="5"><span>5</span></button>
+      <button class="courseBtn" data-course="432"><span>4・3・2</span><small>まとめ</small></button>
+    </div>
+  </div>
+
+  <!-- 難易度・順序 -->
+  <div class="selectOverlay" id="optionOverlay">
+    <div class="selTitle">せってい を えらんでね</div>
+    <div class="optionPanel">
+      <div class="group">
+        <div class="groupTitle">むずかしさ</div>
+        <div class="optionBtns" id="diffBtns">
+          <button class="option selected" data-diff="easy">かんたん<br><small>ひだりが おなじ</small></button>
+          <button class="option" data-diff="normal">ふつう<br><small>みぎが おなじ</small></button>
+          <button class="option" data-diff="hard">むずかしい<br><small>ひだり/みぎ が おなじ</small></button>
+        </div>
+      </div>
+      <div class="group">
+        <div class="groupTitle">じゅんばん</div>
+        <div class="optionBtns" id="orderBtns">
+          <button class="option selected" data-order="1">① まえから</button>
+          <button class="option" data-order="2">② うしろから</button>
+          <button class="option" data-order="3">③ ばらばら</button>
+        </div>
+      </div>
+      <button class="startGo" id="goBtn">はじめる</button>
+    </div>
+  </div>
+
+  <script src="js/main.js"></script>
+</body>
+</html>

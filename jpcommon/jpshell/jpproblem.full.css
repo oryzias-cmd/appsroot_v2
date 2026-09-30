@@ -1,0 +1,68 @@
+/* jpcommon/jpshell/jpproblem.full.css
+   - 国語：問題バー（見た目）
+   - 役割：.v-problem / #jpnProblemMount / #jpnProblemText の見た目だけ
+*/
+
+:root{
+  --color-ink: #111;
+}
+
+/* 問題バー：白・余白ゼロ */
+body.app-vertical-jpn:is(.entry-mode, .screen-quiz, .screen-catalog) .v-side-middle .v-problem{
+  background: #fff;
+  padding: 0;
+  margin: 0;
+  display: block;
+  overflow: hidden;
+  height: 100%;
+}
+
+/* mount：帯幅いっぱいを使って、上詰め＆横中央 */
+#jpnProblemMount{
+  width: 100%;
+  height: 100%;
+
+  display: grid;
+  place-items: start center;
+
+  padding: 0;
+  margin: 0;
+}
+
+/* 本文：帯幅を削らず中央へ */
+#jpnProblemText{
+  inline-size: auto;
+  box-sizing: border-box;
+
+  padding: 0;
+  margin: 0;
+
+  justify-self: center;
+
+  font-weight: 400;
+}
+
+/* 文字：教科書体＋縦書き（問題は通常体） */
+.v-problem #jpnProblemText{
+  color: var(--color-ink);
+  font-family:
+    "UD Digi Kyokasho N-R",
+    "UD Digi Kyokasho NK-R",
+    "UDデジタル教科書体N-R",
+    "UDデジタル教科書体NK-R",
+    "BIZ UDGothic",
+    system-ui,
+    sans-serif;
+
+  letter-spacing: 0.06em;
+
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+
+  white-space: pre-wrap;
+
+  font-size: 26px;
+  line-height: 1.05;
+
+  padding: 2px 0;
+}

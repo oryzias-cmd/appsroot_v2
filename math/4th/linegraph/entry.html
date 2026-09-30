@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>折れ線グラフ（entry）</title>
+
+  <!-- 共通シェル（最新フル） -->
+  <link rel="stylesheet" href="../../../common/shell/header.css">
+  <link rel="stylesheet" href="../../../common/shell/setup.full.css">
+  <link rel="stylesheet" href="../../../common/shell/entry.full.css">
+  <link rel="stylesheet" href="../../../common/shell/tenkeypad.full.css">
+
+  <!-- entry専用（基本は空） -->
+  <link rel="stylesheet" href="./entry.css">
+</head>
+<body>
+
+  <!-- ヘッダースロット（中身は kit が管理） -->
+  <div id="slot-header"
+       data-slot="header"
+       data-title="折れ線グラフ"
+       data-back="history"></div>
+
+  <!-- EntryFull の mount 先 -->
+  <main id="mainArea"></main>
+
+  <!-- ★重要：kit が読むレイアウト宣言 -->
+  <script>
+    window.AppShellLayout = {
+      header: {
+        left:  ['backlink'],
+        center:['title'],
+        right: ['settingsGear']
+      },
+      pbar:   { left:[], center:[], right:[] },
+      main:   { bottomCenter:[] },
+      footer: { left:[], center:[], right:[] }
+    };
+  </script>
+
+  <script src="../../../common/shell/kit.full.js"></script>
+  <script src="../../../common/shell/header.full.js"></script>
+  <script src="../../../common/shell/tenkeypad.full.js"></script>
+
+  <script src="../../../common/shell/setup.full.js"></script>
+  <script src="../../../common/shell/entry.full.js"></script>
+
+  <!-- entry ロジック -->
+  <script src="./entry.js"></script>
+</body>
+</html>

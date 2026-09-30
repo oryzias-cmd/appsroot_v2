@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>画像 → SVG 一括変換（教科書体3px/100x100規格）</title>
+<style>
+  :root{
+    --pad: 6; /* 外枠からの余白％ */
+    --stroke: 1.5;
+  }
+  body{ margin:0; font-family: system-ui, sans-serif; background:#fafafa; color:#111; }
+  header{ padding:12px 16px; border-bottom:1px solid #ddd; background:#fff; position:sticky; top:0; z-index:1; }
+  h1{ font-size:18px; margin:0 0 8px; }
+  .bar{ display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
+  .bar input[type="number"]{ width:80px; }
+  main{ padding:16px; }
+  .drop{
+    border:2px dashed #999; background:#fff; border-radius:12px; padding:24px; text-align:center;
+    color:#666; margin-bottom:16px;
+  }
+  .grid{ display:grid; grid-template-columns: repeat(auto-fill, minmax(260px,1fr)); gap:12px; }
+  .card{ background:#fff; border:1px solid #e5e5e5; border-radius:10px; padding:10px; }
+  .row{ display:flex; gap:8px; align-items:center; justify-content:space-between; margin-top:8px; }
+  .thumb{ display:flex; align-items:center; justify-content:center; background:#f7f7f7; border-radius:8px; height:160px; overflow:hidden; }
+  .thumb svg{ width:160px; height:160px; }
+  button{ padding:8px 12px; border:1px solid #111; background:#f6f6f6; border-radius:8px; cursor:pointer; }
+  .small{ font-size:12px; color:#666; }
+  label{ display:inline-flex; gap:4px; align-items:center; }
+</style>
+</head>
+<body>
+<header>
+  <h1>画像 → SVG 一括変換（3px線／viewBox=0 0 100 100／余白6%）</h1>
+  <div class="bar">
+    <input id="file" type="file" multiple accept="image/*" />
+    <button id="pick">画像をえらぶ</button>
+    <label>線の太さ(px)：<input id="stroke" type="number" min="1" max="10" step="0.5" value="3"></label>
+    <label>余白(％)：<input id="pad" type="number" min="0" max="15" step="1" value="6"></label>
+    <label>単純化(小→大)：<input id="simplify" type="range" min="1" max="12" value="6"></label>
+    <label>閾値(淡→濃)：<input id="threshold" type="range" min="1" max="255" value="200"></label>
+    <button id="zip">全部ZIPで保存</button>
+    <span class="small">※ 仕上がりは <code>fill="none"</code> / <code>stroke="#000"</code></span>
+  </div>
+</header>
+
+<main>
+  <div id="drop" class="drop">ここに画像をドラッグ＆ドロップ（または「画像をえらぶ」）</div>
+  <div id="grid" class="grid"></div>
+</main>
+
+<!-- ライブラリCDN：ImageTracer.js（ベクトル化）, JSZip（ZIP化）, FileSaver（保存） -->
+<script src="https://unpkg.com/imagetracerjs/imagetracer_v1.2.1.js"></script>
+<script src="https://unpkg.com/jszip@3.10.1/dist/jszip.min.js"></script>
+<script src="https://unpkg.com/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+
+<script>
+(function(){
+  "use strict";
+  const el = (q) => document.querySelector(q);
+  const grid = el('#grid');
+  const fileInput = el('#file');
+  const pickBtn = el('#pick');
+  const drop = el('#drop');
+  const zipBtn = el('#zip');
+
+  const strokeEl = el('#stroke');
+  const padEl = el('#pad');
+  const simplifyEl = el('#simplify');
+  const thrEl = el('#threshold');
+
+  pickBtn.onclick = ()=> fileInput.click();
+  fileInput.onchange = ()=> handleFiles(fileInput.files);
+
+  ;['dragenter','dragover'].forEach(ev=>{
+    drop.addEventListener(ev, e=>{ e.preventDefault(); drop.style.background='#eef7ff'; });
+  });
+  ;['dragleave','drop'].forEach(ev=>{
+    drop.addEventListener(ev, e=>{ e.preventDefault(); drop.style.background='#fff'; if(ev==='drop'){ handleFiles(e.dataTransfer.files);} });
+  });
+
+  function handleFiles(files){
+    [...files].forEach(file=>{
+      if(!file.type.startsWith('image/')) return;
+      const reader = new FileReader();
+      reader.onload = ()=> rasterToSVG(reader.result, file.name);
+      reader.readAsDataURL(file);
+    });
+  }
+
+  // 画像 → SVG 変換
+  async function rasterToSVG(dataURL, originalName){
+    const img = new Image();
+    img.src = dataURL;
+    await img.decode();
+
+    // Canvas に描画して前処理（しきい値で二値化→背景を透過扱い）
+    const cnv = document.createElement('canvas');
+    const ctx = cnv.getContext('2d');
+    // 長辺1000pxで標準化（精度確保）
+    const scale = 1000 / Math.max(img.width, img.height);
+    cnv.width = Math.round(img.width * scale);
+    cnv.height = Math.round(img.height * scale);
+    ctx.drawImage(img, 0, 0, cnv.width, cnv.height);
+
+    const thr = parseInt(thrEl.value,10); // 1..255
+    const imgd = ctx.getImageData(0,0,cnv.width,cnv.height);
+    const d = imgd.data;
+
+    // 背景（ほぼ白）を透明化、図形は黒に寄せる
+    for(let i=0;i<d.length;i+=4){
+      const r=d[i], g=d[i+1], b=d[i+2], a=d[i+3];
+      const lum = 0.2126*r + 0.7152*g + 0.0722*b; // 輝度
+      if(lum > thr || a < 5){
+        d[i+3] = 0; // 透明
+      }else{
+        // 図形側は濃く（黒系）寄せる
+        d[i]=d[i+1]=d[i+2]=0; d[i+3]=255;
+      }
+    }
+    ctx.putImageData(imgd,0,0);
+
+    // ImageTracer でベクトル化
+    const opt = {
+      ltres: 1 + (parseInt(simplifyEl.value,10)/2), // 線の簡略化
+      qtres: 1 + (parseInt(simplifyEl.value,10)/2),
+      pathomit: 4,
+      numberofcolors: 2,
+      strokewidth: parseFloat(strokeEl.value), // 仕上げ線幅
+      // あくまでストロークを主に使いたい
+      linefilter: true
+    };
+    const traced = ImageTracer.imagedataToTracedata(ctx.getImageData(0,0,cnv.width,cnv.height), opt);
+    let svg = ImageTracer.getsvgstring(traced, opt);
+
+    // ---- 後処理：viewBox 0 0 100 100、塗りなし、黒ストロークに統一
+    // SVG文字列をDOM化して編集
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(svg, 'image/svg+xml');
+    const svgEl = doc.querySelector('svg');
+    svgEl.setAttribute('viewBox','0 0 100 100');
+    svgEl.removeAttribute('width'); svgEl.removeAttribute('height');
+
+    // 全パス：fill="none" / stroke="#000" / stroke-width={指定}
+    const strokeW = parseFloat(strokeEl.value);
+    doc.querySelectorAll('*').forEach(n=>{
+      if(n.tagName === 'path' || n.tagName === 'polygon' || n.tagName === 'polyline'){
+        n.setAttribute('fill','none');
+        n.setAttribute('stroke','#000');
+        n.setAttribute('stroke-width', String(strokeW));
+        n.setAttribute('stroke-linejoin','miter');
+        n.setAttribute('stroke-linecap','butt');
+      }
+    });
+
+    // ビュー内に6%マージン確保のため全体を少し縮小移動（既存viewBox前提でGラップ）
+    // ただし ImageTracer の出力は 0..w,0..h の座標。これを 100x100 に等比スケール
+    const w = parseFloat(svgEl.getAttribute('width')||cnv.width);
+    const h = parseFloat(svgEl.getAttribute('height')||cnv.height);
+    const PAD = parseInt(padEl.value,10); // %
+    const inner = 100 - PAD*2;
+    const scaleTo = inner / Math.max(w,h);
+    const tx = (100 - w*scaleTo)/2;
+    const ty = (100 - h*scaleTo)/2;
+
+    // 既存子要素を <g transform> に集約
+    const g = doc.createElementNS('http://www.w3.org/2000/svg','g');
+    const kids = [...svgEl.childNodes];
+    kids.forEach(k=> g.appendChild(k));
+    g.setAttribute('transform', `translate(${tx.toFixed(3)},${ty.toFixed(3)}) scale(${scaleTo.toFixed(5)})`);
+    svgEl.appendChild(g);
+
+    // 文字列に戻す
+    svg = new XMLSerializer().serializeToString(doc);
+
+    // プレビュー用カード生成
+    const fname = suggName(originalName);
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `
+      <div class="thumb">${svg}</div>
+      <div class="row">
+        <input class="nm" value="${fname}" style="flex:1; padding:6px; border:1px solid #ccc; border-radius:6px"/>
+      </div>
+      <div class="row">
+        <span class="small">${escapeHtml(originalName)}</span>
+        <button class="save">このSVGを保存</button>
+      </div>
+    `;
+    const saveBtn = card.querySelector('.save');
+    saveBtn.onclick = ()=>{
+      const nm = card.querySelector('.nm').value.replace(/\s+/g,'_').replace(/\.svg$/i,'') + '.svg';
+      const blob = new Blob([svg],{type:'image/svg+xml;charset=utf-8'});
+      saveAs(blob, nm);
+    };
+    grid.appendChild(card);
+
+    // ZIP 用キューに保持
+    zipQueue.push({name: (fname+'.svg'), data: svg});
+  }
+
+  function suggName(original){
+    const base = original.replace(/^.*[\\/]/,'').replace(/\.[^.]+$/,'');
+    // 先頭に tri_auto_ を付けておく（後から先生が好みで変更可）
+    return 'tri_auto_' + base.toLowerCase().replace(/[^a-z0-9_-]+/g,'');
+  }
+
+  function escapeHtml(s){ return s.replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+  // ZIP 保存
+  const zipQueue = [];
+  zipBtn.onclick = async ()=>{
+    if(!zipQueue.length) return;
+    const zip = new JSZip();
+    const folder = zip.folder('svg_output');
+    zipQueue.forEach(it=> folder.file(it.name, it.data));
+    const blob = await zip.generateAsync({type:'blob'});
+    saveAs(blob, 'svg_output.zip');
+  };
+
+})();
+</script>
+</body>
+</html>

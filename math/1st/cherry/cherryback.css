@@ -1,0 +1,782 @@
+/* ========================================
+   さくらんぼ計算ドリル 用 CSS
+   - シェル構造はそのまま
+   - レイアウトと見た目をここで定義
+======================================== */
+:root{
+  /* ===== さくらんぼ・横式 共通サイズ ===== */
+  --eq-box-w: 140px;   /* 横式の4角ボックスの横幅（答え枠に合わせる） */
+  --eq-box-h: 80px;    /* ボックスの高さ */
+
+  --eq-font-size: 3.2rem;   /* 数字用フォントサイズ（１・２桁共通） */
+  --eq-op-font-size: 3.2rem;/* ＋ や ＝ も同じ大きさにする */
+
+  /* 教科書体が上に見えるのを少し下げる量（あとで微調整用） */
+  --num-shift-y: 6%;
+}
+
+/* ---- ベースレイアウト（元の blank.css 相当） ---- */
+
+html,
+body{
+  margin:0;             /* ★ ブラウザデフォルト 8px を打ち消す */
+  padding:0;
+  height:100%;
+  /* background:#faf8ec; */  /* 必要ならここを戻す */
+  color:#222;
+  font-family: "UD Digi Kyokasho N-R","BIZ UDPGothic","Hiragino Sans","Yu Gothic",system-ui,sans;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+main#mainArea{
+  flex: 1;
+}
+
+/* ========================================
+   共通
+======================================== */
+
+.cherry-app{
+  height:100%;
+  display:flex;
+  flex-direction:column;
+}
+
+.page{
+  display:none;
+  height:100%;
+}
+
+.page.is-active{
+  display:flex;
+}
+
+/* ========================================
+   セットアップ画面
+======================================== */
+
+#setupPage{
+  align-items:center;
+  justify-content:center;
+}
+
+.setup-panel{
+  width:min(620px, 96vw);
+  padding:24px 10px 32px;
+  margin-top:20px;
+  background:#fff;
+  border-radius:18px;
+  box-shadow:0 8px 24px rgba(0,0,0,0.15);
+}
+
+.setup-title{
+  margin:0 0 16px;
+  font-size:1.9rem;
+  text-align:center;
+  font-family:"BIZ UDPGothic",sans-serif;
+}
+
+/* --- Lv2 と同じ：小カード２枚を並べるグリッド --- */
+.setup-panel-body{
+  display:grid;
+  grid-template-columns: max-content max-content;
+  justify-content:center;
+  column-gap:40px;
+  padding:24px 10px;
+}
+
+@media (max-width: 720px){
+  .setup-panel-body{
+    grid-template-columns:1fr;
+    row-gap:16px;
+  }
+}
+
+/* 下部の「さくらんぼ」＆スタートボタン周り */
+.setup-actions{
+  margin-top:50px;
+  text-align:center;
+}
+
+.setup-actions .primary-btn{
+  min-width:280px;
+  padding:20px 40px;
+  font-size:1.6rem;
+  font-family:"BIZ UDPGothic",sans-serif;
+}
+
+/* ◆ 各ブロックを「小カード」にする -------------------- */
+
+.setup-block{
+  margin-top:16px;
+  padding:12px 16px;
+  max-width:320px;
+  margin-left:auto;
+  margin-right:auto;
+  border-radius:16px;
+  border:1px solid #e5e5e5;
+  background:#fafafa;
+}
+
+/* 左カード：淡ベージュ／右カード：淡ミント */
+.setup-panel-body .setup-block:nth-child(1){
+  background:#FFF7E5;
+}
+
+.setup-panel-body .setup-block:nth-child(2){
+  background:#EEF8F2;
+}
+
+/* 見出しラベル（「モード」「もんだいすう」「さくらんぼ」） */
+.setup-label{
+  font-size:1.4rem;
+  font-weight:600;
+  margin-bottom:24px;
+  text-align:center;
+  font-family:"BIZ UDPGothic",sans-serif;
+}
+
+/* ラジオボタン群：縦方向にゆったり並べる */
+.setup-options{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:16px;
+}
+
+/* ピル型ラジオ本体 */
+.pill-option{
+  display:grid;
+  grid-template-columns: 24px 1fr 24px; /* 左：○／中央：文字／右：ダミー */
+  align-items:center;
+  column-gap:0.35rem;
+  padding:10px 14px;
+  min-width:190px;
+  border-radius:999px;
+  border:1px solid #bbb;
+  background:#ffffff;
+  font-size:1.2rem;
+  line-height:1.4;
+  font-family:"BIZ UDPGothic",sans-serif;
+}
+
+/* ラジオボタンの配置 */
+.pill-option input[type="radio"]{
+  grid-column:1;
+  justify-self:center;
+}
+
+/* テキストを真ん中に・幅をそろえる */
+.pill-option span{
+  grid-column:2;
+  justify-self:center;
+  text-align:center;
+  display:inline-block;
+  min-width:4.5em;
+  white-space:nowrap;
+}
+
+/* 右側ダミー（左右対称用） */
+.pill-option::after{
+  content:"";
+  grid-column:3;
+}
+
+/* 色指定 */
+.pill-option input{
+  accent-color:#1976d2;
+}
+
+.primary-btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:140px;
+  padding:10px 18px;
+  border:none;
+  border-radius:999px;
+  background:#ff7043;
+  color:#fff;
+  font-family: "BIZ UDGothic", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size:1rem;
+  cursor:pointer;
+  box-shadow:0 4px 10px rgba(0,0,0,0.18);
+}
+
+.primary-btn:disabled{
+  opacity:0.5;
+  cursor:default;
+  box-shadow:none;
+}
+
+.ghost-btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:120px;
+  padding:8px 12px;
+  border-radius:999px;
+  border:1px solid #999;
+  background:#fff;
+  color:#333;
+  font-size:0.9rem;
+  cursor:pointer;
+}
+
+/* ========================================
+   クイズ画面
+======================================== */
+
+#quizPage{
+  padding:12px 12px 16px;
+  box-sizing:border-box;
+  align-items:stretch;
+  justify-content:center;
+}
+
+.board{
+  margin:0 auto;
+  width:min(880px, 100%);
+  height:100%;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  padding:8px 12px 12px;
+  box-sizing:border-box;
+  position:relative;   /* 右のミニ式を絶対配置するための基準 */
+}
+
+/* 採点メッセージ＋大はなまる */
+.result-row{
+  margin-top:6px;
+  min-height:40px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:4px;
+}
+
+.result-msg{
+  font-size:1rem;
+  color:#555;
+  min-height:1.2em;   /* 1行分の高さを確保してレイアウト安定 */
+}
+
+/* 大はなまる：サクランボの上に大きくかぶさる透明な花丸 */
+.hanamaru{
+  position:absolute;
+  top:35%; /* 少し上に寄せてサクランボ中心あたり */
+  left:50%;
+  transform:translate(-50%, -50%) scale(1.2);
+  opacity:0;
+  pointer-events:none;
+  transition:opacity 0.25s ease, transform 0.25s ease;
+  z-index:20;
+}
+
+/* 中身の画像（背景は透明） */
+.hanamaru img,
+.hanamaru svg{
+  display:block;
+  width:360px;
+  height:360px;
+}
+
+/* 表示状態 */
+.hanamaru.is-show{
+  opacity:1;
+  transform:translate(-50%, -50%) scale(1);
+}
+
+/* 式の行：数字と記号の間を広く／全体を大きく */
+
+.eq-row{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:24px;          /* 式全体のゆとりを少し広めに */
+  margin-top:8px;
+}
+
+/* 上の横式３つの四角（被加数・加数・答え）共通 */
+.eq-box{
+  min-width: var(--eq-box-w);
+  min-height: var(--eq-box-h);
+  border-radius:18px;
+  border:3px solid #444;
+  background:#fff;
+  box-sizing:border-box;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  /* mini ○× を四隅に載せるための基準 */
+  position:relative;
+}
+
+/* 数字（5,7,12など）用 */
+.eq-value,
+.circle-value{
+  font-size: var(--eq-font-size);
+  line-height: 1;
+  display: inline-block;
+  transform: translateY(var(--num-shift-y)); /* 中央補正を共通化 */
+}
+
+/* ＋ や ＝ の記号用 */
+.eq-sign{
+  font-size: var(--eq-op-font-size);  /* 数字と同じ大きさに統一 */
+  line-height:1;
+  padding:0 8px;
+}
+
+/* さくらんぼ＋ピル＋10 */
+
+/* ───────── さくらんぼ＆10＆ピル ───────── */
+
+.cherry-row{
+  position:relative;
+  margin-top:0;        /* ★ さらに上に近づける：6px → 0 */
+  flex:0 0 auto;
+  display:flex;
+  justify-content:center;
+}
+
+/* 10・さくらんぼ・枝をまとめる箱 */
+.cherry-layout{
+  position:relative;
+  width:460px;        /* さくらんぼ一式の横幅 */
+  height:180px;       /* 上：枝／下：丸 */
+  display:flex;
+  align-items:flex-end;
+  justify-content:flex-start;
+}
+
+/* ピル型：左の数（A）と左さくらんぼをくるむ帯 */
+.pill-wrap{
+  position:absolute;
+  /* 高さ＝ピルの太さだけ CSS で決めて、位置と長さは JS で制御 */
+  height:88px;        /* 72px + 16px ＝ 上下 8px ずつの余白イメージ */
+  pointer-events:none;
+}
+
+.pill-shape{
+  width:100%;
+  height:100%;
+  /* 四角／丸と区別するために青い線に変更 */
+  border:4px solid #0d6efd;   /* A案 ロイヤルブルーで、よりくっきり */
+  border-radius:999px;
+  box-sizing:border-box;
+  background:transparent;
+  transform:rotate(16deg);    /* JS側の rotate が上書きするので残っていてOK */
+  transform-origin:18% 50%;   /* （いずれ JS 側50%指定に合わせて整理しても可） */
+}
+
+/* 10 の丸（左さくらんぼの左側・少し離す） */
+.ten-circle{
+  position:absolute;
+  z-index:2;          /* 枝より前面に出す */
+}
+
+.eq-circle{
+  width:72px;
+  height:72px;
+  border-radius:50%;
+  border:3px solid #444;
+  background:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  /* mini ○× を四隅に載せるための基準 */
+  position:relative;
+}
+
+/* さくらんぼ２つ本体（10 の右側に並べる） */
+.cherries{
+  position:absolute;
+
+  /* さくらんぼ全体をさらに左へ（114 → 96） */
+  left:96px;
+
+  /* さくらんぼ全体をさらに上へ（24 → 40） */
+  bottom:40px;
+  right:10px;
+
+  display:flex;
+  align-items:flex-start;
+  justify-content:flex-start;  
+
+  gap:90px;            /* 左右さくらんぼの間隔 */
+
+  /* 枝より手前に出すレイヤー */
+  z-index:2;
+}
+
+/* 右側のさくらんぼだけを少し左へ寄せる */
+.cherry-right{
+  margin-left: 20px;   /* ← 負のマージンで左へ寄せる。数字はあとで微調整OK */
+}
+
+/* 加数からの枝
+   今は「上中央 → 各さくらんぼのほぼ中心」にくるよう位置合わせ */
+.cherry-lines{
+  position:absolute;
+  left:120px;          /* さくらんぼ群に合わせて右へ */
+  top:-44px;
+  width:220px;
+  height:140px;
+
+  /* 枝はひとつ奥のレイヤー（背景寄り） */
+  z-index:1;
+}
+
+.cherry-lines polyline{
+  fill:none;
+  stroke:#777;
+  stroke-width:4;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+
+  /* ★ 枝のV字を少し横に広げて角度を開く */
+  transform-origin:50% 0%;   /* 上中央を支点にするイメージ */
+  transform:scaleX(1.22);    /* 横方向を 1.22 倍にして「110°くらい」に */
+}
+
+/* 小さい式「10＋□＝□」
+   → 答えの真下〜右さくらんぼの右あたり */
+.sub-eq-row{
+  margin-top:6px;
+  height:40px;          /* 下のボタンとの間に少し余白を確保 */
+  font-size:1.3rem;
+}
+
+/* 右のミニ式は .board を基準に座標で配置する */
+.sub-eq{
+  position:absolute;
+  display:inline-block;
+  padding:6px 10px;
+  border-radius:14px;
+  border:1px solid #bbb;   /* 未判定のときだけ灰色 */
+  background:#ffffff;      /* 初期は白（無色） */
+  font-size:35px;
+  line-height:1.1;
+}
+
+/* ミニ式：すべて正解 → 本体と同じ薄い赤＋赤枠 */
+.sub-eq.is-mini-correct{
+  background:#fff7f9;      /* 四角・丸と同じ色 */
+  border-color:#e53935;    /* 枠も赤に統一 */
+}
+
+/* ミニ式：どこか一つでも不正解 → 本体と同じ薄い青＋青枠 */
+.sub-eq.is-mini-wrong{
+  background:#f4f7ff;      /* 四角・丸と同じ色 */
+  border-color:#1976d2;    /* 枠も青に統一 */
+}
+
+/* ミニ式の中の 10, ＋, 数字, ＝ を全部 6% 下げる */
+.sub-eq-part{
+  display:inline-block;
+  transform: translateY(var(--num-shift-y));
+}
+
+/* 入力フォーカス／正誤 */
+
+.eq-circle.is-active,
+.eq-box.is-active{
+  /* 入力中ハイライト（淡い青） */
+  background:#e3f2fd;
+}
+
+/* 正解欄：さらに薄い赤（枠は赤のまま） */
+.eq-circle.is-correct,
+.eq-box.is-correct{
+  background:#fff7f9;      /* ← ほぼ白に近いピンク */
+  border-color:#e53935;
+}
+
+.eq-circle.is-correct::after,
+.eq-box.is-correct::after{
+  content:"○";
+  position:absolute;
+  right:-10px;
+  top:-10px;
+  width:26px;
+  height:26px;
+  border-radius:50%;
+  border:2px solid #e53935;
+  color:#e53935;
+  background:#fff;
+  font-size:1rem;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+/* 一度まちがえてから正解になった欄：赤塗り＋赤枠のみ（○なし） */
+.eq-circle.is-correct-fixed,
+.eq-box.is-correct-fixed{
+  background:#ffebee;      /* 淡い赤（正解と同じ） */
+  border-color:#e53935;    /* 濃いめの赤枠（正解と同じ） */
+}
+
+/* ○だけ消す */
+.eq-circle.is-correct-fixed::after,
+.eq-box.is-correct-fixed::after{
+  content:none;
+}
+
+/* 不正解欄：白地＋ミニ青×（入力可のまま）
+   ※タップして選択したときだけ淡い青で塗る */
+.eq-circle.is-wrong,
+.eq-box.is-wrong{
+  background:#fff;         /* 判定後は白いまま */
+  border-color:#1976d2;    /* 青枠 */
+}
+
+/* 間違い欄を選択しているときだけ淡い青で塗る */
+.eq-circle.is-wrong.is-active,
+.eq-box.is-wrong.is-active{
+  background:#e3f2fd;
+}
+
+.eq-circle.is-wrong::after,
+.eq-box.is-wrong::after{
+  content:"×";
+  position:absolute;
+  right:-10px;
+  top:-10px;
+  width:26px;
+  height:26px;
+  border-radius:50%;
+  border:2px solid #1976d2;
+  color:#1976d2;
+  background:#fff;
+  font-size:1rem;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+/* 数字キー */
+
+.key-row{
+  margin-top:auto;
+  padding-top:10px;
+  border-top:2px solid #ddd;   /* ← 上の式エリアと区切る線 */
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:8px;
+}
+/* 数字キーと操作キーのあいだを少し広げる */
+.key-row .ctrl-key:first-of-type{
+  margin-left:12px;
+}
+
+.num-key,
+.ctrl-key{
+  min-width:56px;
+  min-height:56px;
+  padding:6px 4px;
+  border-radius:12px;
+  border:1px solid #888;
+  background:#fff;
+  font-size:1.6rem;
+  cursor:pointer;
+}
+
+.ctrl-key{
+  font-size:1rem;
+}
+
+/* こたえあわせボタン行 */
+
+.check-row{
+  margin-top:10px;
+  display:flex;
+  justify-content:center;
+  gap:12px;
+}
+
+/* 問題バーの簡単な整え（任意） */
+
+.problem-bar{
+  /* ヘッダーとの間を少しだけあける */
+  margin-top:0px;
+  margin-bottom:0px;
+}
+
+/* 中央ラベル（モード＋進行） */
+.pbar-labels{
+  display:flex;
+  align-items:baseline;
+  gap:20px;  /* 横方向のすきまを少し広げる */
+}
+
+.mode-label{
+  font-weight:600;
+}
+
+.progress-label{
+  font-size:0.9em;
+  opacity:0.8;
+}
+
+/* 分子の丸囲み強調（丸自体はそのまま、文字の補正は共通クラスに任せる） */
+.pbar-current{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 1.4em;
+  height: 1.4em;
+
+  border-radius: 50%;
+  background: #fff2a8;
+  font-weight: 700;
+  color: #000;
+
+  line-height: 1;
+
+  /* 逆補正：丸だけ6%上へ。数字はそのまま6%下がってくれる */
+  transform: translateY(-0.06em);
+}
+
+.pbar-current-num{
+  display: inline-block;
+  transform: translateY(0.06em);  /* 分子の数字だけ6%下げる */
+}
+
+/* ベースラインを下に 6% シフトする共通クラス */
+.kyo-fix{
+  display: inline-block;
+  transform: translateY(0.06em);  /* font-size の 6% 下げる */
+}
+
+/* ================================
+   リザルトカード表示用
+================================ */
+.result-overlay{
+  position:fixed;
+  inset:0;
+  z-index:50;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:rgba(0,0,0,0.25);
+  transition:opacity 0.25s ease;
+}
+
+.result-overlay.is-hidden{
+  opacity:0;
+  pointer-events:none;
+}
+
+.result-card{
+  max-width:520px;
+  width:90vw;
+  padding:40px 36px 32px;
+  background:#ffffff;
+  border-radius:22px;
+  box-shadow:0 12px 32px rgba(0,0,0,0.28);
+  text-align:center;
+}
+
+/* 区切りライン */
+.result-sep{
+  border:0;
+  border-top:1px solid #ddd;
+  width:80%;
+  margin:0px auto 32px;
+}
+
+.result-title{
+  font-family: "BIZ UDGothic", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size:1.4rem;
+  font-weight:700;
+  margin-bottom:24px;
+  color:#555;
+}
+
+.result-score{
+  font-family: "UD Digi Kyokasho N-R", "BIZ UDMincho", sans-serif;
+  font-size:1.55rem;
+  font-weight:600;
+  margin-bottom:16px;
+  color:#222;
+}
+
+.result-message{
+  font-family: "UD Digi Kyokasho N-R", "BIZ UDMincho", sans-serif;
+  font-size:1.20rem;
+  line-height:1.6;
+  margin-bottom:28px;
+  color:#333;
+}
+
+.result-actions{
+  display:flex;
+  justify-content:center;
+  gap:20px;
+}
+
+/* セカンダリーボタン（白ベース） */
+.secondary-btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:140px;
+  padding:10px 18px;
+  border-radius:999px;
+  border:2px solid #cccccc;
+  background:#ffffff;
+  color:#444444;
+  font-family: "BIZ UDGothic", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size:0.95rem;
+  cursor:pointer;
+}
+
+.primary-btn:disabled{
+  opacity:0.5;
+  cursor:default;
+  box-shadow:none;
+}
+
+/* --- リザルトボタンの色付け（セットアップと同じ色） --- */
+
+.result-actions .retry-btn {
+  background:#FFF3D6;        /* モード側と同じ淡い黄色 */
+  border:2px solid #e0d1ad;
+  color:#444;
+}
+
+.result-actions .setup-btn {
+  background:#E7F6E8;        /* 問題数側と同じ淡い緑 */
+  border:2px solid #bcd9c2;
+  color:#444;
+}
+
+/* --- リザルトボタン専用の装飾調整（影を消す） --- */
+.result-actions .setup-btn {
+  box-shadow:none;
+}
+
+.result-actions .retry-btn,
+.result-actions .setup-btn {
+  border-radius:999px;
+}
+
+/* --- ボタンの共通サイズ統一 --- */
+.result-actions button {
+  width:210px !important;          /* ★3ボタン同じ横幅 */
+  min-width:210px !important;      /* 念のため */
+  padding:12px 24px !important;
+  text-align:center !important;
+  white-space:nowrap !important;   /* ★改行させない */
+  font-size:1.05rem !important;
+  font-weight:700 !important;
+  line-height:1.2 !important;
+}

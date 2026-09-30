@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>ひらがな くいず</title>
+<style>
+  :root{
+    --stack-gap: clamp(16px, 3vh, 28px);
+    --choice-size: clamp(84px, 10vw, 120px);
+    --choice-font: clamp(56px, 7.5vw, 84px);
+    --question-font: clamp(48px, 6.5vw, 84px);
+    --num-font: clamp(28px, 4vw, 42px);
+    --icon-size: clamp(64px, 7.5vw, 88px);
+    --question-box-w: clamp(360px, 40vw, 520px);
+    --image-max-h: 28vh;
+    --gap-ic: 28px;
+    --nav-gap: clamp(12px, 2.5vw, 24px);
+  }
+  *{ box-sizing:border-box; }
+  html,body{ height:100%; }
+  body{
+    font-family:"Yu Kyokasho","YuKyokasho","UD Digi Kyokasho N-R",sans-serif;
+    margin:0; padding:16px; text-align:center; background:#fff; color:#000;
+  }
+  .hidden{ display:none !important; }
+
+  /* ===== トップ ===== */
+  #home{
+    min-height:100svh;
+    display:flex; flex-direction:column; align-items:center; justify-content:flex-start;
+    gap: 20px; position: relative; padding-top: clamp(24px,8vh,64px);
+  }
+  .home-title{ font-size: clamp(32px,5.5vw,48px); margin:0 0 4px; }
+  .home-sub{ font-size: clamp(18px,3.4vw,24px); color:#444; margin:0 0 18px; }
+
+  .btnrow{ display:flex; flex-wrap:wrap; gap: clamp(14px,2vw,20px); justify-content:center; }
+  .btn{
+    font-size: clamp(22px,4.2vw,28px);
+    padding: clamp(14px,2.6vw,20px) clamp(22px,4vw,28px);
+    border-radius: 9999px; border:3px solid #333; background:#fff; cursor:pointer;
+    min-width: clamp(140px,30vw,240px);
+  }
+  .btn:active{ transform: translateY(1px); }
+  .btn-cancel{ border-color:#888; color:#555; }
+
+  /* 4ボタンの“下”に出す選択パネル */
+  .picker{
+    width: min(92vw, 760px);
+    background:#fff; border:3px solid #333; border-radius: 16px; padding: 14px;
+    display: none; z-index: 1; box-shadow: 0 10px 28px rgba(0,0,0,0.12);
+  }
+  .picker-title{ margin:0 0 12px; font-size: clamp(18px,3vw,22px); }
+  .grid{
+    display:grid; gap: clamp(10px,1.4vw,14px);
+    grid-template-columns: repeat(6, minmax(0,1fr));
+  }
+  .grid .btn{ min-width: auto; padding: clamp(10px,1.8vw,14px) 0; }
+  .picker-footer{ margin-top:12px; display:flex; justify-content:flex-end; }
+
+  /* ===== クイズ ===== */
+  #quiz{
+    min-height:100svh;
+    display:none; flex-direction:column; align-items:center; justify-content:center;
+    gap:var(--stack-gap); position:relative;
+  }
+  .title{ position:absolute; top:8px; right:14px; font-size:16px; color:gray; user-select:none; }
+
+  .header-wrap{ display:flex; justify-content:center; width:100%; }
+  .header{
+    display:grid;
+    grid-template-columns: var(--icon-size) var(--gap-ic) var(--question-box-w) var(--gap-ic) var(--icon-size);
+    align-items:center; justify-content:center;
+    border-bottom: 4px solid blue;
+    padding-bottom: 4px;
+    margin-bottom: 60px;
+  }
+
+  .speed-btn{
+    width:var(--icon-size); height:var(--icon-size);
+    border:3px solid #888; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    user-select:none; cursor:pointer; background:#fff; overflow:hidden;
+  }
+  .speed-btn img{ width:100%; height:100%; object-fit:contain; display:block; }
+  .speed-btn:active{ transform:scale(0.98); }
+
+  .question-box{ width: var(--question-box-w); display:flex; align-items:center; justify-content:center; }
+  .question{ font-size:var(--question-font); line-height:1.1; margin:0; user-select:none; }
+
+  .choices{
+    display:grid; grid-template-columns: repeat(4, var(--choice-size));
+    justify-content:center; gap: clamp(16px, 3vw, 30px);
+    margin:0 auto; position:relative;
+    padding-left:  max(0px, var(--nav-gap));
+    padding-right: max(0px, var(--nav-gap));
+  }
+  .choice{
+    width:var(--choice-size); height:var(--choice-size);
+    border:3px solid gray; background:#fff;
+    display:flex; align-items:center; justify-content:center;
+    position:relative; user-select:none;
+  }
+  .say{ font-size:var(--choice-font); line-height:1; color:#000; }
+  .number{
+    position:absolute; top: calc(var(--num-font) * -1.2);
+    left:50%; transform:translateX(-50%);
+    font-size:var(--num-font); cursor:pointer; color:#000;
+  }
+  .circle-mark{
+    position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+    font-size: calc(var(--choice-size) * 1.35);
+    font-weight:bold; color:red;
+    font-family:"Arial Black","Yu Gothic UI",sans-serif; pointer-events:none;
+  }
+  .cross-mark{
+    position:absolute; top: calc(var(--num-font) * (-1.6 - 0.15));
+    left:50%; transform:translateX(-50%);
+    font-size: var(--num-font); font-weight:bold; color:blue;
+    font-family:"Arial Black","Yu Gothic UI",sans-serif; pointer-events:none;
+  }
+
+  /* ヒント画像（未用意でも高さを確保） */
+  img.hint{
+    max-width:90vw; max-height:var(--image-max-h);
+    width:auto; height:auto; margin:8px auto 0; display:block; object-fit:contain;
+    opacity:1 !important; min-height: var(--image-max-h); background: #eee;
+    user-select: none;           /* 画像上のテキスト選択を無効化 */
+    caret-color: transparent;    /* 画像上のテキストカーソルを不可視に */
+}
+
+  /* ▶つぎへ／◀ もどる … 正解時だけ表示。選択肢 1 マスぶん外側へ */
+  .nav-btn{
+    position:absolute; top: 50%; transform: translateY(-50%);
+    padding: 12px 18px; border:3px solid #333; background:#fff; border-radius:9999px; cursor:pointer;
+    font-size: clamp(18px,2.8vw,22px); white-space:nowrap; display:none;
+  }
+  #btn-next{ left:  calc(100% + var(--choice-size)*0.2 + var(--nav-gap)); }
+  #btn-quit{ right: calc(100% + var(--choice-size)*0.2 + var(--nav-gap)); }
+
+  @media (max-width: 900px){
+    #btn-next{ left:  calc(100% + var(--nav-gap)); }
+    #btn-quit{ right: calc(100% + var(--nav-gap)); }
+  }
+/* クイズ画面ではテキストカーソルを常に非表示 */
+#quiz, #quiz * { caret-color: transparent; }
+
+  /* 結果 */
+  #result{ position:fixed; inset:0; display:none; align-items:center; justify-content:center; background: rgba(0,0,0,0.35); }
+  .result-card{ background:#fff; padding:24px; border-radius:16px; min-width:min(92vw,560px); text-align:center; border:3px solid #333; }
+  .res-score{ margin:8px 0 16px; font-size: clamp(40px,6vw,56px); color:#c40000; font-weight:bold; }
+  .res-msg{ margin:0 0 12px; font-size: clamp(20px,3vw,24px); }
+  .res-row{ display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
+
+  #confetti{ position:fixed; inset:0; pointer-events:none; }
+</style>
+</head>
+<body>
+
+<!-- ===== トップ（4コース） ===== -->
+<section id="home">
+  <h1 class="home-title">ひらがな くいず</h1>
+  <p class="home-sub">やりたい こーす を えらんでね</p>
+
+  <div class="btnrow">
+    <button class="btn" data-course="rand5">5もん</button>
+    <button class="btn" data-course="rand10">10もん</button>
+    <button class="btn" id="btn-open-tate">たて</button>
+    <button class="btn" id="btn-open-yoko">よこ</button>
+  </div>
+
+  <!-- 4ボタンの“下”に出す -->
+  <div id="picker-tate" class="picker">
+    <p class="picker-title">たて を えらんでね（『や＋わ』 は いっしょ）</p>
+    <div class="grid" id="grid-tate"></div>
+    <div class="picker-footer"><button class="btn btn-cancel" id="close-tate">とじる</button></div>
+  </div>
+
+  <div id="picker-yoko" class="picker">
+    <p class="picker-title">よこ を えらんでね</p>
+    <div class="grid" id="grid-yoko"></div>
+    <div class="picker-footer"><button class="btn btn-cancel" id="close-yoko">とじる</button></div>
+  </div>
+</section>
+
+<!-- ===== クイズ ===== -->
+<section id="quiz">
+  <div class="title">ひらがな くいず</div>
+
+  <div class="header-wrap">
+    <div class="header" aria-label="おんせい と もんだい">
+      <div class="speed-btn" id="btn-fast"><img id="ic-usagi" src="./images/usagi.png" alt="うさぎ"></div>
+      <div aria-hidden="true"></div>
+      <div class="question-box"><p class="question" id="qText">○さがお</p></div>
+      <div aria-hidden="true"></div>
+      <div class="speed-btn" id="btn-slow"><img id="ic-kame" src="./images/kame.png" alt="かめ"></div>
+    </div>
+  </div>
+
+  <div class="choices" id="choices">
+    <div class="choice" data-letter="あ"><div class="number" data-answer>①</div><div class="say">あ</div></div>
+    <div class="choice" data-letter="お"><div class="number" data-answer>②</div><div class="say">お</div></div>
+    <div class="choice" data-letter="の"><div class="number" data-answer>③</div><div class="say">の</div></div>
+    <div class="choice" data-letter="め"><div class="number" data-answer>④</div><div class="say">め</div></div>
+
+    <!-- 正解時だけ表示 -->
+    <button id="btn-next" class="nav-btn">つぎへ ▶</button>
+    <button id="btn-quit" class="nav-btn">◀ もどる</button>
+  </div>
+
+  <img src="./images/asagao.jpg" alt="あさがお" class="hint" id="hintImg" />
+</section>
+
+<!-- 結果 -->
+<section id="result">
+  <div class="result-card">
+    <p class="res-msg" id="resMsg">がんばって</p>
+    <p class="res-score" id="resScore">0 / 5</p>
+    <div class="res-row">
+      <button class="btn" id="btn-retry-wrong">もういちど（まちがえた もんだい）</button>
+      <button class="btn" id="btn-back-home">もどる</button>
+    </div>
+  </div>
+</section>
+
+<canvas id="confetti"></canvas>
+
+<script>
+/* ===================== データ ===================== */
+/* かな → 複数ワード。ア行は複数サンプル、他は1件のままでもOK */
+const DB = {
+  hira: {
+  "あ": {
+  "words": [ { "word": "あり", "romaji": "ari" },
+    { "word": "あさがお", "romaji": "asagao" },
+    { "word": "あじさい", "romaji": "azisai" },
+    { "word": "あめ", "romaji": "ame" } ]
+  },
+  "い": {
+  "words": [ { "word": "いぬ", "romaji": "inu" },
+    { "word": "いか", "romaji": "ika" },
+    { "word": "いちご", "romaji": "itigo" },
+    { "word": "いす", "romaji": "isu" } ]
+  },
+  "う": {
+  "words": [ { "word": "うま", "romaji": "uma" },
+    { "word": "うさぎ", "romaji": "usagi" },
+    { "word": "うめ", "romaji": "ume" },
+    { "word": "うちわ", "romaji": "utiwa" } ]
+  },
+  "え": {
+  "words": [ { "word": "えび", "romaji": "ebi" },
+    { "word": "えだまめ", "romaji": "edamame" },
+    { "word": "えのぐ", "romaji": "enogu" },
+    { "word": "えんぴつ", "romaji": "enpitu" } ]
+  },
+  "お": {
+  "words": [ { "word": "おおかみ", "romaji": "ookami" },
+    { "word": "おちば", "romaji": "otiba" },
+    { "word": "おにぎり", "romaji": "onigiri" },
+    { "word": "おりがみ", "romaji": "origami" } ]
+  },
+  "か": {
+  "words": [ { "word": "かぶとむし", "romaji": "kabutomusi" },
+    { "word": "かたつむり", "romaji": "katatumuri" },
+    { "word": "かぼちゃ", "romaji": "kabotya" },
+    { "word": "かさ", "romaji": "kasa" } ]
+  },
+  "き": {
+  "words": [ { "word": "きんぎょ", "romaji": "kingyo" },
+    { "word": "きりん", "romaji": "kirin" },
+    { "word": "きのこ", "romaji": "kinoko" },
+    { "word": "きゅうり", "romaji": "kyuuri" } ]
+  },
+  "く": {
+  "words": [ { "word": "くじら", "romaji": "kuzira" },
+    { "word": "くわがた", "romaji": "kuwagata" },
+    { "word": "くり", "romaji": "kuri" },
+    { "word": "くるま", "romaji": "kuruma" } ]
+  },
+  "け": {
+  "words": [ { "word": "けむし", "romaji": "kemusi" },
+    { "word": "けむり", "romaji": "kemuri" },
+    { "word": "けしごむ", "romaji": "kesigomu" },
+    { "word": "けんだま", "romaji": "kendama" } ]
+  },
+  "こ": {
+  "words": [ { "word": "こいのぼり", "romaji": "koinobori" },
+    { "word": "こけ", "romaji": "koke" },
+    { "word": "こま", "romaji": "koma" },
+    { "word": "こおり", "romaji": "koori" } ]
+  },
+  "さ": {
+  "words": [ { "word": "さくら", "romaji": "sakura" },
+    { "word": "さいころ", "romaji": "saikoro" },
+    { "word": "さつまいも", "romaji": "satumaimo" },
+    { "word": "さる", "romaji": "saru" } ]
+  },
+  "し": {
+  "words": [ { "word": "しいたけ", "romaji": "siitake" },
+    { "word": "しまうま", "romaji": "simauma" },
+    { "word": "しんかんせん", "romaji": "sinkansen" },
+    { "word": "しんごう", "romaji": "singou" } ]
+  },
+  "す": {
+  "words": [ { "word": "すいか", "romaji": "suika" },
+    { "word": "すずめ", "romaji": "suzume" },
+    { "word": "すいとう", "romaji": "suitou" },
+    { "word": "すし", "romaji": "susi" } ]
+  },
+  "せ": {
+  "words": [ { "word": "せみ", "romaji": "semi" },
+    { "word": "せり", "romaji": "seri" },
+    { "word": "せんべい", "romaji": "senbei" },
+    { "word": "せんぷうき", "romaji": "senpuuki" } ]
+  },
+  "そ": {
+  "words": [ { "word": "そうじき", "romaji": "soujiki" },
+    { "word": "そり", "romaji": "sori" },
+    { "word": "そらまめ", "romaji": "soramame" },
+    { "word": "そば", "romaji": "soba" } ]
+  },
+  "た": {
+  "words": [ { "word": "たぬき", "romaji": "tanuki" },
+    { "word": "たまねぎ", "romaji": "tamanegi" },
+    { "word": "たんぽぽ", "romaji": "tanpopo" },
+    { "word": "たまご", "romaji": "tamago" } ]
+  },
+  "ち": {
+  "words": [ { "word": "ちょう", "romaji": "tyou" },
+    { "word": "ちりとり", "romaji": "tiritori" },
+    { "word": "ちょうちん", "romaji": "tyoutin" },
+    { "word": "ちゅうしゃき", "romaji": "tyuusyaki" } ]
+  },
+  "つ": {
+  "words": [ { "word": "つばめ", "romaji": "tubame" },
+    { "word": "つる", "romaji": "turu" },
+    { "word": "つくし", "romaji": "tukusi" },
+    { "word": "つくえ", "romaji": "tukue" } ]
+  },
+  "て": {
+  "words": [ { "word": "てんとうむし", "romaji": "tentoumusi" },
+    { "word": "てぶくろ", "romaji": "tebukuro" },
+    { "word": "てがみ", "romaji": "tegami" },
+    { "word": "てるてるぼうず", "romaji": "teruterubouzu" } ]
+  },
+  "と": {
+  "words": [ { "word": "とんぼ", "romaji": "tonbo" },
+    { "word": "とうもろこし", "romaji": "toumorokosi" },
+    { "word": "とまと", "romaji": "tomato" },
+    { "word": "とけい", "romaji": "tokei" } ]
+  },
+  "な": {
+  "words": [ { "word": "なめくじ", "romaji": "namekuzi" },
+    { "word": "なす", "romaji": "nasu" },
+    { "word": "なし", "romaji": "nasi" },
+    { "word": "なべ", "romaji": "nabe" } ]
+  },
+  "に": {
+  "words": [ { "word": "にわとり", "romaji": "niwatori" },
+    { "word": "にんじん", "romaji": "ninzin" },
+    { "word": "にく", "romaji": "niku" },
+    { "word": "にんぎょう", "romaji": "ningyou" } ]
+  },
+  "ぬ": {
+  "words": [ { "word": "ぬいぐるみ", "romaji": "nuigurumi" },
+    { "word": "ぬの", "romaji": "nuno" },
+    { "word": "ぬりえ", "romaji": "nurie" } ]
+  },
+  "ね": {
+  "words": [ { "word": "ねこ", "romaji": "neko" },
+    { "word": "ねずみ", "romaji": "nezumi" },
+    { "word": "ねぎ", "romaji": "negi" },
+    { "word": "ねじ", "romaji": "nezi" } ]
+  },
+  "の": {
+  "words": [ { "word": "のり", "romaji": "nori" },
+    { "word": "のこぎり", "romaji": "nokogiri" },
+    { "word": "のり", "romaji": "nori" },
+    { "word": "のぼり", "romaji": "nobori" } ]
+  },
+  "は": {
+  "words": [ { "word": "はくちょう", "romaji": "hakutyou" },
+    { "word": "はち", "romaji": "hati" },
+    { "word": "はす", "romaji": "hasu" },
+    { "word": "はさみ", "romaji": "hasami" } ]
+  },
+  "ひ": {
+  "words": [ { "word": "ひつじ", "romaji": "hituzi" },
+    { "word": "ひまわり", "romaji": "himawari" },
+    { "word": "ひこうき", "romaji": "hikouki" },
+    { "word": "ひしゃく", "romaji": "hisyaku" } ]
+  },
+  "ふ": {
+  "words": [ { "word": "ふくろう", "romaji": "hukurou" },
+    { "word": "ふきのとう", "romaji": "hukinotou" },
+    { "word": "ふとん", "romaji": "huton" },
+    { "word": "ふね", "romaji": "hune" } ]
+  },
+  "へ": {
+  "words": [ { "word": "へび", "romaji": "hebi" },
+    { "word": "へちま", "romaji": "hetima" },
+    { "word": "へら", "romaji": "hera" },
+    { "word": "へそ", "romaji": "heso" } ]
+  },
+  "ほ": {
+  "words": [ { "word": "ほたる", "romaji": "hotaru" },
+    { "word": "ほたて", "romaji": "hotate" },
+    { "word": "ほうれんそう", "romaji": "hourensou" },
+    { "word": "ほうき", "romaji": "houki" } ]
+  },
+  "ま": {
+  "words": [ { "word": "まぐろ", "romaji": "maguro" },
+    { "word": "まんとひひ", "romaji": "mantohihi" },
+    { "word": "まめ", "romaji": "mame" },
+    { "word": "まくら", "romaji": "makura" } ]
+  },
+  "み": {
+  "words": [ { "word": "みみず", "romaji": "mimizu" },
+    { "word": "みつばち", "romaji": "mitubati" },
+    { "word": "みかん", "romaji": "mikan" },
+    { "word": "みみかき", "romaji": "mimikaki" } ]
+  },
+  "む": {
+  "words": [ { "word": "むかで", "romaji": "mukade" },
+    { "word": "むしめがね", "romaji": "musimegane" },
+    { "word": "むぎちゃ", "romaji": "mugitya" },
+    { "word": "むね", "romaji": "mune" } ]
+  },
+  "め": {
+  "words": [ { "word": "めだか", "romaji": "medaka" },
+    { "word": "めがね", "romaji": "megane" },
+    { "word": "めだまやき", "romaji": "medamayaki" },
+    { "word": "めざましどけい", "romaji": "mezamasidokei" } ]
+  },
+  "も": {
+  "words": [ { "word": "もんしろちょう", "romaji": "monsirotyou" },
+    { "word": "もも", "romaji": "momo" },
+    { "word": "もやし", "romaji": "moyasi" },
+    { "word": "ものさし", "romaji": "monosasi" } ]
+  },
+  "や": {
+  "words": [ { "word": "やぎ", "romaji": "yagi" },
+    { "word": "やどかり", "romaji": "yadokari" },
+    { "word": "やつで", "romaji": "yatude" },
+    { "word": "やかん", "romaji": "yakan" } ]
+  },
+  "ゆ": {
+  "words": [ { "word": "ゆり", "romaji": "yuri" },
+    { "word": "ゆうがお", "romaji": "yuugao" },
+    { "word": "ゆき", "romaji": "yuki" },
+    { "word": "ゆびわ", "romaji": "yubiwa" } ]
+  },
+  "よ": {
+  "words": [ { "word": "よこえび", "romaji": "yokoebi" },
+    { "word": "よもぎ", "romaji": "yomogi" },
+    { "word": "よし", "romaji": "yosi" },
+    { "word": "よるがお", "romaji": "yorugao" } ]
+  },
+  "ら": {
+  "words": [ { "word": "らくだ", "romaji": "rakuda" },
+    { "word": "らいおん", "romaji": "raion" },
+    { "word": "らっきょう", "romaji": "rakkyou" },
+    { "word": "らくがき", "romaji": "rakugaki" } ]
+  },
+  "り": {
+  "words": [ { "word": "りす", "romaji": "risu" },
+    { "word": "りゅう", "romaji": "ryuu" },
+    { "word": "りんご", "romaji": "ringo" },
+    { "word": "りんどう", "romaji": "rindou" } ]
+  },
+  "る": {
+  "words": [ { "word": "るりびたき", "romaji": "ruribitaki" },
+    { "word": "るりはこべ", "romaji": "rurihakobe" },
+    { "word": "るすばん", "romaji": "rusuban" },
+    { "word": "るすでん", "romaji": "rusuden" } ]
+  },
+  "れ": {
+  "words": [ { "word": "れんこん", "romaji": "renkon" },
+    { "word": "れいぞうこ", "romaji": "reizouko" },
+    { "word": "れんげ", "romaji": "renge" },
+    { "word": "れんが", "romaji": "renga" } ]
+  },
+  "ろ": {
+  "words": [ { "word": "ろば", "romaji": "roba" },
+    { "word": "ろうそく", "romaji": "rousoku" },
+    { "word": "ろうか", "romaji": "rouka" },
+    { "word": "ろてんぶろ", "romaji": "rotenburo" } ]
+  },
+  "わ": {
+  "words": [ { "word": "わに", "romaji": "wani" },
+    { "word": "わさび", "romaji": "wasabi" },
+    { "word": "わた", "romaji": "wata" },
+    { "word": "わごむ", "romaji": "wagomu" } ]
+  }
+}
+};
+
+const CONFUSERS = {
+ "あ":["お","め","ぬ"], "い":["り","こ","し"], "う":["る","ら","つ"], "え":["ろ","そ","ぬ"], "お":["あ","め","を"],
+ "か":["が","さ","ち"], "き":["さ","に","ち"], "く":["ぐ","て","へ"], "け":["さ","は","ほ"], "こ":["さ","よ","え"],
+ "さ":["き","ち","は"], "し":["つ","い","こ"], "す":["ぬ","む","え"], "せ":["そ","さ","え"], "そ":["え","す","る"],
+ "た":["な","ち","さ"], "ち":["さ","き","つ"], "つ":["し","す","く"], "て":["く","へ","さ"], "と":["し","り","そ"],
+ "な":["め","ぬ","た"], "に":["き","こ","け"], "ぬ":["め","ね","る"], "ね":["め","ぬ","れ"], "の":["め","ぬ","ね"],
+ "は":["ほ","け","さ"], "ひ":["ぴ","に","り"], "ふ":["す","ぬ","む"], "へ":["て","く","ぬ"],
+ "ほ":["は","ま","も"], "ま":["ほ","は","も"], "み":["に","す","さ"], "む":["ぬ","め","す"],
+ "め":["ぬ","ね","ま"], "も":["ほ","ま","は"], "や":["わ","ゆ","よ"], "ゆ":["や","よ","わ"], "よ":["ゆ","や","を"],
+ "ら":["う","ろ","る"], "り":["い","れ","こ"], "る":["ろ","ら","う"], "れ":["ね","り","ら"], "ろ":["る","ら","え"],
+ "わ":["や","ゆ","を"], "を":["お","よ","わ"], "ん":["る","れ","い"]
+};
+
+/* 列（よこ）用の行テーブル：欠ける位置は空文字 */
+const ROW_TABLE = {
+  "あ":["あ","い","う","え","お"],
+  "か":["か","き","く","け","こ"],
+  "さ":["さ","し","す","せ","そ"],
+  "た":["た","ち","つ","て","と"],
+  "な":["な","に","ぬ","ね","の"],
+  "は":["は","ひ","ふ","へ","ほ"],
+  "ま":["ま","み","む","め","も"],
+  "や":["や","","ゆ","","よ"],
+  "ら":["ら","り","る","れ","ろ"],
+  "わ":["わ","","","","を"]
+};
+
+const ROW_KEYS = ["あ","か","さ","た","な","は","ま","や＋わ","ら"];
+const ROW_KEY_INTERNAL = ["あ","か","さ","た","な","は","ま","やわ","ら"];
+const DAN_KEYS = ["あ","い","う","え","お"];
+
+let currentCourse=null, qIndex=0, correctCount=0, wrongBank=[];
+let firstClickMade=false, firstClickCorrect=false, thisQuestionHadWrong=false;
+
+const home=document.getElementById('home'), quiz=document.getElementById('quiz'), resultOverlay=document.getElementById('result');
+const pickerTate=document.getElementById('picker-tate'), pickerYoko=document.getElementById('picker-yoko');
+const qText=document.getElementById('qText'), hintImg=document.getElementById('hintImg');
+const btnFast=document.getElementById('btn-fast'), btnSlow=document.getElementById('btn-slow');
+const btnNext=document.getElementById('btn-next'), btnQuit=document.getElementById('btn-quit');
+
+/* アイコン画像のフォールバック（用意済みなので実質発動しません） */
+document.getElementById('ic-usagi').onerror = e => { e.target.remove(); btnFast.textContent = "🐇"; };
+document.getElementById('ic-kame').onerror  = e => { e.target.remove(); btnSlow.textContent = "🐢"; };
+
+hintImg.onload=()=>{ hintImg.style.opacity='1'; hintImg.style.background='#fff'; };
+hintImg.onerror=()=>{  /* 画像なしの簡易プレースホルダ */
+  const ph=`<svg xmlns="http://www.w3.org/2000/svg" width="800" height="480">
+    <rect width="100%" height="100%" fill="#eeeeee"/>
+    <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle"
+          font-family="sans-serif" font-size="32" fill="#999999">No Image</text>
+  </svg>`;
+  hintImg.src="data:image/svg+xml;utf8,"+encodeURIComponent(ph);
+  hintImg.style.opacity='1'; hintImg.style.background='#eee';
+};
+
+function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function sample(arr,n){ const b=[...arr]; shuffle(b); return b.slice(0,n); }
+function maskIndexFor(kana){ return (kana==="を"||kana==="ん") ? 2 : 0; }
+
+/* ====== 単語選択：袋（bag）方式 ====== */
+/* かなごとに「未使用インデックスの袋」を持ち、そこから無作為抽出して消費。
+   袋が空になったら全補充（= 一巡）。コースをまたいでも状態は保持される。 */
+const PICK_BAG = {}; // 例: { "hira|あ": [2,0,1] }
+function keyFor(script, kana){ return `${script}|${kana}`; }
+function refillBag(script, kana, n){
+  const k = keyFor(script, kana);
+  PICK_BAG[k] = Array.from({length:n}, (_,i)=>i); // [0,1,2,...,n-1]
+}
+function pickWordInfo(script, kana){
+  const entry = DB[script] && DB[script][kana];
+  if(!entry || !entry.words || entry.words.length===0) return null;
+  const n = entry.words.length;
+  const k = keyFor(script, kana);
+  if(!Array.isArray(PICK_BAG[k]) || PICK_BAG[k].length===0){
+    refillBag(script, kana, n);
+  }
+  const bag = PICK_BAG[k];
+  const idxInBag = Math.floor(Math.random() * bag.length);
+  const pickIndex = bag.splice(idxInBag, 1)[0]; // 取り出して袋から削除
+  return entry.words[pickIndex];
+}
+// 追加ここから: 同かな同単語の直前重複を避けるピッカー
+function preventSameKanaSameWord(prev, next) {
+  return !(prev && next && prev.kana === next.kana && prev.word === next.word);
+}
+
+/* 直前が同かな同単語になるのを避けて取り出す版
+   - avoidWord が指定され、候補が複数ある場合は同じ単語を避けて選ぶ
+   - 袋（PICK_BAG）の補充も考慮する */
+function pickWordInfoAvoid(script, kana, avoidWord) {
+  const entry = DB[script] && DB[script][kana];
+  if (!entry || !entry.words || entry.words.length === 0) return null;
+  const n = entry.words.length;
+  const key = keyFor(script, kana);
+
+  // 袋が無い/空 → 補充
+  if (!Array.isArray(PICK_BAG[key]) || PICK_BAG[key].length === 0) {
+    refillBag(script, kana, n);
+  }
+
+  // 候補が1個しかない場合はそのまま（教材上ほぼ無いが安全策）
+  if (n === 1) {
+    const bag = PICK_BAG[key];
+    const idxInBag = Math.floor(Math.random() * bag.length);
+    const pickIndex = bag.splice(idxInBag, 1)[0];
+    return entry.words[pickIndex];
+  }
+
+  // 袋が1枚で、その1枚が avoidWord ならいったん全補充し直す
+  if (avoidWord && PICK_BAG[key].length === 1) {
+    const lastIdx = PICK_BAG[key][0];
+    if (entry.words[lastIdx] && entry.words[lastIdx].word === avoidWord) {
+      refillBag(script, kana, n);
+    }
+  }
+
+  // 避けたい語をできるだけ避けて抜く
+  let tries = 0;
+  while (tries < 6) {
+    const bag = PICK_BAG[key];
+    if (!bag || bag.length === 0) refillBag(script, kana, n);
+    const idxInBag = Math.floor(Math.random() * PICK_BAG[key].length);
+    const pickIndex = PICK_BAG[key].splice(idxInBag, 1)[0];
+    const cand = entry.words[pickIndex];
+
+    if (!avoidWord || cand.word !== avoidWord) {
+      return cand;
+    }
+    // 衝突したので一時的に別ポケットへ避難して再トライ
+    (PICK_BAG[key + "|tmp"] ||= []).push(pickIndex);
+    tries++;
+  }
+  // どうしても避けられない場合（袋が全部 avoidWord など）は tmp を戻して通常取得
+  if (PICK_BAG[key + "|tmp"]) {
+    PICK_BAG[key].push(...PICK_BAG[key + "|tmp"]);
+    delete PICK_BAG[key + "|tmp"];
+  }
+  return pickWordInfo(script, kana);
+}
+// 追加ここまで
+
+const audioBase="./audio";
+function wordAudioPaths(romaji){ return { fast:`${audioBase}/words/${romaji}_normal.mp3`, slow:`${audioBase}/words/${romaji}_05.mp3` }; }
+function letterAudioPath(kana){
+  const m={"あ":"a","い":"i","う":"u","え":"e","お":"o","か":"ka","き":"ki","く":"ku","け":"ke","こ":"ko","さ":"sa","し":"shi","す":"su","せ":"se","そ":"so",
+           "た":"ta","ち":"chi","つ":"tsu","て":"te","と":"to","な":"na","に":"ni","ぬ":"nu","ね":"ne","の":"no","は":"ha","ひ":"hi","ふ":"fu","へ":"he","ほ":"ho",
+           "ま":"ma","み":"mi","む":"mu","め":"me","も":"mo","や":"ya","ゆ":"yu","よ":"yo","ら":"ra","り":"ri","る":"ru","れ":"re","ろ":"ro","わ":"wa","を":"wo","ん":"n"};
+  return `${audioBase}/letters/${m[kana]||"a"}.mp3`;
+}
+function imagePath(romaji){ return `./images/${romaji}.jpg`; }
+
+function toHome(){
+  home.style.display="flex";
+  quiz.style.display="none";
+  resultOverlay.style.display="none";
+  pickerTate.style.display='none';
+  pickerYoko.style.display='none';
+  hideNav();
+  wrongBank=[]; currentCourse=null;
+}
+function toQuiz(){ home.style.display="none"; quiz.style.display="flex"; resultOverlay.style.display="none"; }
+function hideNav(){ btnNext.style.display="none"; btnQuit.style.display="none"; }
+
+/* ===== プール作成 ===== */
+function buildPoolByRandom(count){ return sample(Object.keys(DB.hira),count); }
+
+function buildPoolByRow(rowKey){
+  const rows = {
+    "あ":"あいうえお",
+    "か":"かきくけこ",
+    "さ":"さしすせそ",
+    "た":"たちつてと",
+    "な":"なにぬねの",
+    "は":"はひふへほ",
+    "ま":"まみむめも",
+    "やわ":"やゆよわを",
+    "ら":"らりるれろ"
+  };
+  const chars = [...(rows[rowKey] || "")];
+  const selected = [];
+  chars.forEach(kana=>{
+    const entry = DB.hira[kana];
+    if(entry && entry.words && entry.words.length > 0){
+      // 各かなは1問出す（どの単語になるかは setQuestion 内で pickWordInfo が決定）
+      selected.push(kana);
+    }
+  });
+  return shuffle(selected); // 出題順は毎回ランダム
+}
+
+// 追加ここから: 同値（同じかな）が隣接しないよう適度に並べ替える
+function arrangeNoAdjacentSame(arr) {
+  const a = [...arr];
+  for (let i = 1; i < a.length; i++) {
+    if (a[i] === a[i - 1]) {
+      // i から先で違う要素を探してスワップ
+      let j = i + 1;
+      while (j < a.length && a[j] === a[i]) j++;
+      if (j < a.length) {
+        [a[i], a[j]] = [a[j], a[i]];
+      } else {
+        // 見つからなければ前方と入れ替えを試みる
+        let k = i - 2;
+        while (k >= 0 && a[k] === a[i]) k--;
+        if (k >= 0) [a[i], a[k]] = [a[k], a[i]];
+      }
+    }
+  }
+  return a;
+}
+// 追加ここまで
+
+function buildPoolByDan(danKey){
+  const idx="あいうえお".indexOf(danKey);
+  const arr=[];
+  for(const row of Object.keys(ROW_TABLE)){
+    const ch = ROW_TABLE[row][idx] || "";
+    if(ch) arr.push(ch);
+  }
+  shuffle(arr);
+  let seq=[...arr];
+  if(seq.length<10){
+    if(seq[0]) seq.push(seq[0]);
+    if(seq.length<10 && seq[1]) seq.push(seq[1]);
+  }
+  while(seq.length<10) seq.push(seq[Math.floor(Math.random()*arr.length)]);
+return arrangeNoAdjacentSame(seq.slice(0,10));
+}
+
+/* ===== クイズ描画 ===== */
+let wordFast=null, wordSlow=null;
+// 追加ここから: 直前出題（かな・単語）を保持
+let lastPair = null;
+// 追加ここまで
+
+function setQuestion(kana){
+  // 追加ここから: フォーカスを外してキャレット点滅を抑止
+  try{ if(document.activeElement && document.activeElement.blur) document.activeElement.blur(); }catch{}
+  // 追加ここまで
+// 直前が同じかな同単語にならないように避けて選ぶ
+const avoid = (lastPair && lastPair.kana === kana) ? lastPair.word : null;
+const picked = pickWordInfoAvoid("hira", kana, avoid) || { word:"", romaji:"" };
+  const word = picked.word;
+  const romaji = picked.romaji;
+
+  const mi=maskIndexFor(kana);
+  const chars=[...word];
+  if(chars[mi]) chars[mi]="○";
+  qText.textContent=chars.join("");
+
+  hintImg.style.opacity='1'; hintImg.style.background='#fff';
+  hintImg.src = imagePath(romaji);
+
+  const p=wordAudioPaths(romaji);
+  wordFast=new Audio(p.fast);
+  wordSlow=new Audio(p.slow);
+
+  const conf=CONFUSERS[kana]||[];
+  const opts=shuffle([kana, ...sample(conf,3)]).slice(0,4);
+  const nums=["①","②","③","④"]; const letters=document.querySelectorAll(".choice");
+
+  firstClickMade=false; firstClickCorrect=false; thisQuestionHadWrong=false;
+
+  letters.forEach((box,i)=>{
+    const say=box.querySelector(".say"); const num=box.querySelector(".number");
+    say.textContent=opts[i]; box.dataset.letter=opts[i];
+    box.querySelectorAll(".circle-mark,.cross-mark").forEach(m=>m.remove());
+    if(!num || !num.classList.contains("number")){
+      const n=document.createElement("div"); n.className="number"; n.setAttribute("data-answer",""); n.textContent=nums[i]; box.prepend(n);
+    }else{ num.textContent=nums[i]; }
+  });
+
+  /* 文字タップで単音おんせい */
+  document.querySelectorAll(".say").forEach(el=>{
+    el.onclick=()=>{ const ap=letterAudioPath(el.textContent.trim()); try{const a=new Audio(ap); a.currentTime=0; a.play().catch(()=>{});}catch{} };
+  });
+
+  /* 番号タップで判定（最初のクリックのみ得点対象） */
+  document.querySelectorAll("[data-answer]").forEach(numEl=>{
+    numEl.onclick=()=>{
+      const choice=numEl.parentElement; const letter=choice.dataset.letter;
+      if(choice.querySelector(".circle-mark")) return;
+
+      if(letter===kana){
+        choice.appendChild(Object.assign(document.createElement("div"),{className:"circle-mark",textContent:"◯"}));
+        if(!firstClickMade){ firstClickCorrect=true; correctCount++; }
+        firstClickMade=true;
+        btnNext.style.display="inline-block";
+        btnQuit.style.display="inline-block";
+      }else{
+        if(!numEl.classList.contains("answered")){
+          const cross=document.createElement("div"); cross.className="cross-mark"; cross.textContent="×";
+          numEl.replaceWith(cross); numEl.classList.add("answered");
+        }
+        if(!firstClickMade){ firstClickCorrect=false; }
+        firstClickMade=true;
+        thisQuestionHadWrong=true;
+      }
+    };
+  });
+// 追加ここから: 今回出題を記録（次回の直前比較に使う）
+lastPair = { kana, word };
+// 追加ここまで
+
+  hideNav();
+}
+
+/* ===== コース開始 ===== */
+function startGame(options){
+  let pool=[];
+  if(options.mode==='rand5'){ pool=buildPoolByRandom(5); }
+  else if(options.mode==='rand10'){ pool=buildPoolByRandom(10); }
+  else if(options.mode==='tate'){ pool=buildPoolByRow(options.row || ROW_KEY_INTERNAL[Math.floor(Math.random()*ROW_KEY_INTERNAL.length)]); }
+  else if(options.mode==='yoko'){ pool=buildPoolByDan(options.dan || DAN_KEYS[Math.floor(Math.random()*DAN_KEYS.length)]); }
+  else { pool=buildPoolByRandom(5); }
+
+  pool = shuffle(pool.slice());
+  currentCourse={mode:options.mode, pick:pool};
+  qIndex=0; correctCount=0; wrongBank=[];
+  toQuiz(); setQuestion(currentCourse.pick[qIndex]);
+
+  const stopBoth=()=>{ try{wordFast.pause();}catch{} try{wordSlow.pause();}catch{} };
+  btnFast.onclick=()=>{ stopBoth(); if(wordFast){ wordFast.currentTime=0; wordFast.play().catch(()=>{}); } };
+  btnSlow.onclick=()=>{ stopBoth(); if(wordSlow){ wordSlow.currentTime=0; wordSlow.play().catch(()=>{}); } };
+
+  btnNext.onclick=()=>{
+    if(thisQuestionHadWrong) wrongBank.push(currentCourse.pick[qIndex]);
+    qIndex++;
+    if(qIndex>=currentCourse.pick.length){ showResult(); }
+    else{ setQuestion(currentCourse.pick[qIndex]); }
+  };
+
+  /* 途中やめ → 採点なしでトップへ直帰＆パネルも閉じる */
+  btnQuit.onclick=()=>{ toHome(); };
+}
+
+/* ===== 結果 ===== */
+function showResult(){
+  quiz.style.display="none";
+  resultOverlay.style.display="flex";
+  const total=currentCourse.pick.length, ratio=correctCount/total;
+  const msgEl=document.getElementById('resMsg'), scoreEl=document.getElementById('resScore');
+  scoreEl.textContent=`${correctCount} / ${total}`;
+  if(correctCount===total){ msgEl.textContent="すばらしい！"; msgEl.style.color="#c40000"; confettiBurst(); }
+  else if(ratio>=0.8){ msgEl.textContent="もうすこし"; msgEl.style.color="#0057d9"; }
+  else{ msgEl.textContent="がんばって"; msgEl.style.color="#000"; }
+
+  document.getElementById('btn-retry-wrong').disabled=(wrongBank.length===0);
+  document.getElementById('btn-retry-wrong').onclick=()=>{
+    if(wrongBank.length===0){ toHome(); return; }
+    currentCourse={mode:"retry", pick:shuffle([...wrongBank])}; qIndex=0; correctCount=0; wrongBank=[];
+    resultOverlay.style.display="none"; toQuiz(); setQuestion(currentCourse.pick[qIndex]);
+  };
+  document.getElementById('btn-back-home').onclick=()=>{ toHome(); };
+}
+
+/* かんたん紙吹雪 */
+function confettiBurst(){
+  try{
+    const c=document.getElementById('confetti'), ctx=c.getContext('2d');
+    c.width=innerWidth; c.height=innerHeight;
+    let parts=Array.from({length:120},()=>({x:Math.random()*c.width,y:-20-Math.random()*c.height*0.5,r:2+Math.random()*5,vy:1+Math.random()*3,vx:-1+Math.random()*2,a:0.6+Math.random()*0.4}));
+    const colors=["#ff477e","#ffd166","#06d6a0","#118ab2","#ef476f","#8338ec","#fb5607"]; let t=0,id;
+    (function loop(){ ctx.clearRect(0,0,c.width,c.height); parts.forEach((p,i)=>{ p.x+=p.vx; p.y+=p.vy; p.vy+=0.02; ctx.globalAlpha=p.a; ctx.fillStyle=colors[i%colors.length]; ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fill(); }); if(++t<180) id=requestAnimationFrame(loop); else ctx.clearRect(0,0,c.width,c.height); })();
+    setTimeout(()=>cancelAnimationFrame(id),4000);
+  }catch{}
+}
+
+/* ===== トップの4ボタン ===== */
+document.querySelectorAll('#home .btn[data-course]').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const course=btn.getAttribute('data-course');
+    if(course==='rand5') startGame({mode:'rand5'});
+    else if(course==='rand10') startGame({mode:'rand10'});
+  });
+});
+
+/* たて／よこ：4ボタンの下で開閉 */
+document.getElementById('btn-open-tate').onclick=()=>{ buildTateGrid(); pickerYoko.style.display='none'; pickerTate.style.display='block'; pickerTate.scrollIntoView({behavior:'smooth',block:'nearest'}); };
+document.getElementById('btn-open-yoko').onclick=()=>{ buildYokoGrid(); pickerTate.style.display='none'; pickerYoko.style.display='block'; pickerYoko.scrollIntoView({behavior:'smooth',block:'nearest'}); };
+document.getElementById('close-tate').onclick=()=>{ pickerTate.style.display='none'; };
+document.getElementById('close-yoko').onclick=()=>{ pickerYoko.style.display='none'; };
+
+function buildTateGrid(){
+  const grid=document.getElementById('grid-tate'); grid.innerHTML='';
+  ROW_KEYS.forEach((label,idx)=>{
+    const b=document.createElement('button'); b.className='btn'; b.textContent=label;
+    b.onclick=()=>{ startGame({mode:'tate', row:ROW_KEY_INTERNAL[idx]}); pickerTate.style.display='none'; };
+    grid.appendChild(b);
+  });
+  const secret=document.createElement('button'); secret.className='btn'; secret.textContent='ひみつ';
+  secret.onclick=()=>{ startGame({mode:'tate'}); pickerTate.style.display='none'; };
+  grid.appendChild(secret);
+}
+function buildYokoGrid(){
+  const grid=document.getElementById('grid-yoko'); grid.innerHTML='';
+  DAN_KEYS.forEach(label=>{
+    const b=document.createElement('button'); b.className='btn'; b.textContent=label;
+    b.onclick=()=>{ startGame({mode:'yoko', dan:label}); pickerYoko.style.display='none'; };
+    grid.appendChild(b);
+  });
+  const secret=document.createElement('button'); secret.className='btn'; secret.textContent='ひみつ';
+  secret.onclick=()=>{ startGame({mode:'yoko'}); pickerYoko.style.display='none'; };
+  grid.appendChild(secret);
+}
+
+/* 起動時はトップへ */
+toHome();
+</script>
+</body>
+</html>

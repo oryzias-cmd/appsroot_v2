@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>テープ図で かんがえよう</title>
+
+  <link rel="stylesheet" href="../../../common/shell/header.full.css">
+  <link rel="stylesheet" href="../../../common/shell/setup.full.css">
+  <link rel="stylesheet" href="../../../common/shell/actionpanel.full.css">
+<link rel="stylesheet" href="./tape.css" />
+</head>
+
+<body data-appkey="tape.quiz" data-phase="quiz" data-ox-size="m" data-color-mode="color">
+  <!-- 縦向き禁止オーバーレイ -->
+  <div class="portrait-lock" id="portraitLock" hidden>
+    <div class="portrait-lock__card">
+      <div class="portrait-lock__text">タブレットを よこに してね</div>
+    </div>
+  </div>
+
+  <div class="app-root">
+    <div id="slot-header" data-slot="header" data-title="テープ図で かんがえよう"></div>
+
+    <main class="app-main">
+      <section id="quizPage" class="page page-quiz">
+        <div class="quiz-grid2">
+          <!-- 左：問題文＋テープ -->
+          <section class="left-col">
+<div class="problem-area">
+  <div id="problemText" class="problem-text"></div>
+  <div class="problem-box-row">
+    <button id="problemBoxBtn" class="pnum pbox" type="button" data-value="box" aria-label="しかく">□</button>
+  </div>
+</div>
+            <div class="tape-area">
+              <div id="tapeFigure" class="tape-figure">
+                <button id="slotTop" class="slot slot-top" type="button" aria-label="ぜんたい">
+                  <span id="slotTopText" class="slot-text"></span>
+                </button>
+
+                <button id="slotBtmL" class="slot slot-bottom slot-left" type="button" aria-label="ぶぶん ひだり">
+                  <span id="slotBtmLText" class="slot-text"></span>
+                </button>
+
+                <button id="slotBtmR" class="slot slot-bottom slot-right" type="button" aria-label="ぶぶん みぎ">
+                  <span id="slotBtmRText" class="slot-text"></span>
+                </button>
+
+                <div class="tape-body">
+                  <div id="tapeBar" class="tape-body__inner" aria-label="テープ">
+                    <div class="tape-left" aria-hidden="true"></div>
+                    <div class="tape-right" aria-hidden="true"></div>
+                    <div class="tape-divider" aria-hidden="true"></div>
+                  </div>
+                </div>
+
+                <svg id="tapeSvg" class="tape-svg" viewBox="0 0 1000 420" preserveAspectRatio="none" aria-hidden="true">
+                  <path id="braceTop" class="brace brace-top" d=""></path>
+                  <path id="braceLeft" class="brace brace-left" d=""></path>
+                  <path id="braceRight" class="brace brace-right" d=""></path>
+                </svg>
+
+                <div id="markTop" class="mark mark-top" aria-hidden="true"></div>
+                <div id="markBottom" class="mark mark-bottom" aria-hidden="true"></div>
+              </div>
+
+              <div class="hint-area"></div>
+            </div>
+          </section>
+
+          <!-- 右：式表示＋アクション -->
+          <section class="right-col">
+            <div class="reveal-area">
+              <div class="reveal-title">しき</div>
+
+              <div class="reveal-steps">
+                <div id="step1" class="reveal-step"></div>
+                <div id="step2" class="reveal-step"></div>
+                <div class="reveal-title">こたえ</div>
+                <div id="step3" class="reveal-step"></div>
+              </div>
+            </div>
+
+            <div class="action-area">
+              <div id="actionPanelMount"></div>
+            </div>
+          </section>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- SetupCard mount 先（kuku母型と同じ：存在保証だけする） -->
+  <div id="mainArea"></div>
+
+  <!-- ★重要：kit.full.js が読む前に宣言（⚙＝SetupCard を確実にする） -->
+  <script>
+    window.AppShellOptions = window.AppShellOptions || {};
+    window.AppShellOptions.gearAction = "settings";
+
+    window.AppShellLayout = {
+      header:{ left:['backlink'], center:['title'], right:['settingsGear'] },
+      pbar:{ left:[], center:[], right:[] },
+      main:{ bottomCenter:[] },
+      footer:{ left:[], center:[], right:[] }
+    };
+  </script>
+
+  <script src="../../../common/shell/gear.full.js"></script>
+  <script src="../../../common/shell/kit.full.js"></script>
+  <script src="../../../common/shell/header.full.js"></script>
+  <script src="../../../common/shell/setup.full.js"></script>
+  <script src="../../../common/shell/result.full.js"></script>
+  <script src="../../../common/shell/actionpanel.full.js"></script>
+  
+  <!-- 問題データ（tape.js より先に読む） -->
+  <script src="./tape.data.js"></script>
+
+  <script src="./tape.js"></script>
+</body>
+</html>

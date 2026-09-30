@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- 三頂点を丸めた外形：各角に半径約6%の丸み -->
+  <path d="
+    M 22,78
+    Q 18,78 18,74
+    L 18,46
+    Q 18,42 22,40
+    L 66,18
+    Q 70,16 74,20
+    L 86,34
+    Q 90,38 88,42
+    L 70,74
+    Q 68,78 64,78
+    Z"
+    stroke="#000" stroke-width="3" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+</svg>

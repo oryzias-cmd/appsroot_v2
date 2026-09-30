@@ -1,0 +1,85 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>ながさを あらわす（1m）</title>
+
+  <!-- ▼ レゴ共通CSS -->
+  <link rel="stylesheet" href="../../../common/shell/header.css" />
+  <link rel="stylesheet" href="../../../common/shell/pbar.full.css" />
+  <link rel="stylesheet" href="../../../common/shell/setup.full.css" />
+
+  <!-- ▼ アプリCSS -->
+  <link rel="stylesheet" href="./length_1m.css" />
+</head>
+
+<body data-appkey="length.1m.quiz">
+  <div id="slot-header" data-slot="header"></div>
+  <div id="slot-pbar" data-slot="pbar"></div>
+  <main id="mainArea"></main>
+
+  <!-- stepPanelB（刻み選択パネル）はHTML側に出して管理する -->
+  <template id="tpl-stepPanelB">
+    <div class="step-panel" id="stepPanelB" aria-label="刻み選択パネル">
+      <div class="step-row mag" aria-label="倍率">
+        <button class="btn step-btn" data-mag="1"  id="btnMag1">１</button>
+        <button class="btn step-btn" data-mag="5"  id="btnMag5">５</button>
+        <button class="btn step-btn" data-mag="10" id="btnMag10">１０</button>
+      </div>
+
+      <div class="step-row unit" aria-label="単位">
+        <button class="btn step-btn" data-unit="mm" id="btnUnitMm">㎜</button>
+        <button class="btn step-btn" data-unit="cm" id="btnUnitCm">㎝</button>
+        <button class="btn step-btn" data-unit="m"  id="btnUnitM">ｍ</button>
+      </div>
+
+      <div class="step-row exec" aria-label="実行">
+        <button class="btn step-exec" id="btnStepPlus">すすむ</button>
+        <button class="btn step-exec" id="btnStepMinus">もどる</button>
+      </div>
+    </div>
+  </template>
+
+  <script>
+    // 戻り先（setup画面の「もどる」用）
+    // ※kit.full.js（L.header）が back を呼ぶ → AppActions.back はアプリJS側で実装する
+    window.AppShellOptions = window.AppShellOptions || { backHref: '' };
+
+    // ★重要：ここ（HTML）では AppActions.back を上書きしない
+    window.AppActions = window.AppActions || {};
+
+    // ★歯車：kit.full.js が探す openSettings / settingsHref のうち、最低 openSettings を必ず用意する
+    // （実体はアプリJS側が window.__openSettingsHook に差し込む）
+    function openSettings(){
+      if (typeof window.__openSettingsHook === 'function'){
+        window.__openSettingsHook();
+      } else {
+        console.warn('[length_1m] __openSettingsHook is not ready yet');
+      }
+    }
+    // ★重要：kit側が window.openSettings を参照する場合に備えて、window に載せる
+    window.openSettings = openSettings;
+
+    // レゴ配置：右の「色」ボタンは置かない（要望⑥）
+window.AppShellLayout = {
+      header: { left:['backlink'], center:['title'], right:['settingsGear'] },
+      pbar: {
+        left:   [],
+        center: ['message'],
+        right:  []
+      }
+    };
+  </script>
+
+  <!-- ▼ レゴ共通JS -->
+  <script src="../../../common/shell/kit.full.js"></script>
+  <script src="../../../common/shell/header.full.js"></script>
+  <script src="../../../common/shell/pbar.full.js"></script>
+  <script src="../../../common/shell/setup.full.js"></script>
+
+  <!-- ▼ アプリJS -->
+  <script src="./length_1m.js"></script>
+</body>
+</html>

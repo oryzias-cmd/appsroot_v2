@@ -1,0 +1,594 @@
+/* =========================================================
+   jpsetup.full.css（国語 SetupCard 共通）
+   役割（責務）：
+   A) SetupCard 本体の見た目・寸法・操作性（教材共通の部品）
+   B) entry（screen-menu）で「国語の縦組み」を成立させる配置ルール（国語の基本）
+      ※ただし “画面構成”＝右帯を消す等は entry.css の責務
+
+   方針：
+   - 共通はここに集約（重複を作らない）
+   - app.css は「問題画面（クイズ本体）」専用
+   - entry.css は「舞台装置」（右帯を消す／背景を白、など）専用
+   ========================================================= */
+
+
+/* =========================================================
+   0) Overlay / Wrap
+   - どの mount でも「出てるのに見えない」を防ぐ
+   ========================================================= */
+
+.setupcard-wrap{
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0,0,0,0.35);
+
+  width:100%;
+  display:flex;
+  justify-content:center;
+  align-items:center; /* ★追加：stretchを防いで、板を内容高で表示 */
+
+  /* ★共通：wrap余白を変数化（panel高さの計算に使う） */
+  --setup-pad-top: 16px;
+  --setup-pad-x: 10px;
+  --setup-pad-bottom: 28px;
+
+  padding: var(--setup-pad-top) var(--setup-pad-x) var(--setup-pad-bottom);
+
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  caret-color: transparent;
+}
+
+/* ★menu（entryと同じ縦組みモード）のときだけ、entry基準の余白に統一 */
+.setupcard-wrap.is-menu{
+  --setup-pad-top: 40px;
+  --setup-pad-x: 10px;
+  --setup-pad-bottom: 28px;
+  background: rgba(0,0,0,0.35);
+}
+
+/* SetupCard内の入力系：文字入力系の保険 */
+.setupcard-wrap input,
+.setupcard-wrap textarea{
+  -webkit-user-select: text;
+  user-select: text;
+  caret-color: auto;
+}
+
+
+/* =========================================================
+   1) Panel（大カード）
+   - 国語3列（280×3）を飲み込める幅を基準にする
+   ========================================================= */
+
+.setupcard-panel{
+  width:min(940px, 96vw);
+  background:#ffffff;
+  border-radius:18px;
+  box-shadow:0 8px 24px rgba(0,0,0,0.15);
+  padding:24px 10px 28px;
+
+  font-family:"BIZ UDPGothic", sans-serif;
+    /* ★panelの高さを「画面高 − wrap余白」で固定
+     entryでもモーダルでも同じ板サイズになる */
+  /* ★通常：画面高から計算 */
+  box-sizing: border-box;
+}
+
+/* ★menu（entry基準）：高さを固定して、モーダル側をentryに揃える
+   - 552px はあなたの entry 実測（920×552）に合わせる
+   - 小さい画面は min() で安全に縮む
+*/
+/* .setupcard-wrap.is-menu .setupcard-panel{
+  height: min(552px, calc(100dvh - var(--setup-pad-top) - var(--setup-pad-bottom)));
+} */
+
+/* =========================================================
+   2) Columns（カラム）
+   - data-cols に応じて grid を作る
+   ========================================================= */
+
+.setupcard-columns{
+  display:grid;
+
+  /* ★ここが基準：常に全体を中央へ */
+  justify-content:center;
+  justify-items:center;
+
+  gap:16px 20px;
+  padding: 8px 10px 18px;
+
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.setupcard-columns[data-cols="1"]{
+  /* ★1列でも “290pxの柱” を中央に置く */
+  grid-template-columns: 290px;
+}
+
+.setupcard-columns[data-cols="2"]{
+  /* ★2列も3列も同じ幅(290px)で揃える → 常に左右均等 */
+  grid-template-columns: 290px 290px;
+
+  justify-content: center;
+  column-gap: 20px; /* gapと揃える（必要なら後で数字だけ調整） */
+
+  /* ★左右paddingでズラさない */
+  padding-left: 0;
+  padding-right: 0;
+
+  box-sizing: border-box;
+}
+
+.setupcard-columns[data-cols="3"]{
+  grid-template-columns: 290px 290px 290px;
+  justify-content: center;
+}
+
+/* 列番号固定の拡張はしない（テンキーが中央とは限らないため） */
+
+@media (max-width: 860px){
+  .setupcard-columns[data-cols="3"]{ grid-template-columns: 1fr; }
+}
+@media (max-width: 720px){
+  .setupcard-columns[data-cols="2"]{ grid-template-columns: 1fr; }
+}
+
+/* 3列=280pxに合わせて固定（国語の共通基準） */
+.setupcard-col{
+  width: 290px;
+  min-width: 290px;
+  max-width: 290px;
+  box-sizing: border-box;
+}
+
+/* =========================================================
+   3) Block（小カード）
+   ========================================================= */
+
+.setupcard-block{
+  padding:12px 16px 16px;
+  border-radius:16px;
+  border:1px solid #e5e5e5;
+}
+
+/* 列テーマ */
+.setupcard-col[data-col="1"] .setupcard-block{ background:#FFF4DE; }
+.setupcard-col[data-col="2"] .setupcard-block{ background:#E7F6E8; }
+.setupcard-col[data-col="3"] .setupcard-block{ background:#F1E9FF; }
+
+/* 見出し */
+.setupcard-label{
+  margin: 6px 0 10px;
+  text-align:center;
+  font-size:1.35rem;
+  font-weight:700;
+  font-family:"BIZ UDPGothic", sans-serif;
+}
+
+/* 説明 */
+.setupcard-desc{
+  margin: 0 0 10px;
+  text-align:center;
+  font-size:1.05rem;
+  color:#444;
+}
+
+
+/* =========================================================
+   4) Options（ラジオ群 / ピル）
+   - 見た目の基準はここで一元管理
+   ========================================================= */
+
+.setupcard-options{
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+  align-items:center;
+}
+
+/* 選択ピル（ラジオ/チェック共通）
+   - 互換のため .setupcard-pill も同じ定義に含める
+*/
+.select-pill,
+.setupcard-pill{
+  display:grid;
+  grid-template-columns: 24px 1fr 24px;
+  align-items:start;
+  column-gap:0.35rem;
+  padding:12px 14px;
+  min-width:190px;
+  border-radius:999px;
+  border:1px solid #bbb;
+  background:#ffffff;
+  font-size:1.2rem;
+  cursor:pointer;
+}
+
+/* disabled は hover を無効化したいので、hover は “not disabled” のみ */
+.select-pill:not(.is-disabled):hover,
+.setupcard-pill:not(.is-disabled):hover{
+  box-shadow:0 4px 10px rgba(0,0,0,0.12);
+}
+
+/* =========================================================
+   disabled option（B2）
+   - グレー表示
+   - クリック不可
+   - hover 無効
+   ========================================================= */
+.select-pill.is-disabled,
+.setupcard-pill.is-disabled{
+  background:#f3f3f3;
+  border-color:#cfcfcf;
+  box-shadow:none;
+  cursor:default;
+
+  /* ★クリック/hover を完全無効化（labelが拾わない） */
+  pointer-events:none;
+
+  /* 少しだけ“無効感”を出す（濃すぎない） */
+  opacity:0.72;
+}
+
+.select-pill input[type="radio"],
+.select-pill input[type="checkbox"],
+.setupcard-pill input[type="radio"],
+.setupcard-pill input[type="checkbox"]{
+  grid-column:1;
+  justify-self:center;
+  align-self:center;
+}
+
+.select-pill span,
+.setupcard-pill span{
+  grid-column:2;
+  text-align:center;
+  white-space: pre-line;
+  line-height: 1.35;
+}
+
+.select-pill-spacer,
+.setupcard-pill-spacer{
+  grid-column:3;
+}
+
+/* =========================================================
+   WordMode mini toggle（丸ボタン1つ）
+   位置：スタート右端 と パネル右端 の中点（中心合わせ）
+   ※影は付けない（要求外）
+   ========================================================= */
+
+.setupcard-panel{
+  position: relative; /* 絶対配置の基準 */
+}
+
+/* 位置（中点） */
+.setupcard-wm-toggle{
+  position: absolute;
+
+  /* ★ 中点：start右端(=50%+start幅/2) と panel右端(=100%) の中点 */
+  left: calc(75% + (76px / 4));
+  transform: translateX(-50%);
+
+  bottom: 34px;
+  z-index: 5;
+}
+
+/* 丸ボタン本体（影なし） */
+.setupcard-wm-one{
+  width: 64px;
+  height: 64px;
+
+  border-radius: 50%;
+  border: 2px solid rgba(74,134,255,0.55);
+  background: rgba(205, 228, 255, 0.75);
+
+  font-family: "BIZ UDPGothic", sans-serif;
+  font-weight: 800;
+  font-size: 20px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  box-shadow: none;
+  cursor: pointer;
+
+  /* ★縦書き固定（entryと同じ） */
+  writing-mode: vertical-rl !important;
+  text-orientation: upright !important;
+  letter-spacing: 0;
+  line-height: 1;
+}
+/* hoverも影を出さない（要求外） */
+.setupcard-wm-one:hover{
+  box-shadow: none;
+}
+
+/* entry（menu系）で Start が円＆下に来る場合は少し上げる */
+:is(body.screen-menu, .setupcard-wrap.is-menu) .setupcard-wm-toggle{
+  bottom: 46px;
+}
+
+/* ★entry（menu系）の Start は 120px 円なので、中点補正も変える */
+:is(body.screen-menu, .setupcard-wrap.is-menu) .setupcard-wm-toggle{
+  left: calc(75% + (120px / 4));
+}
+
+/* =========================================================
+   5) Actions（Startボタン：サクランボ完全一致）
+   ========================================================= */
+
+.setupcard-actions{
+  display:flex;
+  justify-content:center;
+  padding-top: 14px;
+}
+
+/* jp entry（縦書き）：上段（小パネル）とStartの間だけ広げる
+   いま約1文字分 → 合計3文字分にしたいので +2em を追加
+*/
+:is(body.screen-menu, .setupcard-wrap.is-menu) .setupcard-actions{
+  padding-top: calc(14px + 2em);
+}
+
+.setupcard-start{
+  min-width: 300px;
+  padding: 18px 42px;
+
+  font-size:1.6rem;
+  font-family:"BIZ UDPGothic", sans-serif;
+  font-weight:700;
+
+  border-radius:999px;
+
+  background:#FF7A3D;
+  border: none;
+  color:#ffffff;
+
+  box-shadow:
+    0 6px 0 #E35F23,
+    0 10px 18px rgba(0,0,0,0.25);
+
+  cursor:pointer;
+}
+
+.setupcard-start:active{
+  transform: translateY(3px);
+  box-shadow:
+    0 3px 0 #E35F23,
+    0 6px 12px rgba(0,0,0,0.22);
+}
+
+.setupcard-start:disabled{
+  background:#FFF1E6;
+  color:#C9B4A3;
+  box-shadow:none;
+  transform:none;
+  cursor:default;
+}
+
+/* customカードの中身用（テンキーなど） */
+.setupcard-custom{
+  margin-top: 10px;
+}
+
+
+/* =========================================================
+   6) jp：縦書き（安全版）
+   - レイアウトは変えない
+   - 「文字が載る要素」だけ縦書き
+   ========================================================= */
+
+.setupcard-panel .setupcard-label,
+.setupcard-panel .setupcard-desc{
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  line-height: 1.6;
+}
+
+.setupcard-panel .setupcard-options .setupcard-pill span,
+.setupcard-panel .setupcard-options .select-pill span{
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  line-height: 1.55;
+}
+
+/* Startボタン（テキスト直書きなのでボタン自体を縦書き化） */
+.setupcard-panel .setupcard-start{
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  letter-spacing: 0.12em;
+
+  width: 76px;
+  height: 132px;
+  padding: 10px 0;
+}
+
+/* jp entry（screen-menu）では Start を円形にする（国語共通） */
+:is(body.screen-menu, .setupcard-wrap.is-menu) .setupcard-panel .setupcard-start{
+  width: 120px;
+  height: 120px;
+
+  min-width: 0;
+  padding: 0;
+
+  border-radius: 50%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* =========================================================
+   7) jp entry（screen-menu）用：縦組み配置（国語の基本）
+   目的：
+   - entry（screen-menu）で「右→左の縦組み」を成立させる
+   注意：
+   - 画面構成（右帯を消す等）は entry.css の責務
+   ========================================================= */
+
+/* --- jp entry：縦ボタン（ピル）寸法の基準 ----------------
+   ※ 見た目は今と同じ
+   ※ 将来はここだけ触れば全体が変わる
+----------------------------------------------------------- */
+:is(body.screen-menu, .setupcard-wrap.is-menu){
+  --jp-pill-w: 50px;     /* 横書きピルの高さに相当 */
+  --jp-pill-h: 220px;    /* 現在値（後で 220px にする想定） */
+  --jp-pill-pad-y: 12px;
+  --jp-pill-pad-x: 6px;
+  --jp-pill-gap: 8px;
+}
+
+/* ---------------------------------------------------------
+   jp entry（screen-menu）：Start（円）の影を右下に振って「円」に見せる
+--------------------------------------------------------- */
+:is(body.screen-menu, .setupcard-wrap.is-menu) .setupcard-start{
+  box-shadow:
+    6px 6px 0 rgba(227,95,35,0.55),
+    10px 14px 18px rgba(0,0,0,0.14);
+}
+
+:is(body.screen-menu, .setupcard-wrap.is-menu) .setupcard-start:active{
+  box-shadow:
+    3px 3px 0 rgba(227,95,35,0.5),
+    6px 9px 12px rgba(0,0,0,0.12);
+}
+
+/* 3列：右=col1 / 中=col2 / 左=col3 にする */
+:is(body.screen-menu, .setupcard-wrap.is-menu) .setupcard-columns[data-cols="3"] .setupcard-col[data-col="1"]{ order: 3; }
+:is(body.screen-menu, .setupcard-wrap.is-menu) .setupcard-columns[data-cols="3"] .setupcard-col[data-col="2"]{ order: 2; }
+:is(body.screen-menu, .setupcard-wrap.is-menu) .setupcard-columns[data-cols="3"] .setupcard-col[data-col="3"]{ order: 1; }
+
+/* 2列：右=col1 / 左=col2 にする（将来2列になっても国語順） */
+:is(body.screen-menu, .setupcard-wrap.is-menu) .setupcard-columns[data-cols="2"] .setupcard-col[data-col="1"]{ order: 2; }
+:is(body.screen-menu, .setupcard-wrap.is-menu) .setupcard-columns[data-cols="2"] .setupcard-col[data-col="2"]{ order: 1; }
+
+/* 小パネル内部（見えない3レーン）
+   - 右：タイトル → 中：説明 → 左：選択肢
+   - 全て「同じ1行・上端そろえ」
+   - 線や枠は追加しない
+*/
+:is(body.screen-menu, .setupcard-wrap.is-menu) .setupcard-block{
+  display: grid;
+
+  grid-template-columns: 1fr auto auto;
+  column-gap: 12px;
+
+  align-items: start;
+
+  height: 240px;
+  min-height: 240px;
+  max-height: 240px;
+
+  min-width: 220px;
+  max-width: 320px;
+
+  box-sizing: border-box;
+}
+
+/* 左：選択肢（右→左に横並び） */
+:is(body.screen-menu, .setupcard-wrap.is-menu) .setupcard-options{
+  grid-column: 1;
+  grid-row: 1;
+
+  align-self: stretch;
+  height: 100%;
+
+  display: flex;
+  flex-direction: row-reverse;
+
+  flex-wrap: nowrap;
+
+  gap: 10px;
+
+  align-items: center;
+
+  justify-content: flex-start;
+
+  min-width: 0;
+}
+
+/* 中：説明（タイトルの左） */
+:is(body.screen-menu, .setupcard-wrap.is-menu) .setupcard-desc{
+  grid-column: 2;
+  grid-row: 1;
+  justify-self: end;
+  align-self: start;
+
+  margin: 0;
+}
+
+/* 右：タイトル（いちばん右） */
+:is(body.screen-menu, .setupcard-wrap.is-menu) .setupcard-label{
+  grid-column: 3;
+  grid-row: 1;
+  justify-self: end;
+  align-self: start;
+}
+
+/* entry：縦ボタン（ピル） */
+:is(body.screen-menu, .setupcard-wrap.is-menu) .setupcard-options .setupcard-pill,
+:is(body.screen-menu, .setupcard-wrap.is-menu) .setupcard-options .select-pill{
+  margin: 0;
+
+  width: var(--jp-pill-w);
+  min-width: var(--jp-pill-w);
+  max-width: var(--jp-pill-w);
+
+  height: var(--jp-pill-h);
+  min-height: var(--jp-pill-h);
+  max-height: var(--jp-pill-h);
+
+  padding: var(--jp-pill-pad-y) var(--jp-pill-pad-x);
+
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 22px 1fr;
+  row-gap: var(--jp-pill-gap);
+
+  justify-items: center;
+  align-items: start;
+
+  box-sizing: border-box;
+}
+
+:is(body.screen-menu, .setupcard-wrap.is-menu) .setupcard-pill-spacer,
+:is(body.screen-menu, .setupcard-wrap.is-menu) .select-pill-spacer{
+  display: none;
+}
+
+/* ピル内部を「上：○ / 下：ラベル」に強制 */
+:is(body.screen-menu, .setupcard-wrap.is-menu) .setupcard-options .setupcard-pill input[type="radio"],
+:is(body.screen-menu, .setupcard-wrap.is-menu) .setupcard-options .select-pill input[type="radio"],
+:is(body.screen-menu, .setupcard-wrap.is-menu) .setupcard-options .setupcard-pill input[type="checkbox"],
+:is(body.screen-menu, .setupcard-wrap.is-menu) .setupcard-options .select-pill input[type="checkbox"]{
+  grid-column: 1 !important;
+  grid-row: 1 !important;
+  justify-self: center;
+  align-self: start;
+  margin: 0;
+}
+
+:is(body.screen-menu, .setupcard-wrap.is-menu) .setupcard-options .setupcard-pill span,
+:is(body.screen-menu, .setupcard-wrap.is-menu) .setupcard-options .select-pill span{
+  grid-column: 1 !important;
+  grid-row: 2 !important;
+  justify-self: center;
+  align-self: start;
+
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  line-height: 1.15;
+  white-space: normal;
+  text-align: center;
+}
+
+:is(body.screen-menu, .setupcard-wrap.is-menu) .setupcard-options .setupcard-pill span,
+:is(body.screen-menu, .setupcard-wrap.is-menu) .setupcard-options .select-pill span{
+  grid-column: 1 !important;
+}

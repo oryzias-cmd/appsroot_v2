@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>テンプレート集</title>
+
+<link rel="stylesheet" href="../../shared/css/base.css">
+
+<style>
+  :root{ --card-max: 320px; }
+  body{ background:#f6f6f6; }
+  .wrap{ max-width: 1120px; margin: 0 auto; padding: 16px; }
+  .page-title{ font-size: clamp(20px,2.6vw,28px); text-align:center; margin: 8px 0 16px; font-family: var(--font-heading, inherit); }
+  .intro{ text-align:center; color:#333; margin-bottom: 16px; line-height:1.7; }
+
+  .grid{ display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; align-items: stretch; }
+  .card{
+    display:flex; flex-direction:column; gap:10px;
+    background:#fff; padding:14px;
+    border-top:4px solid #333; border-bottom:4px solid #333;
+    box-shadow: 0 1px 0 #ddd;
+    max-width: var(--card-max);
+    margin: 0 auto;
+  }
+  .card h3{ font-size: 18px; margin: 0 0 4px; }
+  .card .desc{ font-size: 14px; color:#333; line-height:1.6; }
+  .preview img{ width:100%; border:2px solid #ccc; border-radius:8px; }
+  .usecases{ font-size:13px; color:#111; margin-top:4px; }
+  .flow{ font-size:13px; margin:6px 0 0 14px; line-height:1.5; }
+  .flow li{ list-style: disc; }
+  .devnote{ font-size:13px; background:#fdfdfd; border:1px solid #ddd; border-radius:6px; padding:6px 8px; margin-top:6px; }
+  .tags{ display:flex; flex-wrap:wrap; gap:6px; margin-top:4px; }
+  .tag{ font-size:12px; background:#eee; border:1px solid #ddd; padding:2px 6px; border-radius:10px; }
+
+  .actions{ margin-top:auto; display:flex; gap:8px; flex-wrap:wrap; }
+  .btn{
+    display:inline-block; padding:8px 10px; background:#fff; color:#111; text-decoration:none; text-align:center;
+    border-top:3px solid #111; border-bottom:3px solid #111;
+  }
+  .btn:hover{ box-shadow: 0 2px 0 0 #111; }
+</style>
+</head>
+<body>
+<header class="app-header" style="justify-content:center;">
+  <button class="btn btn-back" onclick="history.back()">{ もどる }</button>
+  <h1 class="page-title">テンプレート集</h1>
+  <span style="width:80px"></span>
+</header>
+
+<main class="wrap">
+  <p class="intro">
+    新しい教材アプリをつくるときの雛形（v0）。<br>
+    すべて <strong>色モード：OFF／ON（毎問ランダム）</strong>／共通ヘッダ＆フッタの骨格／拡張フック（onFinish 等）を備えています。<br>
+    使い方：テンプレを開いて確認 → フォルダごとコピー＆改名 → タイトル／問題／図形・画像／判定を差し替え。
+  </p>
+
+  <section class="grid">
+
+    <!-- 1: 盤面ドラッグ -->
+    <article class="card">
+      <h3>① 盤面ドラッグ型（仕分け／並べ替え）</h3>
+      <div class="desc">
+        図形や画像をドラッグして、領域に入れる／並べ替える教材に最適。試行錯誤が可視化されます。四分割ボード比率はCSS変数で調整可。
+      </div>
+      <div class="preview">
+        <img src="../../shared/images/previews/tmpl-drag.png" alt="盤面ドラッグ型の見本" loading="lazy">
+      </div>
+      <div class="usecases">
+        <strong>使いどころ：</strong> 分類・仕分け・系列化／整列・マッチング<br>
+        <strong>教科例：</strong> 算数（図形分類）・理科（動植物/物質）・社会（方位/地図）・生活科
+      </div>
+      <ul class="flow">
+        <li><b>導入：</b> 例題で操作確認。</li>
+        <li><b>練習：</b> 配列を変えた問題を2〜3回。色ONで違い強調。</li>
+        <li><b>まとめ：</b> 色OFFで自力分類→言語化。</li>
+      </ul>
+      <div class="devnote">
+        <b>開発ヒント：</b><br>
+        ・`panelA〜D` のラベル変更で2領域/3領域も可。<br>
+        ・`rebuildColorMap()` で毎問シャッフル色。<br>
+        ・問題セットはJSON化で拡張しやすい。
+      </div>
+      <div class="tags">
+        <span class="tag">DnD</span><span class="tag">4ボード</span><span class="tag">色ランダム</span>
+        <span class="tag">共通: shapes.js</span><span class="tag">共通: colors_shapes10.js</span>
+      </div>
+      <div class="actions">
+        <a class="btn" href="../tmpl-drag-board/index.html">開く</a>
+        <a class="btn" href="../tmpl-drag-board/index.html" download>DL</a>
+      </div>
+    </article>
+
+    <!-- 2: カード選択 -->
+    <article class="card">
+      <h3>② カード選択型（条件判断・複数選択）</h3>
+      <div class="desc">
+        条件に当てはまるものをタップで選ぶクイズ型。選択状態（○/×）のフィードバックが簡単。印刷転用も容易。
+      </div>
+      <div class="preview">
+        <img src="../../shared/images/previews/tmpl-card.png" alt="カード選択型の見本" loading="lazy">
+      </div>
+      <div class="usecases">
+        <strong>使いどころ：</strong> 定義判断・用例選び・語句整理・誤答学習<br>
+        <strong>教科例：</strong> 算数（定義）・国語（助詞/用法）・理科（性質/分類）
+      </div>
+      <ul class="flow">
+        <li><b>導入：</b> 1問だけミニ解説。</li>
+        <li><b>練習：</b> 10枚グリッドで複数選択。色ON。</li>
+        <li><b>まとめ：</b> 間違えたカードの理由を共有。</li>
+      </ul>
+      <div class="devnote">
+        <b>開発ヒント：</b><br>
+        ・`TARGETS[].judge(id)` を差し替えで別教科OK。<br>
+        ・バッジ/○×演出はCSSで微調整。<br>
+        ・`scale` とギャラリー列数はCSSで統一。
+      </div>
+      <div class="tags">
+        <span class="tag">タップ選択</span><span class="tag">グリッド</span><span class="tag">色ランダム</span>
+        <span class="tag">共通: shapes.js</span><span class="tag">共通: colors_shapes10.js</span>
+      </div>
+      <div class="actions">
+        <a class="btn" href="../tmpl-card-select/index.html">開く</a>
+        <a class="btn" href="../tmpl-card-select/index.html" download>DL</a>
+      </div>
+    </article>
+
+    <!-- 3: スライダー調整 -->
+    <article class="card">
+      <h3>③ スライダー調整型（量・角度合わせ）</h3>
+      <div class="desc">
+        スライダーやハンドルを動かして目標値に合わせる。“量感”の理解に向く骨格。
+      </div>
+      <div class="preview">
+        <img src="../../shared/images/previews/tmpl-slider.png" alt="スライダー調整型の見本" loading="lazy">
+      </div>
+      <div class="usecases">
+        <strong>使いどころ：</strong> 目標一致・許容範囲・即時フィードバック<br>
+        <strong>教科例：</strong> 算数（長さ/角度）・理科（温度/光/音）・音楽（音量/テンポ）
+      </div>
+      <ul class="flow">
+        <li><b>導入：</b> 目標の読み取り練習。</li>
+        <li><b>練習：</b> 許容±の中に入るとOK表示。</li>
+        <li><b>まとめ：</b> 値と単位を言語化。</li>
+      </ul>
+      <div class="devnote">
+        <b>開発ヒント：</b><br>
+        ・`target/tolerance/unit` を問題ごとに変更。<br>
+        ・`render(value)` を分離すればゲージ/針表示にも応用可。
+      </div>
+      <div class="tags">
+        <span class="tag">range入力</span><span class="tag">許容範囲</span><span class="tag">即時FB</span>
+      </div>
+      <div class="actions">
+        <a class="btn" href="../tmpl-slider-adjust/index.html">開く</a>
+        <a class="btn" href="../tmpl-slider-adjust/index.html" download>DL</a>
+      </div>
+    </article>
+
+    <!-- 4: 構成パズル -->
+    <article class="card">
+      <h3>④ 構成パズル型（合成・分割）</h3>
+      <div class="desc">
+        ピースを動かして目標形に合わせる。空間認識・構成力の養成に。スナップ・回転など拡張しやすい。
+      </div>
+      <div class="preview">
+        <img src="../../shared/images/previews/tmpl-puzzle.png" alt="構成パズル型の見本" loading="lazy">
+      </div>
+      <div class="usecases">
+        <strong>使いどころ：</strong> 合成・分割・対応関係・重なり<br>
+        <strong>教科例：</strong> 算数（図形構成）・図工（構成遊び）・STEAM
+      </div>
+      <ul class="flow">
+        <li><b>導入：</b> 目標形の観察ポイント共有。</li>
+        <li><b>練習：</b> スナップ有りで成功体験。</li>
+        <li><b>まとめ：</b> どのピースがどこに対応か説明。</li>
+      </ul>
+      <div class="devnote">
+        <b>開発ヒント：</b><br>
+        ・`TARGET_POS` と当たり許容を調整。<br>
+        ・回転/反転はCSS transformで追加可能。
+      </div>
+      <div class="tags">
+        <span class="tag">DnD</span><span class="tag">スナップ</span><span class="tag">目標合わせ</span>
+      </div>
+      <div class="actions">
+        <a class="btn" href="../tmpl-puzzle-compose/index.html">開く</a>
+        <a class="btn" href="../tmpl-puzzle-compose/index.html" download>DL</a>
+      </div>
+    </article>
+
+    <!-- 5: クリック探索 -->
+    <article class="card">
+      <h3>⑤ クリック探索型（観察・発見）</h3>
+      <div class="desc">
+        図や地図、イラスト内の領域をクリックして発見する教材。観察・語彙付け・注意集中に。
+      </div>
+      <div class="preview">
+        <img src="../../shared/images/previews/tmpl-spot.png" alt="クリック探索型の見本" loading="lazy">
+      </div>
+      <div class="usecases">
+        <strong>使いどころ：</strong> 部位名・地名・要素の同定／注視訓練<br>
+        <strong>教科例：</strong> 理科（からだのつくり）・社会（地図）・国語（挿絵と本文）
+      </div>
+      <ul class="flow">
+        <li><b>導入：</b> まず1か所を一緒に探す。</li>
+        <li><b>練習：</b> 3〜5領域の探索。命中数を表示。</li>
+        <li><b>まとめ：</b> 見つけ方のコツを共有。</li>
+      </ul>
+      <div class="devnote">
+        <b>開発ヒント：</b><br>
+        ・SVGの`path/polygon`で領域定義。<br>
+        ・領域ラベルをJSON管理して多言語化も可。
+      </div>
+      <div class="tags">
+        <span class="tag">SVG判定</span><span class="tag">発見記録</span>
+      </div>
+      <div class="actions">
+        <a class="btn" href="../tmpl-spot-explore/index.html">開く</a>
+        <a class="btn" href="../tmpl-spot-explore/index.html" download>DL</a>
+      </div>
+    </article>
+
+  </section>
+</main>
+</body>
+</html>

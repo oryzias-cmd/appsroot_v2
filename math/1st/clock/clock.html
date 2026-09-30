@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>とけい① よむ</title>
+  <link rel="stylesheet" href="./clock.css" />
+  <link rel="stylesheet" href="./clock_result.css" />
+  <link rel="stylesheet" href="./clock_settings.css" />
+</head>
+<body data-phase="quiz" data-sound="on">
+  <div id="labelProgress" class="floating-progress" aria-live="polite"></div>
+  <button id="btnSettings" class="floating-gear" type="button" aria-label="せっていを ひらく">⚙</button>
+
+  <main class="app-main">
+    <section id="quizPage" class="page page-quiz" aria-hidden="false">
+      <div class="quiz-layout">
+        <div class="quiz-left">
+          <div class="clock-wrap">
+            <div id="clockContainer" class="clock-container" aria-label="とけい"></div>
+          </div>
+
+          <div id="assistButtons" class="assist-buttons" aria-label="とけいの おたすけ">
+            <button id="btnAssistHelpers" class="assist-btn" type="button" aria-pressed="false"><span id="assistMinuteLabel">ふん</span></button>
+            <button id="btnAssistSectors" class="assist-btn" type="button" aria-pressed="false"><span id="assistColorLabel">いろわけ</span></button>
+            <button id="btnAssistHighlight" class="assist-btn" type="button" aria-pressed="false"><span id="assistShortLabel">みじかいはり</span></button>
+            <button id="btnAssistRedMarks" class="assist-btn" type="button" aria-pressed="false"><span id="assistRedLabel">あかめもり</span></button>
+          </div>
+        </div>
+
+        <div class="quiz-right">
+          <div class="qa-wrap">
+            <div class="answer-row clock-time-row">
+              <label class="answer-field clock-time-field" id="fieldHour">
+                <div class="answer-box"><input id="inputHour" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2" /></div>
+                <span class="answer-label" id="hourLabel">じ</span>
+              </label>
+
+              <label class="answer-field clock-time-field" id="fieldMinute">
+                <div class="answer-box">
+                  <input id="inputMinute" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2" />
+                  <span class="half-display" id="halfDisplay"></span>
+                </div>
+                <span class="answer-label" id="minuteLabel">ふん</span>
+              </label>
+            </div>
+          </div>
+
+          <div id="middlePanel" class="middle-panel">
+            <div id="correctAnswerWrap" class="correct-answer-display hidden" aria-live="polite">
+              <div class="correction-title" id="correctionTitle">ただしいのは</div>
+              <div id="correctAnswerSlot"></div>
+            </div>
+
+            <div id="feedbackArea" class="feedback-card hidden" aria-live="polite"></div>
+
+            <div class="keypad-wrap" id="keypad">
+              <div class="keypad-body">
+                <div class="keypad-row keypad-row-num">
+                  <button type="button" data-key="1">1</button><button type="button" data-key="2">2</button><button type="button" data-key="3">3</button><button type="button" class="keypad-dummy" tabindex="-1" aria-hidden="true"></button>
+                </div>
+                <div class="keypad-row keypad-row-num">
+                  <button type="button" data-key="4">4</button><button type="button" data-key="5">5</button><button type="button" data-key="6">6</button><button type="button" class="keypad-dummy" tabindex="-1" aria-hidden="true"></button>
+                </div>
+                <div class="keypad-row keypad-row-num keypad-row-wide">
+                  <button type="button" data-key="7">7</button><button type="button" data-key="8">8</button><button type="button" data-key="9">9</button><button type="button" data-key="0">0</button>
+                </div>
+                <div class="keypad-row keypad-row-mode">
+                  <button type="button" class="key-mode" data-target="hour" id="btnHourMode">なんじ</button>
+                  <button type="button" class="key-mode" data-target="minute" id="btnMinuteMode">なんふん</button>
+                </div>
+                <div class="keypad-row keypad-row-edit">
+                  <button type="button" class="key-op" data-key="back" id="btnBackOne">1つけす</button>
+                  <button type="button" class="key-op" data-key="clear" id="btnClearAll">ぜんぶけす</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <button id="btnCheckNext" class="check-next-btn" type="button" disabled>こたえあわせ</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="clockSettingsMount"></div>
+
+  <script src="./clock_text.js"></script>
+  <script src="./clock_settings.js"></script>
+  <script src="./clock_result.js"></script>
+  <script src="./clock_svg.js" defer></script>
+  <script src="./clock.js" defer></script>
+</body>
+</html>

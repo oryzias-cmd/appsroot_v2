@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>筆算でわる（仮商→修正・整数版）</title>
+<link rel="stylesheet" href="css/base.css" />
+<link rel="stylesheet" href="css/longdiv.css" />
+</head>
+<body>
+<header class="app-header">
+  <h1>筆算でわる（仮商→修正）</h1>
+  <div class="mode-switch">
+    <label><input type="radio" name="mode" value="approx" checked> 仮商→修正（基本）</label>
+    <label><input type="radio" name="mode" value="optimal"> 最適解（修正なし）</label>
+  </div>
+</header>
+
+<main class="app-main">
+  <section class="panel input-panel">
+    <div class="row">
+      <label for="expr">横式：</label>
+      <input id="expr" type="text" inputmode="numeric" placeholder="例）972 ÷ 36" />
+      <button id="startBtn" class="btn primary">開始</button>
+    </div>
+<!-- ▼テンキー（数字 10・÷・＝） -->
+<div id="tenkey" class="tenkey" aria-label="テンキー">
+  <!-- 1段目 -->
+  <button type="button" data-key="7">7</button>
+  <button type="button" data-key="8">8</button>
+  <button type="button" data-key="9">9</button>
+  <button type="button" data-key="÷" aria-label="わる">÷</button>
+  <!-- 2段目 -->
+  <button type="button" data-key="4">4</button>
+  <button type="button" data-key="5">5</button>
+  <button type="button" data-key="6">6</button>
+  <div class="spacer" aria-hidden="true"></div>
+  <!-- 3段目 -->
+  <button type="button" data-key="1">1</button>
+  <button type="button" data-key="2">2</button>
+  <button type="button" data-key="3">3</button>
+  <div class="spacer" aria-hidden="true"></div>
+  <!-- 4段目 -->
+  <button type="button" data-key="0" class="span-3">0</button>
+  <button type="button" data-key="＝" class="primary" aria-label="けいさんをはじめる">＝</button>
+</div>
+<!-- ▲テンキー -->
+    <div class="row options">
+      <div>
+        <label>桁の制限：<span id="limitNote">被除数 ≤ 4桁、除数 ≤ 3桁、整数のみ</span></label>
+      </div>
+      <div>
+        <label><input type="checkbox" id="showZeros"> ×の代わりに 0 を表示</label>
+        <label><input type="checkbox" id="gridOn" checked> 経線（マス目）を表示</label>
+        <label><input type="checkbox" id="lanesOn" checked> 位ラベルを表示</label>
+      </div>
+    </div>
+    <div class="row samples">
+      例： <button class="ex btn" data-ex="734 ÷ 28">734 ÷ 28</button>
+          <button class="ex btn" data-ex="972 ÷ 36">972 ÷ 36</button>
+          <button class="ex btn" data-ex="4876 ÷ 123">4876 ÷ 123</button>
+          <button class="ex btn" data-ex="4056 ÷ 64">4056 ÷ 64</button>
+    </div>
+  </section>
+
+    <section class="panel board-panel">
+    <div id="gridAll" class="grid-overlay"></div>
+    <div class="board-head">
+      <div id="gridHead" class="grid-overlay"></div>
+      <div class="lane-labels" id="laneLabels"></div>
+      <div class="quotient" id="quotient"></div>
+    </div>
+    <div class="board-body">
+      <div id="grid" class="grid-overlay"></div>
+      <div class="divisor" id="divisor"></div>
+      <div class="bracket"></div>
+      <div class="dividend" id="dividend"></div>
+      <div class="work" id="work"></div>
+      <div class="arrows" id="arrows"></div>
+    </div>
+  </section>
+
+  <section class="panel control-panel">
+    <div class="controls">
+      <button id="backBtn" class="btn">もどる</button>
+      <button id="nextBtn" class="btn primary">次へ</button>
+      <button id="autoBtn" class="btn">自動再生</button>
+      <label class="speed">
+        速度
+        <input id="speed" type="range" min="0.6" max="1.6" step="0.1" value="1.0" />
+      </label>
+      <button id="resetBtn" class="btn">やり直し</button>
+    </div>
+    <div class="explain" id="explain">ここに工程の説明が出ます。</div>
+  </section>
+</main>
+
+<footer class="app-footer">
+  <small>© 算数・筆算／整数割り　第1弾（将来：小数拡張予定）</small>
+</footer>
+
+<script src="js/core/formatter.js"></script>
+<script src="js/core/validator.js"></script>
+<script src="js/core/estimator.js"></script>
+<script src="js/core/records.js"></script>
+<script src="js/core/engine.js"></script>
+<script src="js/core/renderer.js"></script>
+<script src="js/modes/approx.js"></script>
+<script src="js/modes/optimal.js"></script>
+<script src="js/app.js"></script>
+<script>
+/* LD: 終了時に自動再生タイマーを即停止するフック（強制停止） */
+(function () {
+  document.addEventListener('ld:finished', function () {
+    // 1) 既存の停止関数があればまず呼ぶ
+    if (typeof window.stopAutoPlay === 'function') {
+      try { window.stopAutoPlay(); } catch (_) {}
+    }
+
+    // 2) 念のため、残っている setInterval / setTimeout を全て掃除（強制停止）
+    //    小規模なこのページでは副作用は出ません。ラグの原因を確実に潰します。
+    (function clearAllIntervalsAndTimeouts() {
+      var i = window.setInterval(function(){}, 0);
+      while (i >= 0) { window.clearInterval(i--); }
+      var t = window.setTimeout(function(){}, 0);
+      while (t >= 0) { window.clearTimeout(t--); }
+    })();
+
+    // 3) 自動再生ボタンの表示を「自動再生」に戻す（任意ですが見た目を整えます）
+    var autoBtn = document.getElementById('autoBtn');
+    if (autoBtn) {
+      if (/停止/.test(autoBtn.textContent)) autoBtn.textContent = '自動再生';
+      autoBtn.classList.remove('active');
+    }
+  });
+})();
+</script>
+<script>
+  // 終了時に自動再生ボタンが「停止」表示だったら即クリックして停止させる
+  document.addEventListener('ld:finished', () => {
+    const btn = document.getElementById('autoBtn');
+    if (btn && /停止/.test(btn.textContent)) btn.click();
+  });
+</script>
+<script>
+/* テンキー配線：＝で即開始。IDが無くても動くようにしています。 */
+(function(){
+  const tenkey = document.getElementById('tenkey');
+  if (!tenkey) return;
+
+  // 入力欄と開始ボタンを取得（id が無くてもテキストで拾う）
+  const inputEl  = document.getElementById('exprInput') ||
+                   document.querySelector('input[type="text"]');
+  const startBtn = document.getElementById('startBtn') ||
+                   Array.from(document.querySelectorAll('button'))
+                        .find(b => (b.textContent || '').trim() === '開始');
+
+  if (!inputEl || !startBtn) return; // 安全装置
+
+  function appendDigit(d){
+    inputEl.focus();
+    inputEl.value += d;
+  }
+  function appendDivider(){
+    // すでに ÷ があれば無視。無ければ前後にスペースを入れて追加
+    if (/÷/.test(inputEl.value)) return;
+    const v = inputEl.value.replace(/\s+/g,' ').trim();
+    inputEl.value = (v ? v + ' ' : '') + '÷ ';
+  }
+  function startNow(){
+    // 末尾の ＝ を消し、スペース整形してから「開始」をクリック
+    const v = inputEl.value.replace(/[＝=]\s*$/,'').replace(/\s+/g,' ').trim();
+    inputEl.value = v;
+    startBtn.click();
+  }
+
+  tenkey.addEventListener('click', (e)=>{
+    const btn = e.target.closest('button[data-key]');
+    if (!btn) return;
+    const k = btn.dataset.key;
+    if (k === '÷') { appendDivider(); return; }
+    if (k === '＝') { startNow(); return; }
+    // 数字
+    appendDigit(k);
+  });
+})();
+</script>
+<!-- 歯車（右上固定） -->
+<button id="gearFab" class="gear-fab" aria-label="設定">⚙</button>
+
+<!-- 設定モーダル -->
+<div id="settingsModal" class="ld-modal" hidden>
+  <div class="ld-modal__backdrop"></div>
+  <div class="ld-modal__panel" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+    <div class="ld-modal__header">
+      <div id="settingsTitle" class="ld-modal__title">設定</div>
+      <button type="button" id="settingsClose" class="ld-modal__close" aria-label="閉じる">×</button>
+    </div>
+    <div id="settingsBody" class="ld-modal__body"></div>
+  </div>
+</div>
+
+<script>
+/* 歯車モーダル＆テンキー/筆算切替（貼るだけで動作） */
+(function(){
+  // ===== A) 設定：既存ブロックをモーダルへ「移動」 =====
+  const modal   = document.getElementById('settingsModal');
+  const bodyBox = document.getElementById('settingsBody');
+  const openBtn = document.getElementById('gearFab');
+  const closeBtn= document.getElementById('settingsClose');
+
+  // 1) 「解の出し方」(ラジオ) を探して移動
+  const modeRow = Array.from(document.querySelectorAll('div,section,form'))
+    .find(n => /仮商|最適解/.test(n.textContent||''));
+  // 2) 「桁の制限……／チェック」行を探して移動
+  const limitsRow = Array.from(document.querySelectorAll('div,section'))
+    .find(n => /桁の制限/.test(n.textContent||''));
+  // 3) 「例：」行を探して移動
+  const examplesRow = Array.from(document.querySelectorAll('div,section'))
+    .find(n => /^例：/.test((n.textContent||'').trim()));
+
+  [modeRow, limitsRow, examplesRow].forEach(n=>{
+    if (n && bodyBox && !bodyBox.contains(n)) bodyBox.appendChild(n);
+  });
+
+  function openSettings(){ modal.hidden = false; }
+  function closeSettings(){ modal.hidden = true; }
+  openBtn && openBtn.addEventListener('click', openSettings);
+  closeBtn && closeBtn.addEventListener('click', closeSettings);
+  modal && modal.querySelector('.ld-modal__backdrop')?.addEventListener('click', closeSettings);
+
+  // ===== B) テンキーと筆算を「左枠」で共存（開始前/後で切替） =====
+  const tenkey = document.getElementById('tenkey');               // 先に作ったテンキー
+  const boardPanel = document.querySelector('.board-panel');      // 左の筆算ボード全体
+
+  if (tenkey && boardPanel && !boardPanel.parentElement.contains(tenkey)) {
+    // 左枠の先頭にテンキーを移す（筆算と同じ枠で共存）
+    boardPanel.parentElement.insertBefore(tenkey, boardPanel);
+  }
+
+  // 初期は「開始前」= テンキーだけ見せる
+  document.body.classList.add('before-start');
+
+  // 「開始」「やり直し」ボタンを取得（IDが無くてもテキストで拾う）
+  const startBtn = document.getElementById('startBtn') ||
+    Array.from(document.querySelectorAll('button')).find(b => (b.textContent||'').trim() === '開始');
+  const retryBtn = document.getElementById('retryBtn') ||
+    Array.from(document.querySelectorAll('button')).find(b => (b.textContent||'').trim() === 'やり直し');
+
+  function showBoard(){ document.body.classList.remove('before-start'); tenkey && tenkey.classList.add('hidden'); }
+  function showTenkey(){ document.body.classList.add('before-start'); tenkey && tenkey.classList.remove('hidden'); }
+
+  // 「開始」クリックで筆算表示へ、「やり直し」でテンキーへ
+  startBtn && startBtn.addEventListener('click', showBoard);
+  retryBtn && retryBtn.addEventListener('click', showTenkey);
+
+  // ＝（テンキー）で開始したときも確実に切替え（テンキーの配線に依存せず保険）
+  document.getElementById('tenkey')?.addEventListener('click', (e)=>{
+    if (e.target && e.target.dataset && e.target.dataset.key === '＝') showBoard();
+  });
+})();
+</script>
+<script>
+/* 見出しの右に「横式＋＝」を常設。開始ボタンは非表示にして機能だけ残す */
+(function(){
+  // 1) 見出し(h1)を titlebar に包む
+  const h1 = document.querySelector('h1');
+  if (!h1) return;
+  if (!h1.parentElement.classList.contains('ld-titlebar')) {
+    const wrap = document.createElement('div');
+    wrap.className = 'ld-titlebar';
+    h1.parentElement.insertBefore(wrap, h1);
+    wrap.appendChild(h1);
+  }
+  const titlebar = h1.parentElement;
+
+  // 2) 既存の「横式」入力と「開始」ボタンを取得
+  const inputEl = document.getElementById('exprInput') ||
+                  document.querySelector('input[type="text"]');
+  const startBtn = document.getElementById('startBtn') ||
+                  Array.from(document.querySelectorAll('button'))
+                      .find(b => (b.textContent||'').trim() === '開始');
+  if (!inputEl || !startBtn) return;
+
+  // 3) 入力バーを作り、入力欄を移動して「＝」ボタンを追加
+  const bar = document.createElement('div');
+  bar.className = 'exprbar';
+  const eqBtn = document.createElement('button');
+  eqBtn.type = 'button';
+  eqBtn.className = 'eq-btn';
+  eqBtn.textContent = '＝';
+  eqBtn.setAttribute('aria-label','計算をはじめる');
+
+  // 元の親から input を外してバーへ移す（クローンせず実体を移動）
+  bar.appendChild(inputEl);
+  bar.appendChild(eqBtn);
+  titlebar.appendChild(bar);
+
+  // 4) ＝で即開始
+  function startNow(){
+    // 末尾の ＝ を掃除 & 整形（既存バリデータと整合）
+    inputEl.value = inputEl.value.replace(/[＝=]\s*$/,'').replace(/\s+/g,' ').trim();
+    startBtn.click();
+  }
+  eqBtn.addEventListener('click', startNow);
+
+  // Enter キーでも開始（物理キーボード接続時の利便性）
+  inputEl.addEventListener('keydown', (ev)=>{
+    if (ev.key === 'Enter') { ev.preventDefault(); startNow(); }
+  });
+
+  // 5) 画面上の「開始」ボタンは隠す（機能はそのまま）
+  startBtn.classList.add('hidden-start');
+
+  // 6) 歯車モーダルに設定を移す処理が、うっかりこの行を巻き込まないように保護
+  //   （この titlebar 内の要素はモーダル移動の対象外にする）
+  titlebar.setAttribute('data-lock-settings-move','1');
+
+})();
+</script>
+<script>
+/* ボード高さを常に「13行ぶん + 安全マージン」に固定（測ってから設定） */
+(function(){
+  const ROWS = 13;       // 位ラベル1 + 調整2 + 筆算最大10
+  const EXTRA = 32;      // 横線の太さ/フォント差分の余白（足りなければ増やせます）
+
+  function lockBoardHeight(){
+    const panel = document.querySelector('.board-panel');
+    if (!panel) return;
+
+    // 既存セルを使って行の高さを実測（商エリアのセルが最初からある想定）
+    let cell = panel.querySelector('.quotient .cell') || panel.querySelector('.cell');
+    if (!cell) {
+      // セルがまだ無いタイミングなら少し後で再試行
+      requestAnimationFrame(lockBoardHeight);
+      return;
+    }
+    const cellH = cell.getBoundingClientRect().height || 32;
+
+    // 13行ぶん＋余白で固定
+    const h = Math.round(ROWS * cellH + EXTRA);
+    panel.style.minHeight = h + 'px';
+    panel.style.height    = h + 'px';
+    panel.style.overflow  = 'hidden';  // これで外側が伸びません（中身は収まる想定）
+  }
+
+  // 初回・リサイズ・終了時（レイアウト変化後）に合わせて再計測
+  window.addEventListener('load',   lockBoardHeight);
+  window.addEventListener('resize', lockBoardHeight);
+  document.addEventListener('ld:finished', lockBoardHeight);
+  // 念のため描画直後にも一度
+  requestAnimationFrame(lockBoardHeight);
+})();
+</script>
+
+</body>
+</html>

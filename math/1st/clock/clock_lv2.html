@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>とけい② うごかす</title>
+  <link rel="stylesheet" href="./clock.css" />
+  <link rel="stylesheet" href="./clock_lv2.css" />
+  <link rel="stylesheet" href="./clock_result.css" />
+  <link rel="stylesheet" href="./clock_settings.css" />
+</head>
+<body data-phase="quiz" data-sound="on">
+  <div id="labelProgress" class="floating-progress" aria-live="polite"></div>
+  <button id="btnSettings" class="floating-gear" type="button" aria-label="せっていを ひらく">⚙</button>
+
+  <main class="app-main">
+    <section id="quizPage" class="page page-quiz" aria-hidden="false">
+      <div class="quiz-layout lv2-layout">
+        <!-- ②は①の左右を反転：左＝問題・判定、右＝操作する時計 -->
+        <div class="lv2-left-panel">
+          <div class="lv2-problem-card" aria-live="polite">
+            <div class="answer-row clock-time-row lv2-target-time-row" id="lv2ProblemText">
+              <div class="answer-field clock-time-field">
+                <div class="answer-box"><input id="lv2TargetHour" type="text" readonly tabindex="-1" aria-label="じ" /></div>
+                <span class="answer-label" id="lv2TargetHourLabel">じ</span>
+              </div>
+
+              <div class="answer-field clock-time-field" id="lv2TargetMinuteField">
+                <div class="answer-box"><input id="lv2TargetMinute" type="text" readonly tabindex="-1" aria-label="ふん" /></div>
+                <span class="answer-label" id="lv2TargetMinuteLabel">ふん</span>
+              </div>
+            </div>
+          </div>
+
+          <div id="lv2ReviewPanel" class="lv2-review-panel" aria-live="polite">
+            <div id="feedbackArea" class="feedback-card hidden"></div>
+          </div>
+
+          <button id="btnCheckNext" class="check-next-btn" type="button">こたえあわせ</button>
+        </div>
+
+        <div class="quiz-left lv2-clock-column">
+          <div class="clock-wrap">
+            <div id="clockContainer" class="clock-container" aria-label="とけい"></div>
+          </div>
+
+          <div id="assistButtons" class="assist-buttons" aria-label="とけいの おたすけ">
+            <button id="btnAssistHelpers" class="assist-btn" type="button" aria-pressed="false"><span id="assistMinuteLabel">ふん</span></button>
+            <button id="btnAssistSectors" class="assist-btn" type="button" aria-pressed="false"><span id="assistColorLabel">いろわけ</span></button>
+            <button id="btnAssistHighlight" class="assist-btn" type="button" aria-pressed="false"><span id="assistShortLabel">みじかいはり</span></button>
+            <button id="btnAssistRedMarks" class="assist-btn" type="button" aria-pressed="false"><span id="assistRedLabel">あかめもり</span></button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="clockSettingsMount"></div>
+
+  <script src="./clock_text.js"></script>
+  <script src="./clock_settings.js"></script>
+  <script src="./clock_result.js"></script>
+  <script src="./clock_svg_lv2.js" defer></script>
+  <script src="./clock_lv2.js" defer></script>
+</body>
+</html>

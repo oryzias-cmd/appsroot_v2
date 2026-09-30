@@ -1,0 +1,564 @@
+.kakushi-board{
+  width: 100%;
+
+  /* ★児童環境で切れない：親（v-board側）の高さに追従 */
+  height: 100%;
+
+  display: grid;
+
+  /* ★行の高さを固定：中央の内容変化（fit）が左右に波及しない */
+  grid-template-rows: 1fr;
+  align-items: stretch;
+
+  /* 左右同幅 + 中央最大 */
+  --side-w: 220px;
+  grid-template-columns: var(--side-w) 1fr var(--side-w);
+
+  gap: 18px;
+
+  /* ★上下余白を削る（有効高さを増やす） */
+  padding: 8px 14px;
+
+  box-sizing: border-box;
+}
+
+/* ★#appRoot が高さを持っていないと 100% が効かないので明示 */
+html, body{
+  height: 100%;
+}
+
+#appRoot{
+  height: 100%;
+}
+
+.pane{
+  position: relative;
+  border-radius: 0;         /* 枠っぽさを消す */
+  background: transparent;  /* ★パネルの白背景を消す（プリント感） */
+  overflow: visible;
+
+  /* ★Grid子の“押し広げ”を止める（中央のfitが左右に波及しない） */
+  min-height: 0;
+  min-width: 0;
+}
+
+.pane-left{
+  padding: 8px 14px;
+  background: transparent;  /* 念のため */
+
+  /* ★grid行(1fr)いっぱいに伸ばして、中央の内容高に引っ張られない */
+  height: 100%;
+  box-sizing: border-box;
+}
+
+/* ===== 左：ヒント枠（相殺なし／gap=0／margin-topだけで位置決め） ===== */
+.hint-area{
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+
+  /* ★paddingで基準を作らない（ズレの原因になる） */
+  padding: 0;
+}
+
+.hint-stack{
+  /* ★上下2枠：残り高さを2等分 */
+  height: 100%;
+  box-sizing: border-box;
+
+  display: flex;
+  flex-direction: column;
+
+  /* 枠間の隙間だけ固定 */
+  gap: 70px;
+
+  /* 位置合わせ用（必要ならここだけ調整） */
+  margin-top: 0px;
+
+  align-items: center;
+}
+
+.hint-box{
+  width: 180px;
+  flex: 1;
+
+  border: 2px solid #000;
+  border-radius: 12px;
+  background: #fff;
+  box-sizing: border-box;
+
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+
+  font-family:
+    "UD Digi Kyokasho N-R",
+    "UD Digi Kyokasho NK-R",
+    "UDデジタル教科書体N-R",
+    "UDデジタル教科書体NK-R",
+    "BIZ UDGothic",
+    system-ui,
+    sans-serif;
+
+  /* 方針A：vh + clamp（基準値）。はみ出す時は app.js の fit が自動で下げる */
+  font-size: clamp(18px, 2.6vh, 34px);
+  line-height: 1.5;
+  letter-spacing: 0.10em;
+
+  padding: 14px;
+  overflow: hidden;
+}
+
+/* ヒントOFF時は “枠だけ薄く” */
+.hint-area.is-hint-closed .hint-box{
+  opacity: 0.25;
+}
+
+/* A'：中央本文 */
+.pane-center{
+  padding: 8px 14px;
+  background: transparent;
+
+  /* ★grid行(1fr)いっぱいに伸ばす（中央の内容サイズが行高を決めない） */
+  height: 100%;
+  box-sizing: border-box;
+}
+
+/* A'：左ダミー */
+.pane-spacer{
+  padding: 0;
+  background: transparent;
+}
+
+/* 右：ActionPanelを上寄せで置く（マウントだけ） */
+.pane-right{
+  padding: 14px;
+  background: transparent;
+
+  display: flex;
+  flex-direction: column;
+
+  /* 横は中央 */
+  align-items: center;
+
+  /* 既存の「下寄せ」思想は維持（auto margin で上/下を分ける） */
+  justify-content: flex-end;
+
+  height: 100%;
+  box-sizing: border-box;
+
+  /* 下端の安全マージン（児童環境の切れ対策） */
+  padding-bottom: calc(14px + 28px);
+}
+
+/* =========================
+   進捗表示（A案）
+   右カラム上／数字だけ大
+========================= */
+.progress-box{
+  margin-bottom: auto;
+
+  /* ★上の空き：いま(14px)の3倍＝42px にする（追加で +28px） */
+  margin-top: 28px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  width: 110px;
+  height: 110px;
+
+  border: 2px solid #d0d0d0;
+  border-radius: 50%;
+
+  box-sizing: border-box;
+
+  font-family:
+    "UD Digi Kyokasho N-R",
+    "UD Digi Kyokasho NK-R",
+    "UDデジタル教科書体N-R",
+    "UDデジタル教科書体NK-R",
+    system-ui,
+    sans-serif;
+}
+
+.progress-current{
+  font-size: 34px;
+  font-weight: 800;
+  line-height: 1;
+
+  margin: 0;
+
+  width: 100%;
+  text-align: center;
+
+  /* ★A：現在番号だけアクセント（国語ピンク寄り） */
+  color: #FF3366;
+
+  /* ★うるさくならない程度に“くっきり” */
+  text-shadow: 0 0 0.5px rgba(0,0,0,0.25);
+}
+
+/* 分数風の「線」 */
+.progress-line{
+  /* ★分数の横棒（通常レイアウトなので width/height でOK） */
+  width: 32px;      /* 線の長さ（調整ポイント） */
+  height: 2px;      /* 線の太さ */
+  background: #333;
+  border-radius: 999px;
+
+  margin: 8px 0;
+}
+
+/* 分数風の「下（総数）」 */
+.progress-total{
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+/* ===== 本文（穴あき文）：完全縦書き ===== */
+.sentence{
+  width: 100%;
+  height: 100%;
+
+  /* ★段階式（JSで fit-m / fit-s を付け替える） */
+  --sent-fs: 34px;
+  --sent-lh: 1.55;
+
+  /* ★2本の縦カラム（右→左） */
+  display: flex;
+  flex-direction: row-reverse;
+
+  gap: 34px;
+  justify-content: center;
+  align-items: flex-start;
+
+  margin: 0;
+
+  /* ★上下位置は固定（問題の長さで上下が動かない） */
+  padding: 5px 0 0 0;
+
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+/* 1段階小さく（位置は固定、サイズだけ変える） */
+.sentence.fit-m{
+  --sent-fs: 30px;
+}
+
+/* 2段階小さく（位置は固定、サイズだけ変える） */
+.sentence.fit-s{
+  --sent-fs: 26px;
+}
+
+/* 共通：縦書きカラム */
+.sent-col{
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+
+  font-family:
+    "UD Digi Kyokasho N-R",
+    "UD Digi Kyokasho NK-R",
+    "UDデジタル教科書体N-R",
+    "UDデジタル教科書体NK-R",
+    "BIZ UDGothic",
+    system-ui,
+    sans-serif;
+
+  font-size: var(--sent-fs);
+
+  /* ★行間：もっとゆったり */
+  line-height: 1.55;
+
+  /* ★字間：そのまま（必要なら後で微調整） */
+  letter-spacing: 0.12em;
+}
+
+/* 右カラム：語ボタン＋続きの文 */
+.sent-base{
+  white-space: normal;
+}
+
+/* 右カラムの続きの文（通常文字） */
+.sent-text{
+  font-size: 34px;
+  font-weight: 500;
+}
+
+/* ★fit時：固定サイズ組（ボタン文字・「の中には」）も一緒に縮める */
+.sentence.fit-m .sent-text{
+  font-size: 30px;
+}
+.sentence.fit-s .sent-text{
+  font-size: 26px;
+}
+
+.sentence.fit-m .kana-btn{
+  font-size: 30px;
+}
+.sentence.fit-s .kana-btn{
+  font-size: 26px;
+}
+
+/* ★「の」と「な」の間：縦書きの進む方向（inline方向）に 10px 空ける */
+.seg-gap{
+  display: inline-block;
+
+  /* 縦書きでは「下方向の間」は inline-size が効く */
+  inline-size: 0.5em;
+
+  /* 余計な太さは持たせない */
+  block-size: 0;
+
+  letter-spacing: 0;
+}
+
+/* ★答え□（上・下）：枠あり／中身は常に中央 */
+.blank-box{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 2px solid #000;
+
+  /* ★答え枠は角丸長方形のまま */
+  border-radius: 12px;
+
+  width: 80px;
+  height: 240px;
+
+  box-sizing: border-box;
+  background: #fff;
+
+  /* ★枠内文字も「すいか」と揃える（微妙な差の解消） */
+  font-size: 44px;
+  font-weight: 700;
+  line-height: 1;
+
+  font-family:
+    "UD Digi Kyokasho N-R",
+    "UD Digi Kyokasho NK-R",
+    "UDデジタル教科書体N-R",
+    "UDデジタル教科書体NK-R",
+    "BIZ UDGothic",
+    system-ui,
+    sans-serif;
+
+  user-select: none;
+  cursor: pointer;
+}
+
+/* ★上の□と、その直後の「が」を“半角の半分くらい”離す（縦書きなので論理プロパティ） */
+#blankWord{
+  /* ★縦書きの inline の流れ（上→下）に効くようにする */
+  margin-inline-end: 0.25em;
+}
+
+/* ★2行目：文字「が」と下の□の間を半角くらいに縮める */
+#blankWord + .blank-box{
+  /* 縦書き：進行方向（下）への間 */
+  margin-inline-start: 0.5em;
+}
+
+/* 下の いる/ある は少し低くてもOK */
+.blank-box.exist{
+  height: 150px;
+}
+
+.judge-layer{
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* ★○×画像：共通（中央表示は app.js 側で座標決定） */
+.judge-layer .judge-mark{
+  user-select: none;
+  -webkit-user-drag: none;
+  image-rendering: auto;
+}
+
+/* ※文字色の指定は残しても害はないが、画像化したので実質使われません */
+.judge-layer .ok{
+  color: #E74C3C;
+}
+
+.judge-layer .ng{
+  color: #2E86DE;
+  opacity: 0.75;
+}
+
+button{
+  font-size: 22px;
+  border: 2px solid #d0d0d0;
+  border-radius: 14px;
+  background: #fff;
+  padding: 10px 12px;
+}
+
+/* ★文字ボタン（ぞ/う/…）：本文より2周り大 */
+.kana-buttons button{
+  font-size: 34px;
+  font-weight: 700;
+  border: 2px solid #000;
+  border-radius: 10px;
+  width: 64px;
+  height: 64px;
+  padding: 0;
+}
+
+/* ★本文中の「さ/か/な」ボタン */
+.sentence .kana-btn{
+  width: 60px;
+  height: 60px;
+  padding: 0;
+
+  border: 2px solid #000;
+
+  /* ★すいかボタンは区別のため「正方形そのまま」 */
+  border-radius: 0;
+
+  background: #fff;
+
+  font-family:
+    "UD Digi Kyokasho N-R",
+    "UD Digi Kyokasho NK-R",
+    "UDデジタル教科書体N-R",
+    "UDデジタル教科書体NK-R",
+    "BIZ UDGothic",
+    system-ui,
+    sans-serif;
+
+  font-size: 34px;
+
+  /* ★追加④：太字にしない */
+  font-weight: 500;
+
+  line-height: 1;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  /* ★段間も詰める（長文で折り返しにくく） */
+  margin-bottom: 0.12em;
+
+  cursor: pointer;
+  user-select: none;
+
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* いる/ある のボタンは今回は使わない（枠を見せない） */
+.exist-buttons{
+  display: none !important;
+}
+
+button:active{
+  transform: translateY(1px);
+}
+
+.btn-clear{
+  width: 100%;
+  font-size: 22px;
+}
+
+.action-row{
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.btn-check, .btn-next{
+  width: 100%;
+  font-size: 28px;
+  padding: 14px 12px;
+}
+
+.gear-row{
+  display: grid;
+  grid-template-columns: 1fr;
+}
+
+.btn-gear{
+  width: 100%;
+  font-size: 28px;
+  padding: 10px 12px;
+}
+
+/* 共通：選択中 */
+.is-selected{
+  border-color: #333;
+}
+
+/* ★本文中の文字ボタン：薄い紫（オレンジ系ボタンと被らない） */
+.sentence .kana-btn.is-selected{
+  background: #E8D9FF;
+}
+
+/* ★スクショ②/④：語ボタン列の末尾→「の」の隙間を「半角寄り」にする */
+.sent-base .kana-btn:last-of-type{
+  margin-bottom: 0.10em;
+}
+
+/* ★スクショ②：最後のボタンの次（sent-text）に“半角くらい”の間を作る */
+.sent-base .sent-text{
+  margin-inline-start: 0.25em;
+}
+
+.is-disabled{
+  opacity: 0.45;
+}
+
+/* 左列（ボタン群）：右カラム幅（--side-w）に必ず収める */
+.kana-buttons,
+.exist-buttons,
+.btn-clear,
+.action-row{
+  width: 100%;
+  max-width: 100%;
+  justify-self: start;
+}
+
+/* ★ActionPanel：右カラム幅に必ず収める（右端クリップ防止） */
+#actionMount{
+  position: static;
+  left: auto;
+  bottom: auto;
+  transform: none;
+
+  /* ★中身幅にして右カラム中央へ */
+  width: fit-content;
+  max-width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+
+  /* 右端欠け対策は、幅100%運用をやめるので一旦外す */
+  padding-right: 0px;
+  box-sizing: border-box;
+}
+
+/* ===== ActionPanel：中身のはみ出し＆右端欠けを根絶 ===== */
+#actionMount{
+  overflow: visible;
+}
+
+/* ActionPanelの「外枠」(#actionMount直下の要素)を必ず右カラム内に収める */
+#actionMount > *{
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* ===== 歯車（アプリ用） ===== */
+#btnGear{
+  font-family: "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif;
+  font-size: 18px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

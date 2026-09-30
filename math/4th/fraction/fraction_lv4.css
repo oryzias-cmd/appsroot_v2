@@ -1,0 +1,378 @@
+/* ========================================
+   fraction_lv4.css
+======================================== */
+
+html,
+body{
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body{
+  font-family:
+    "UD デジタル 教科書体 N-R",
+    "UD デジタル 教科書体 N-B",
+    "BIZ UDゴシック",
+    "YuGothic",
+    sans-serif;
+
+  display: flex;
+  flex-direction: column;
+}
+
+main#mainArea{
+  flex: 1;
+
+  /* quiz画面の高さ計算を安定させる */
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+#slot-footer{
+  border-top: 1px solid rgba(0,0,0,0.06);
+}
+
+/* メインの余白 */
+#mainArea{
+  padding: 10px 12px 12px;
+  box-sizing: border-box;
+}
+
+/* quizPage を mainArea の残り高さで伸ばす */
+#quizPage{
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
+
+/* 2カラム配下の“高さ100%”が効くようにする保険 */
+.quiz-layout{
+  flex: 1;
+  min-height: 0;
+}
+
+.quiz-left,
+.quiz-right{
+  min-height: 0;
+}
+
+#cardGrid{
+  height: 100%;
+}
+
+/* 2カラム */
+.quiz-layout{
+  display: flex;
+  gap: 12px;
+  height: 100%;
+}
+
+/* 左カラム：カードグリッド（72%） */
+.quiz-left{
+  flex: 0 0 72%;
+  max-width: 72%;
+  display: flex;
+  align-items: stretch;
+}
+
+#cardGrid{
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-auto-rows: minmax(80px, 1fr);
+  gap: 10px;
+  width: 100%;
+}
+
+/* 右カラム：見本パネル（28%） */
+.quiz-right{
+  flex: 0 0 28%;
+  max-width: 28%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.info-panel{
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.12);
+  padding: 14px 16px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* 図ON/OFF */
+.diagram-toggle-row{
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.diagram-toggle-row label{
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  user-select: none;
+}
+
+/* 見本分数 */
+.target-fraction{
+  text-align: center;
+  font-size: 44px;
+  line-height: 1.1;
+  padding: 8px 0 0;
+}
+
+/* コメント */
+.comment-box{
+  font-size: 14px;
+  line-height: 1.4;
+  min-height: 44px;
+}
+
+/* ボタン */
+.quiz-buttons{
+  display: flex;
+  gap: 10px;
+}
+
+#btnCheck{
+  width: 100%;
+  border: none;
+  border-radius: 999px;
+  padding: 14px 12px;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  background: #ffcc33;
+  box-shadow: 0 6px 0 rgba(0,0,0,0.08);
+}
+
+#btnCheck:active{
+  transform: translateY(1px);
+}
+
+/* 分数カード */
+.fraction-card{
+  position: relative;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.12);
+  padding: 10px;
+  box-sizing: border-box;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  transition: transform 0.12s ease-out, box-shadow 0.12s ease-out, background-color 0.12s ease-out;
+  overflow: hidden;
+}
+
+.fraction-card:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 5px 12px rgba(0,0,0,0.14);
+}
+
+.fraction-card.selected{
+  outline: 3px solid rgba(255, 165, 0, 0.55);
+}
+
+.fraction-card.locked{
+  cursor: default;
+  opacity: 0.98;
+}
+
+.fraction-card.correct{
+  outline: 3px solid rgba(229, 57, 53, 0.55);
+}
+
+.fraction-card.wrong{
+  outline: 3px solid rgba(30, 136, 229, 0.55);
+}
+
+/* 分数（縦組） */
+.value{
+  font-size: 44px;
+  text-align: center;
+  padding-top: 6px;
+  padding-bottom: 8px;
+}
+
+.frac{
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.frac-num,
+.frac-den{
+  line-height: 1.0;
+}
+
+.frac-bar{
+  width: 56px;
+  height: 3px;
+  background: #000;
+  border-radius: 2px;
+  margin: 6px 0 6px;
+}
+
+/* 図 */
+.fraction-card .diagram{
+  flex: 0 0 auto;
+  height: 18px;
+  border-radius: 12px;
+  background: rgba(92, 107, 192, 0.10);
+  overflow: hidden;
+}
+
+/* 図の中身（割合の塗り） */
+.fraction-card .diagram > div{
+  background: rgba(92, 107, 192, 0.55);
+  border-radius: 12px;
+}
+
+.fraction-card .diagram.hidden{
+  display: none;
+}
+
+/* ○× */
+.card-mark{
+  position: absolute;
+  right: 10px;
+  top: 8px;
+  font-size: 44px;
+  font-weight: 900;
+  line-height: 1;
+  opacity: 0.85;
+  pointer-events: none;
+  color: #111; /* 未判定時の保険 */
+}
+
+.card-mark.circle{
+  color: #e53935; /* 赤 */
+}
+
+.card-mark.cross{
+  color: #1e88e5; /* 青 */
+}
+
+/* ───────────────────────────────
+   ミニ設定モーダル
+─────────────────────────────── */
+.mini-setup-modal.hidden{
+  display: none;
+}
+
+.mini-setup-modal{
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+}
+
+.mini-setup-backdrop{
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.35);
+}
+
+.mini-setup-card{
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: min(640px, calc(100vw - 24px));
+  background: #ffffff;
+  border-radius: 18px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+  overflow: hidden;
+}
+
+.mini-setup-head{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(0,0,0,0.08);
+}
+
+.mini-setup-title{
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.mini-setup-close{
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid rgba(0,0,0,0.10);
+  background: #fff;
+  cursor: pointer;
+  font-size: 18px;
+}
+
+.mini-setup-body{
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.mini-setup-block{
+  border: 1px solid rgba(0,0,0,0.08);
+  border-radius: 14px;
+  padding: 10px 12px;
+}
+
+.mini-setup-label{
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+.mini-setup-row{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 16px;
+  font-size: 16px;
+}
+
+.mini-setup-row label{
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  user-select: none;
+}
+
+.mini-setup-foot{
+  padding: 12px 14px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  border-top: 1px solid rgba(0,0,0,0.08);
+}
+
+.mini-setup-btn{
+  border: 1px solid rgba(0,0,0,0.10);
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 16px;
+  font-weight: 800;
+  cursor: pointer;
+  background: #fff;
+}
+
+.mini-setup-btn.primary{
+  background: #2f80ed;
+  color: #fff;
+  border-color: rgba(0,0,0,0);
+}
+
+.mini-setup-btn.ghost{
+  background: #fff;
+}

@@ -1,0 +1,10 @@
+/* 4枚ボードの割合は必要に応じて上書き可 */
+:root{
+  --board-col1: 50%;
+  --board-col2: 50%;
+  --board-row1: 55%;
+  --board-row2: 45%;
+}
+.shape{position:absolute; width:120px; cursor:grab; user-select:none;}
+.panel{position:relative; overflow:hidden}
+.panel .shape{position:absolute}

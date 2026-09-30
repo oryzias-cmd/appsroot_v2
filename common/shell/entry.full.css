@@ -1,0 +1,103 @@
+/* ========================================
+   entry.full.css（Entry Lego）
+   - entryは「ページ内表示」：ヘッダー下の mainArea 内に SetupCard を収める
+   - setup.full.css（モーダル標準）は変更しない（A1）
+======================================== */
+
+html, body{
+  height: 100%;
+
+  /* タブレット：長押しメニュー/選択カーソル/青い範囲選択を抑止（entry標準） */
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  caret-color: transparent;
+}
+
+/* 入力UIを使う可能性への保険 */
+input, textarea{
+  -webkit-user-select: text;
+  user-select: text;
+  caret-color: auto;
+}
+
+body{
+  margin: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* header は上、main は残り全部 */
+#slot-header{
+  flex: 0 0 auto;
+  display: block;
+
+  /* ★テンプレ統一：ヘッダー高さは「中身（header.title）」に追従させる
+     ＝余計な白帯（下の空白）を作らない */
+  min-height: 0;
+
+  position: relative;
+  z-index: 20000;        /* 常に最前面（戻るが死なない） */
+}
+
+#mainArea{
+  flex: 1 1 auto;
+  min-height: 0;         /* flex内はみ出し防止 */
+  overflow: hidden;
+  position: relative;    /* ★ページ内化の基準点 */
+}
+
+/* ========================================
+   A1：SetupCard（モーダル標準）を entry だけページ内に上書き
+   - setup.full.css の .setupcard-wrap は fixed/inset で全画面を覆う
+   - entryでは mainArea 内に収める（ヘッダーに被せない）
+======================================== */
+
+#mainArea .setupcard-wrap{
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  background: transparent; /* entryは暗幕なし（ページ内） */
+
+  /* ★テンプレ統一：ヘッダー下端＝大パネル上端 をピッタリにする
+     ＝上方向の余白を0に固定 */
+  padding: 0 10px 28px;
+
+  /* 横センタリングは維持。上端から開始（ぴったり合わせ） */
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+/* ========================================
+   A案 標準化：大パネル（白いカード）＝中身に追従して伸縮
+   - 列幅（例：280×3）を変えても毎回自動追従
+   - 最小幅は 700px を保証（ただし狭い画面では 100%）
+   - entry（#mainArea）内だけに限定して副作用を最小化
+======================================== */
+#mainArea .setupcard-wrap .setupcard-panel{
+  width: fit-content;
+  max-width: 100%;
+  min-width: min(700px, 100%);
+  margin-left: auto;
+  margin-right: auto;
+  box-sizing: border-box;
+}
+
+/* ========================================
+   教材ルール：横画面前提（entry標準）
+======================================== */
+@media (orientation: portrait){
+  body::before{
+    content: "よこにして つかってね";
+    position: fixed;
+    inset: 0;
+    background: #ffffff;
+    display: grid;
+    place-items: center;
+    font-size: 1.5rem;
+    font-weight: 700;
+    z-index: 999999;
+  }
+}

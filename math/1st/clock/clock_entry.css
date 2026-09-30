@@ -1,0 +1,111 @@
+:root{
+  --entry-bg:#f5f5f5;
+  --entry-blue:#1976d2;
+  --entry-orange:#ff7a3d;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--entry-bg)}
+body{
+  min-height:100dvh;
+  font-family:"UD Digi Kyokasho N-R","BIZ UD Gothic","Yu Gothic",sans-serif;
+  color:#222;
+}
+.entry-main{min-height:100dvh;display:grid;place-items:center;padding:72px 18px 54px}
+.entry-panel{position:relative;padding-bottom:62px}
+.entry-columns{grid-template-columns:1fr 1fr!important;gap:24px}
+.entry-columns .setupcard-col{width:280px;min-width:280px;max-width:280px}
+.entry-columns .setupcard-block{height:100%}
+.entry-columns .setupcard-label{margin-bottom:18px}
+.entry-columns .setupcard-desc{display:none!important}
+.entry-columns .setupcard-pill{min-height:82px;align-items:center;font-size:1.28rem}
+.entry-columns .setupcard-pill span{white-space:pre-line;line-height:1.35}
+.entry-columns .setupcard-pill span br{display:block}
+.entry-float{
+  position:fixed;top:max(14px,env(safe-area-inset-top));z-index:40;
+  border:1px solid #b0bec5;background:rgba(255,255,255,.96);
+  box-shadow:0 4px 12px rgba(0,0,0,.12);cursor:pointer
+}
+.entry-back{
+  left:max(14px,env(safe-area-inset-left));height:52px;padding:0 18px;border-radius:16px;
+  font-family:"UD Digi Kyokasho N-R","BIZ UD Gothic",sans-serif;font-size:1.08rem;font-weight:700
+}
+.entry-gear{
+  right:max(14px,env(safe-area-inset-right));width:58px;height:58px;border-radius:16px;
+  font-size:1.8rem;display:grid;place-items:center
+}
+.entry-word-mode{
+  position:absolute;right:18px;bottom:16px;min-width:86px;height:42px;padding:0 14px;
+  border:1px solid #1976d2;border-radius:999px;background:#eef6ff;color:#174f86;
+  font-family:"BIZ UD Gothic","Yu Gothic",sans-serif;font-size:1rem;font-weight:700;cursor:pointer
+}
+.entry-modal{position:fixed;inset:0;background:rgba(0,0,0,.4);display:grid;place-items:center;z-index:80;padding:18px}
+.entry-modal.hidden{display:none}
+.entry-modal-inner{
+  width:min(730px,94vw);max-height:90dvh;overflow:auto;background:white;border-radius:18px;
+  box-shadow:0 10px 30px rgba(0,0,0,.28);padding:22px 24px 18px;
+  font-family:"BIZ UD Gothic","Yu Gothic","Meiryo",sans-serif
+}
+.entry-settings-grid{display:grid;grid-template-columns:220px minmax(0,1fr);gap:26px}
+.entry-settings-common{padding-right:24px;border-right:1px solid #d6dde2}
+.entry-settings-grid h3{margin:0 0 16px;font-size:1.18rem;font-weight:700}
+.entry-settings-grid h4{margin:8px 0 10px;font-size:1rem;font-weight:700}
+.entry-settings-grid label{display:flex;align-items:center;gap:8px;margin:11px 0;font-size:1rem}
+.entry-settings-grid .muted{margin-top:22px;color:#90a4ae}
+.entry-settings-grid .disabled{color:#a7b2b8}
+.settings-btn{display:block;width:100%;min-height:46px;margin:10px 0;border:1px solid #b0bec5;border-radius:14px;background:#fff;font-size:1rem;cursor:pointer}
+.entry-modal-actions{text-align:right;margin-top:18px}
+.settings-close{min-width:100px;height:44px;border:none;border-radius:999px;background:var(--entry-blue);color:white;font-weight:700;cursor:pointer}
+@media(max-width:700px){
+  .entry-main{padding-top:84px;align-items:start}
+  .entry-columns{grid-template-columns:1fr!important}
+  .entry-columns .setupcard-col{width:min(300px,84vw);min-width:0;max-width:none}
+  .entry-settings-grid{grid-template-columns:1fr}
+  .entry-settings-common{padding:0 0 18px;border-right:none;border-bottom:1px solid #d6dde2}
+}
+
+/* v2 revision：ENTRYの左右ボタンは役割に合わせて高さを分ける */
+.entry-columns [data-col="1"] .setupcard-pill{
+  min-height:82px;
+}
+.entry-columns [data-col="2"] .setupcard-pill{
+  min-height:58px;
+  padding-top:8px;
+  padding-bottom:8px;
+}
+
+/* 独立ボタンは必ず押せる位置に置く */
+.entry-back,.entry-gear{
+  z-index:120!important;
+  pointer-events:auto!important;
+}
+
+
+/* v2 revision2：setup.full.css の全面ラッパー(z-index:9999)より前面へ */
+.entry-back,.entry-gear{
+  z-index:10020!important;
+  pointer-events:auto!important;
+}
+.entry-modal{
+  z-index:10100!important;
+}
+.entry-modal-inner{
+  position:relative;
+  z-index:10101;
+}
+
+
+/* v2 revision10：ENTRY設定も有効項目は黒、未実装だけ薄いグレー */
+.entry-settings-grid h3,
+.entry-settings-grid h4:not(.muted),
+.entry-settings-grid label:not(.disabled),
+.entry-settings-grid label:not(.disabled) span,
+.settings-btn {
+  color:#000 !important;
+}
+.entry-settings-grid .muted {
+  color:#90a4ae !important;
+}
+.entry-settings-grid .disabled,
+.entry-settings-grid .disabled span {
+  color:#a7b2b8 !important;
+}

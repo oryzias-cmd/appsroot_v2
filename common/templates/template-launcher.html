@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>（テンプレート）ランチャー</title>
+<style>
+  /* ====== ひな形：上の変数を変えるだけで全体を調整できます ====== */
+  :root{
+    --card-height: 160px;          /* ボタンの高さ（120/140/160 など） */
+    --title-size: 1.4rem;          /* 上段タイトル（第1弾 など） */
+    --desc-size: 0.95rem;          /* 下段の説明文 */
+    --radius: 16px;                 /* 角丸 */
+    --border-color: #b4b9bf;       /* 枠線色 */
+    --hover-bg: #f5f5f5;           /* ホバー時の背景 */
+    --shadow: 0 1px 2px rgba(0,0,0,0.05);
+    --shadow-hover: 0 3px 8px rgba(0,0,0,0.15);
+  }
+
+  /* ====== ページ基本 ====== */
+  body{
+    font-family:'BIZ UD教科書体','UD Digi Kyokasho N-R','YuKyokasho',
+                'Hiragino Kaku Gothic ProN','Yu Gothic','Noto Sans JP',system-ui,sans-serif;
+    margin:0; padding:0; text-align:center; background:#fff; color:#111;
+  }
+  h1{ margin:16px 0 24px; font-size:1.8rem; letter-spacing:0.1em; }
+
+  /* ====== グリッド配置 ====== */
+  .menu{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+    gap:20px;
+    width:90%; max-width:900px;
+    margin:0 auto 40px;
+  }
+
+  /* ====== 1枚=リンク（カード全体がボタン） ====== */
+  .btn{
+    display:flex; flex-direction:column; justify-content:center; align-items:center;
+    height:var(--card-height);
+    border:3px solid var(--border-color);
+    border-radius:var(--radius);
+    background:#fff;
+    color:#111;
+    text-decoration:none;
+    transition:transform .12s ease, box-shadow .12s ease, background .12s ease;
+    box-shadow:var(--shadow);
+    outline: none;
+  }
+  .btn strong{
+    font-size:var(--title-size);
+    line-height:1.1;
+  }
+  .btn span{
+    font-size:var(--desc-size);
+    color:#444;
+    margin-top:8px;
+    line-height:1.5;
+    letter-spacing:0.04em;
+    padding:0 8px;   /* 説明が長いときの左右余白 */
+  }
+
+  .btn:hover{
+    background:var(--hover-bg);
+    transform:translateY(-2px);
+    box-shadow:var(--shadow-hover);
+  }
+  /* キーボード操作時もわかるよう可視フォーカス */
+  .btn:focus-visible{
+    box-shadow:0 0 0 3px #000, 0 0 0 6px #fff inset;
+  }
+
+  footer{ font-size:0.85rem; color:#666; margin:20px 0 14px; }
+</style>
+</head>
+<body>
+  <h1>（テンプレート）教材ランチャー</h1>
+
+  <div class="menu">
+
+    <!-- ↓ href を自分のアプリのファイル名に変えるだけで使えます -->
+    <a class="btn" href="./app-1.html">
+      <strong>第１弾</strong>
+      <span>ここに説明。例：三角形と四角形を分けよう</span>
+    </a>
+
+    <a class="btn" href="./app-2.html">
+      <strong>第２弾</strong>
+      <span>ここに説明。例：定義を学ぼう（辺・頂点）</span>
+    </a>
+
+    <a class="btn" href="#">
+      <strong>第３弾</strong>
+      <span>（準備中）ここに説明が入ります。必要なら2行でもOK。</span>
+    </a>
+
+    <a class="btn" href="#">
+      <strong>第４弾</strong>
+      <span>（準備中）ここに説明が入ります。</span>
+    </a>
+
+    <a class="btn" href="#">
+      <strong>第５弾</strong>
+      <span>（準備中）ここに説明が入ります。</span>
+    </a>
+
+    <a class="btn" href="#">
+      <strong>第６弾</strong>
+      <span>（準備中）ここに説明が入ります。</span>
+    </a>
+
+  </div>
+
+  <footer>© 共通ランチャーテンプレート</footer>
+
+  <!-- 使い方の要点：README-Launcher-HowTo.txt 参照 -->
+</body>
+</html>

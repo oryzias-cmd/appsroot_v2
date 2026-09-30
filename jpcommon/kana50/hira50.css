@@ -1,0 +1,358 @@
+/* ===== Hira50 コンポーネント用 CSS（書きアプリの50音部分を抽出） ===== */
+
+:root{
+  /* ボタンサイズなどの共通変数 */
+  --cell: 64px;
+  --gap: 10px;
+  --panel-gap: 12px;
+  --kana-gap: 10px;
+  --open-btn-font: 1.28rem;
+}
+
+/* 全体のベース */
+html,body{
+  margin:0;
+  background:#fafafa;
+  color:#111;
+  font-family:
+    "UD Digi Kyokasho N-R","UD Digi Kyokasho NK-R",
+    "Hiragino Maru Gothic ProN","Hiragino Maru Gothic Pro",
+    "Yu Gothic","Meiryo","Hiragino Sans","Noto Sans JP",sans-serif;
+}
+
+button{
+  cursor:pointer;
+  border-radius:12px;
+  border:1px solid #cfd5dd;
+  padding:0 16px;
+  background:#fff;
+  height: var(--cell);
+  white-space:nowrap;
+}
+
+button[aria-pressed="true"]{
+  background:#e6f2ff;
+  border-color:#4da3ff;
+}
+
+/* ページ全体の枠（中央寄せ） */
+.page{
+  max-width:1280px;
+  margin:0 auto;
+  padding:14px;
+}
+
+/* ヘッダ行（タイトル＋バッジ） */
+.headgrid{
+  display:grid;
+  grid-template-columns: max-content 8px auto 8px minmax(320px,1fr);
+  align-items:center;
+  margin-bottom: calc(var(--cell) / 2);
+  position:relative;
+  row-gap: 1.6rem; /* タイトルとバッジの間 */
+}
+
+.title{
+  grid-column:1 / -1;
+  justify-self:center;
+  font-weight:900;
+  font-size:1.9rem;
+  letter-spacing:.04em;
+}
+
+.picked-wrap{
+  grid-column:1 / -1;
+  justify-self:center;
+}
+
+.badge{
+  display:inline-flex;
+  align-items:center;
+  gap:.5rem;
+  background:#e7f0ff;
+  color:#0b57d0;
+  border:1px solid #cfe0ff;
+  padding:.55rem 1.1rem;
+  border-radius:999px;
+  font-weight:800;
+}
+
+.badge.big{
+  font-size:1.8rem;
+  padding:.6rem 1.2rem;
+}
+
+.badge .count{
+  display:inline-block;
+  min-width:3ch;
+  text-align:right;
+}
+
+/* ===== レイアウト本体 ===== */
+
+/* 5列グリッド：
+   1〜3列 … 行パネル／50音グリッド
+   4列     … 段パネル
+   5列     … クイック・つぎへ */
+.layout{
+  display:grid;
+  grid-auto-rows:auto;
+  align-items:start;
+  row-gap:16px;
+  column-gap:16px;
+  justify-content:center;
+  margin:0 auto;
+  grid-template-columns:
+    max-content  /* 1 */
+    max-content  /* 2 */
+    max-content  /* 3 */
+    max-content  /* 4: 段 */
+    max-content; /* 5: クイック */
+}
+
+/* 行（あ行〜ん）パネル：列1〜3をまたいで配置（下のグリッドと幅をそろえる） */
+.rowpanel{
+  grid-column:1 / 4;        /* 列1〜3 */
+  grid-row:1;               /* 1行目 */
+  background:#ecf9ee;
+  border:1px solid #d7eadc;
+  border-radius:14px;
+  padding:12px;
+  margin-bottom:10px;
+}
+/* 1行目右側：「つぎへ」用パネル（列4〜5を使用） */
+.next-panel{
+  grid-column:4 / 6;          /* 列4〜5をまとめて使用 */
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+  /* 行パネル .rowpanel と同じだけ下にスキマをあける */
+  margin:0 0 10px 0;          /* top right bottom left */
+}
+
+/* 中のラッパーは横いっぱいに伸ばす */
+.next-panel .next-wrap{
+  width:100%;
+}
+
+/* 「つぎへ」ボタン本体 */
+.next-wrap{
+  margin:0;
+  width:100%;
+}
+
+.next-btn{
+  width:100%;
+  height:var(--cell);       /* 行ボタンと同じ高さイメージ */
+  font-size:1.2rem;
+  background:#4da3ff;
+  color:#fff;
+  border:1px solid #2f7fd4;
+}
+
+/* 行ボタンの並び（右からあ行になるように JS 側で制御） */
+.rowbar{
+  display:grid;
+  grid-template-columns: repeat(11, var(--cell));
+  grid-auto-rows: var(--cell);
+  gap: var(--gap);
+}
+
+.row-spacer{
+  width:var(--cell);
+  height:var(--cell);
+}
+
+.rowbtn{
+  width: var(--cell);
+  height: var(--cell);
+  border:1px solid #cfd5dd;
+  border-radius:12px;
+  background:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  white-space: nowrap;
+  font-size: var(--open-btn-font);
+  line-height: 1;
+  user-select:none;
+}
+/* 行ボタンの「ん」はスペースだけ残してボタン非表示 */
+.rowbtn[data-key="n"]{
+  border-color: transparent;
+  background: transparent;
+  color: transparent;
+  pointer-events: none;
+  cursor: default;
+  outline: none;
+}
+
+/* メイン：50音グリッド＋段＋クイック（下段） */
+.main{
+  grid-column:1 / span 5;   /* 下段は5列すべてを使う */
+  display:grid;
+  grid-template-columns:
+    max-content  /* グリッド 1〜3列 */
+    max-content
+    max-content
+    max-content  /* 段 */
+    max-content; /* クイック */
+  column-gap:16px;
+  align-items:stretch;
+  justify-content:center;
+}
+
+/* 50音グリッド（1〜3列） */
+.grid{
+  grid-column:1 / span 3;
+  display:grid;
+  grid-template-columns:repeat(11, var(--cell));
+  grid-auto-rows:var(--cell);
+  background:#fff;
+  border:1px solid #e5e5e5;
+  border-radius:14px;
+  padding:12px;
+  align-self: stretch;
+  height: 100%;
+  align-content:start;
+  justify-content:start;
+  box-sizing:border-box;
+  gap: var(--kana-gap);
+}
+
+.cell{
+  width:var(--cell);
+  height:var(--cell);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:12px;
+  border:1px solid #999;
+  font-family:
+    "UD Digi Kyokasho N-R","UD Digi Kyokasho NK-R",
+    "Hiragino Maru Gothic ProN","Hiragino Maru Gothic Pro",
+    "Yu Gothic","Meiryo","Hiragino Sans","Noto Sans JP",sans-serif;
+  font-size:30px;
+  background:#fff;
+  user-select:none;
+  box-sizing:border-box;
+}
+/* 「ん」の下に並ぶ4つの空セル（2～5段目の一番左）を非表示にする */
+.grid .cell:nth-child(12),
+.grid .cell:nth-child(23),
+.grid .cell:nth-child(34),
+.grid .cell:nth-child(45){
+  border-color: transparent;
+  background: transparent;
+  color: transparent;
+  pointer-events: none;
+  cursor: default;
+  outline: none;
+}
+
+.cell.empty{
+  background:#f4f4f4;
+  color:#bbb;
+  border-style:dashed;
+}
+
+/* 表示だけするダミーかな（やいゆえよ・わいうえを） */
+.cell.dummy{
+  background:#f4f4f4;
+  color:#777;        /* 文字は濃いグレー */
+  border-style:dashed;
+}
+
+.cell.selected,
+.cell.is-selected,
+.cell[aria-pressed="true"]{
+  background:#e6f2ff;
+  border-color:#4da3ff;
+}
+
+/* 段ボタン（あ段〜お段：4列） */
+.panel.dan-panel{
+  grid-column:4;                 /* main の4列目に配置 */
+  background:#fffbe6;           /* 薄い黄色の地 */
+  border-color:#f4e6a6;         /* 少し濃い黄色の枠線（太さなどは .panel を継承） */
+  border-radius:14px;
+  padding:12px;                 /* 内側に余白 */
+  width:max-content;
+  justify-self:start;
+  box-sizing:border-box;
+}
+
+.dancol{
+  display:grid;
+  grid-auto-rows: var(--cell);
+  gap: var(--kana-gap);
+  justify-items:center;
+  align-items:center;
+}
+
+.dancol > button,
+.danbtn{
+  width: var(--cell);
+  min-width: var(--cell);
+  height: var(--cell);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border:1px solid #cfd5dd;
+  border-radius:12px;
+  background:#fff;
+  font-size: var(--open-btn-font);
+  line-height:1;
+  box-sizing:border-box;
+}
+
+/* 右カラム：クイック */
+.util{
+  grid-column:5;
+  display:flex;
+  flex-direction:column;
+  gap: var(--panel-gap);
+  align-items:flex-start;
+  margin-top:0;  /* 負のマージンをやめて、グリッドに任せる */
+}
+
+.panel{
+  background:#fff5f5; /* クイックパネルの地：薄い赤 */
+  border:1px solid #e5e5e5;
+  border-radius:14px;
+  padding:12px;
+}
+
+.panel .center-title{
+  font-weight:800;
+  text-align:center;
+  margin:0 0 10px 0;
+}
+
+/* 右カラムの枠は中身の幅にフィット＆左寄せ（将来の拡張用） */
+#utilCol{
+  justify-self:start;
+}
+
+#utilCol .panel{
+  width:max-content;
+}
+
+/* クイックボタンの並び */
+.quick{
+  display:flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: stretch;
+  justify-content: center;
+}
+
+.quick .qbtn{
+  height: var(--cell);
+  padding: 0 16px;
+  border-radius: 12px;
+  white-space: nowrap;
+  font-size: 1.08rem;
+}

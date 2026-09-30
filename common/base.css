@@ -1,0 +1,173 @@
+/* ============================================
+   base.css（シリーズ共通の“土台”）
+   - フォント宣言
+   - :root トークン（色/余白/寸法/線/影/層/モーション）
+   - 最小の本文設定（リセット相当は入れない）
+   - 押す系（button / select 等）の正準化
+   ※「部品（肉）」は app.css / header.full.css 側へ寄せる
+   ============================================ */
+
+/* --- 教科書体：ローカル名のゆらぎを吸収 --- */
+@font-face{
+  font-family: "KyokashoUD";
+  src:
+    local("UDデジタル教科書体 N-R"),
+    local("UD デジタル 教科書体 N-R"),
+    local("UDデジタル教科書体N-R"),
+    local("UD Digi Kyokasho N-R"),
+    local("UDDigiKyokasho N-R"),
+    local("UDデジタル教科書体 NP-R"),
+    local("UD Digi Kyokasho NP-R");
+  font-display: swap;
+}
+
+/* --- トークン（直値はここに集約。UI側は var(--*) 経由） --- */
+:root{
+  /* ベース色 */
+  --color-fg: #111;
+  --color-bg: #f7f9fc;
+  --color-line: #222;
+  --color-weak: #c9d2dd;
+  --color-strong: #0b1b2b;
+
+  /* 役割色 */
+  --color-primary: #2979ff;
+  --color-accent:  #ff6;
+  --color-ok:      #2e7d32;
+  --color-ng:      #d32f2f;
+  --color-info:    #1976d2;
+  --color-warn:    #f57c00;
+  --color-accent-lightblue: #bcd8ff;
+
+  /* 余白スケール（px） */
+  --space-0: 0px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+
+  /* 角丸・影 */
+  --radius-s: 6px;
+  --radius-m: 12px;
+  --radius-l: 20px;
+  --shadow-1: 0 2px 6px rgba(0,0,0,.08);
+  --shadow-2: 0 6px 16px rgba(0,0,0,.12);
+
+  /* 盤面寸法 */
+  --cell: 40px;        /* マス一辺（シリーズ共通） */
+  --grid-gap: 0px;     /* マス間隔 */
+  --stroke-w: 2px;     /* グリッド線幅 */
+
+  /* Z層 */
+  --z-header: 100;
+  --z-dialog: 3000;
+  --z-overlay: 2000;
+  --z-tooltip: 4000;
+
+  /* モーション */
+  --dur-fast: .12s;
+  --dur-base: .2s;
+  --dur-slow: .32s;
+  --ease: cubic-bezier(.2,.0,.2,1);
+
+  /* 4段構成の共通トークン（ここだけ触れば全画面が揃う） */
+  --header-py: 0px;           /* ヘッダー上下余白 */
+  --header-px: 0px;           /* ヘッダー左右余白 */
+  --problem-bar-py: 12px;     /* （互換）問題バー上下余白 */
+  --problem-bar-px: 0px;      /* （互換）問題バー左右余白 */
+  --footer-h: 10vh;           /* フッター固定高 */
+  --side-col: 120px;          /* 左右の固定幅：ヘッダー/（互換）問題バー/フッターで共通 */
+  --gap: 0px;                 /* 各3分割の隙間 */
+
+  --ctrl-w: 100px;
+  --ctrl-h: 30px;
+  --ctrl-r: 12px;
+  --ctrl-bw: 2px;
+  --ctrl-px: 16px;
+  --ctrl-font: 16px;
+  --ctrl-font-w: 600;
+
+  /* 判定マークの線の太さ（○／◎共通） */
+  --judge-stroke-width: 10;
+}
+
+/* --- 最小の本文設定（レイアウトやUIは app.css 側） --- */
+html { font-size: 16px; }
+body {
+  margin: 0;
+  font-family: "KyokashoUD", system-ui, -apple-system, "Segoe UI", "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Meiryo", sans-serif;
+  color: var(--color-fg);
+  /* background は各アプリ／shell側で決める（共通では塗らない） */
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+/* 画面を上下いっぱいに使うための土台 */
+html, body { height: 100%; }
+
+/* はみ出し抑止（右余白対策） */
+html, body {
+  overflow-x: hidden;
+}
+
+/* 押す系（button / .btn / select 等）を一括で正準化 */
+button,
+.btn,
+.backlink,
+.toggle,
+.opt-btn,
+input[type="button"],
+input[type="submit"],
+input[type="reset"],
+select
+{
+  box-sizing: border-box;
+  width: var(--ctrl-w);
+  min-width: 100px;          /* もどるボタン基準で横幅統一 */
+  height: var(--ctrl-h);     /* 高さも統一 */
+  padding: 2px 4px;
+  border: var(--ctrl-bw) solid #111;
+  border-radius: var(--ctrl-r);
+  background: #fff;
+  color: #111;
+  font-size: var(--ctrl-font);
+  font-weight: var(--ctrl-font-w);
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  text-decoration: none;
+  cursor: pointer;
+  box-shadow: none !important;   /* 影などの装飾は全廃 */
+  text-shadow: none !important;
+  filter: none !important;
+  text-align: center;
+  font-family:"BIZ UDGothic", system-ui, sans-serif;
+}
+
+/* セレクト：高さ固定＋ストレッチ無効 */
+select,
+.zoom-select{
+  box-sizing: border-box;
+  width: var(--ctrl-w);
+  min-width: 100px;
+  height: var(--ctrl-h);
+  padding: 2px 4px;
+  border: var(--ctrl-bw) solid #111;
+  border-radius: var(--ctrl-r);
+  background: #fff;
+  color: #111;
+  font-size: var(--ctrl-font);
+  font-weight: var(--ctrl-font-w);
+  line-height: 1.2;
+  font-family:"BIZ UDGothic", system-ui, sans-serif;
+  text-align: center;
+  cursor: pointer;
+  appearance: auto;
+  -webkit-appearance: auto;
+  -moz-appearance: auto;
+  align-self: center;
+}

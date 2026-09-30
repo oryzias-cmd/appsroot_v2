@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>ひらがなクイズ</title>
+<style>
+  :root{
+    --stack-gap: clamp(16px, 3vh, 28px);
+    --big-gap:   clamp(28px, 5.5vh, 52px);
+    --choice-size: clamp(84px, 10vw, 120px);
+    --choice-font: clamp(56px, 7.5vw, 84px);
+    --question-font: clamp(48px, 6.5vw, 84px);
+    --num-font: clamp(28px, 4vw, 42px);
+    --num-offset: 1.6;
+    --icon-size: clamp(64px, 7.5vw, 88px);
+    --question-box-w: clamp(360px, 40vw, 520px);
+    --image-max-h: 28vh;
+    --gap-ic: 28px; /* アイコンと質問の間隔 */
+  }
+
+  *{ box-sizing:border-box; }
+  html,body{ height:100%; }
+  body{
+    font-family:"Yu Kyokasho","YuKyokasho","UD Digi Kyokasho N-R",sans-serif;
+    margin:0; padding:16px; text-align:center; background:#fff; color:#000;
+  }
+
+  .wrapper{
+    min-height:100svh;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:var(--stack-gap); position:relative;
+  }
+  .title{ position:absolute; top:10px; right:20px; font-size:18px; color:gray; }
+
+  .header-wrap{ display:flex; justify-content:center; width:100%; }
+  .header{
+    display:grid;
+    grid-template-columns: var(--icon-size) var(--gap-ic) var(--question-box-w) var(--gap-ic) var(--icon-size);
+    align-items:center; justify-content:center;
+    border-bottom: 4px solid blue;  /* 青いラインを下線として表示 */
+    padding-bottom: 4px;            /* アイコン丸枠と線の間を数ピクセルだけ空ける */
+    margin-bottom: 60px;            /* 線と選択肢との間隔（先生決定の60px） */
+  }
+
+  .speed-btn{
+    width:var(--icon-size); height:var(--icon-size);
+    border:3px solid #888; border-radius:50%; /* 真円 */
+    display:flex; align-items:center; justify-content:center;
+    font-size: calc(var(--icon-size)*0.6);
+    user-select:none; cursor:pointer; background:#fff;
+  }
+  .speed-btn:active{ transform:scale(0.98); }
+
+  .question-box{ width: var(--question-box-w); display:flex; align-items:center; justify-content:center; }
+  .question{ font-size:var(--question-font); line-height:1.1; margin:0; user-select:none; }
+
+  .choices{
+    display:grid; grid-template-columns: repeat(4, var(--choice-size));
+    justify-content:center; gap: clamp(16px, 3vw, 30px);
+    margin:0 auto;
+  }
+  .choice{
+    width:var(--choice-size); height:var(--choice-size);
+    border:3px solid gray; border-radius:0; background:#fff;
+    display:flex; align-items:center; justify-content:center;
+    position:relative; user-select:none;
+  }
+  .say{ font-size:var(--choice-font); line-height:1; color:#000; }
+  .number{
+    position:absolute;
+    top: calc(var(--num-font) * -1.2);  /* 先生調整値を維持 */
+    left:50%;
+    transform:translateX(-50%);
+    font-size:var(--num-font);
+    cursor:pointer;
+    color:#000;
+  }
+
+  .circle-mark{
+    position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+    font-size: calc(var(--choice-size) * 1.35);
+    font-weight:bold; color:red;
+    font-family:"Arial Black","Yu Gothic UI",sans-serif; pointer-events:none;
+  }
+  .cross-mark{
+    position:absolute;
+    top: calc(var(--num-font) * (-1 * var(--num-offset) - 0.15));
+    left:50%; transform:translateX(-50%);
+    font-size: var(--num-font); font-weight:bold; color:blue;
+    font-family:"Arial Black","Yu Gothic UI",sans-serif; pointer-events:none;
+  }
+
+  img.hint{
+    max-width:90vw; max-height:var(--image-max-h);
+    width:auto; height:auto; margin:8px auto 0; display:block; object-fit:contain;
+  }
+
+  /* 次へボタン（控えめな標準ボタン） */
+  #nextBtn{
+    margin-top: 16px;
+    padding: 10px 22px;
+    font-size: 18px;
+    display: none; /* 正解時のみ表示 */
+  }
+</style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="title">ひらがなクイズ</div>
+
+    <div class="header-wrap">
+      <div class="header" aria-label="速度選択と問題">
+        <div class="speed-btn" id="btn-fast">🐇</div>
+        <div aria-hidden="true"></div>
+        <div class="question-box"><p class="question" id="qText">○さがお</p></div>
+        <div aria-hidden="true"></div>
+        <div class="speed-btn" id="btn-slow">🐢</div>
+      </div>
+    </div>
+
+    <!-- 選択肢はJSで生成 -->
+    <div class="choices" id="choices"></div>
+
+    <!-- 画像はJSで差し替え -->
+    <img id="hintImg" src="" alt="" class="hint" />
+
+    <!-- 次へボタン（正解時のみ表示） -->
+    <button id="nextBtn">次へ</button>
+  </div>
+
+<script>
+  /* ========= データ（ア行）を配列から自動生成 ========= */
+
+  // master：正解ひらがな・表示単語・画像/音声キー
+  const master = [
+    { hira:"あ", word:"あさがお", key:"asagao"  },
+    { hira:"い", word:"いちご",   key:"ichigo"  },
+    { hira:"う", word:"うさぎ",   key:"usagi"   },
+    { hira:"え", word:"えんぴつ", key:"enpitsu" },
+    { hira:"お", word:"おりがみ", key:"origami" }
+  ];
+
+  // 先生提供の誤答候補マップ（ア行）
+  const mistakeMap = {
+    "あ":["お","め","ぬ"],
+    "い":["り","こ","し"],
+    "う":["る","ら","つ"],
+    "え":["ろ","そ","ぬ"],
+    "お":["あ","め","を"]
+  };
+
+  // 問題セット（word表示は先頭の正解ひらがなを○に置換）
+  const problems = master.map(it => ({
+    word: it.word.replace(it.hira, "○"),
+    answer: it.hira,
+    choices: [it.hira, ...mistakeMap[it.hira]],
+    image: `images/${it.key}.jpg`,
+    audio_normal: `audio/words/${it.key}_normal.mp3`,
+    audio_slow:   `audio/words/${it.key}_075.mp3`
+  }));
+
+  // ひらがな→ローマ字（単音ファイル名用）
+  const hira2roma = {
+    "あ":"a","い":"i","う":"u","え":"e","お":"o",
+    "の":"no","め":"me","り":"ri","こ":"ko","し":"shi","る":"ru","ら":"ra","つ":"tsu","ろ":"ro","そ":"so","を":"wo"
+  };
+
+  const audioBase = "./audio";
+  let current = 0; // 今の問題番号
+
+  // シャッフル
+  function shuffle(arr){
+    for(let i=arr.length-1;i>0;i--){
+      const j = Math.floor(Math.random()*(i+1));
+      [arr[i],arr[j]] = [arr[j],arr[i]];
+    }
+  }
+
+  // 単音の再生（ファイルが無ければTTSフォールバック）
+  function playLetter(letter){
+    const roma = hira2roma[letter];
+    if(roma){
+      const a = new Audio(`${audioBase}/letters/${roma}.mp3`);
+      a.play().catch(()=>speak(letter));
+    }else{
+      speak(letter);
+    }
+  }
+  function speak(text){
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = "ja-JP";
+    u.rate = 1.0;     // 普通
+    u.pitch = 1.2;    // 少し明るめ
+    speechSynthesis.speak(u);
+  }
+
+  function render(idx){
+    const p = problems[idx];
+
+    // 問題テキストと画像
+    document.getElementById("qText").textContent = p.word;
+    const imgEl = document.getElementById("hintImg");
+    imgEl.src = p.image;
+    imgEl.alt = p.answer;
+
+    // 🐇／🐢 音声（問題はアイコンでのみ再生）
+    const wordFast = new Audio(p.audio_normal);
+    const wordSlow = new Audio(p.audio_slow);
+    const stopBoth = ()=>{ try{wordFast.pause();}catch{} try{wordSlow.pause();}catch{} };
+    document.getElementById("btn-fast").onclick = ()=>{ stopBoth(); wordFast.currentTime=0; wordFast.play(); };
+    document.getElementById("btn-slow").onclick = ()=>{ stopBoth(); wordSlow.currentTime=0; wordSlow.play(); };
+
+    // 選択肢（ランダム並び）
+    const options = [...p.choices];
+    shuffle(options);
+
+    const wrap = document.getElementById("choices");
+    wrap.innerHTML = "";
+
+    options.forEach((ch, i)=>{
+      const cell = document.createElement("div");
+      cell.className = "choice";
+      cell.dataset.letter = ch;
+
+      // 番号（①②③④）…番号タップ＝回答
+      const num = document.createElement("div");
+      num.className = "number";
+      num.textContent = ["①","②","③","④"][i];
+      num.onclick = ()=>{
+        if(cell.querySelector(".circle-mark")) return; // 既に正解済み
+
+        if(ch === p.answer){
+          // 正解：中央に大きな赤◯
+          const mk = document.createElement("div");
+          mk.className = "circle-mark";
+          mk.textContent = "◯";
+          cell.appendChild(mk);
+
+          // ★ 正解のときだけ「次へ」ボタンを出す
+          document.getElementById("nextBtn").style.display = "inline-block";
+        }else{
+          // 不正解：番号を×で置換（同じ番号は再回答不可）
+          if(!num.classList.contains("answered")){
+            const cross = document.createElement("div");
+            cross.className = "cross-mark";
+            cross.textContent = "×";
+            num.replaceWith(cross);
+            num.classList.add("answered");
+          }
+        }
+      };
+
+      // 文字（タップ＝単音再生）
+      const glyph = document.createElement("div");
+      glyph.className = "say";
+      glyph.textContent = ch;
+      glyph.onclick = ()=> playLetter(ch);
+
+      cell.appendChild(num);
+      cell.appendChild(glyph);
+      wrap.appendChild(cell);
+    });
+
+    // 最初は隠す（正解したら表示）
+    document.getElementById("nextBtn").style.display = "none";
+  }
+
+  // 次へボタン
+  document.getElementById("nextBtn").onclick = function(){
+    current++;
+    if(current < problems.length){
+      render(current);
+    }else{
+      alert("これでおわりです！");
+      this.style.display = "none";
+    }
+  };
+
+  // 初期表示
+  render(current);
+</script>
+</body>
+</html>

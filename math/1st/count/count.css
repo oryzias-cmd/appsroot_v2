@@ -1,0 +1,663 @@
+/* ============================================
+   count.css（base.css 卒業のための最小土台）
+   - 教科書体の @font-face
+   - body の基本（フォント・背景）
+   ============================================ */
+
+/* --- 教科書体：ローカル名のゆらぎを吸収 --- */
+@font-face{
+  font-family: "KyokashoUD";
+  src:
+    local("UDデジタル教科書体 N-R"),
+    local("UD デジタル 教科書体 N-R"),
+    local("UDデジタル教科書体N-R"),
+    local("UD Digi Kyokasho N-R"),
+    local("UDDigiKyokasho N-R"),
+    local("UDデジタル教科書体 NP-R"),
+    local("UD Digi Kyokasho NP-R");
+  font-display: swap;
+}
+
+html, body{
+  height: 100%;
+}
+body{
+  margin: 0;
+  overflow-x: hidden;
+  overflow-y: hidden;
+
+  /* base.css の最小本文設定をここへ移植 */
+  font-family: "KyokashoUD", system-ui, -apple-system, "Segoe UI", "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Meiryo", sans-serif;
+  color: #111;
+  background: #f7f9fc;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+#mainArea{
+  height: calc(100vh - 56px);
+  overflow: hidden;
+}
+
+/* ★重要：HTMLの hidden 属性をCSSで潰さない */
+[hidden]{
+  display: none !important;
+}
+
+.count-wrap{
+  height: 100%;
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  grid-template-rows: 1fr;        /* ★左の問題エリアが“必ず高さを持つ”ように固定 */
+  gap: 14px;
+  padding: 12px;
+  box-sizing: border-box;
+}
+
+.count-left{
+  position: relative;
+  border-radius: 16px;
+  background: #fff;
+  overflow: hidden;              /* りんごが外へ出たらここで切る */
+  border: 2px solid rgba(0,0,0,0.08);
+
+  height: 100%;                  /* ★absolute子だけでもエリアが潰れない */
+  padding: 18px;                 /* ★角丸で欠けないための安全余白 */
+  box-sizing: border-box;
+
+}
+
+.count-right{
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr)); /* ★min-content事故を防ぐ */
+  grid-template-rows: auto repeat(4, auto) auto auto auto;
+  gap: 10px;
+  align-content: start;
+  min-height: 0;
+}
+
+/* ===== 1行目：答え欄（3列ぶん） ===== */
+.ans-box{
+  grid-column: 1 / -1;
+  position: relative;
+  height: 70px;
+  border-radius: 14px;
+  background: #fff;
+  border: 3px solid rgba(0,0,0,0.18);
+  display: grid;
+  place-items: center;
+}
+
+.ans-text{
+  font-size: 56px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  min-width: 2ch;
+  text-align: center;
+
+  /* ★教科書体 */
+  font-family: "UD デジタル 教科書体 NP-R","UD Digi Kyokasho NP-R","UD Digi Kyokasho","BIZ UDゴシック","BIZ UDGothic","Meiryo",sans-serif;
+
+  /* ★教科書体の見た目中心補正（答え欄だけ） */
+transform: translateY(-0.075em);
+}
+
+.ans-wrong{
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  border: 0;
+  background: transparent;
+  font-size: 30px;
+  font-weight: 900;
+  color: #111;
+  cursor: pointer;
+}
+
+/* ===== 2〜5行目：テンキー（display:contentsで親グリッドに参加） ===== */
+.keypad{
+  display: contents;
+}
+
+.key{
+  height: 64px;
+  border-radius: 14px;
+  border: 2px solid rgba(0,0,0,0.18);
+  background: #fff;
+  font-size: 34px;
+  font-weight: 900;
+  cursor: pointer;
+
+  /* ★教科書体（環境差があるのでフォールバックも用意） */
+  font-family: "UD デジタル 教科書体 NP-R","UD Digi Kyokasho NP-R","UD Digi Kyokasho","BIZ UDゴシック","BIZ UDGothic","Meiryo",sans-serif;
+}
+
+.key:active{
+  transform: translateY(1px);
+}
+
+.key:disabled{
+  opacity: 1;
+  cursor: default;
+  pointer-events: none;
+
+  /* “押せない”が一目で分かる */
+  background: #e6e6e6;
+  color: rgba(0,0,0,0.55);
+  border-color: rgba(0,0,0,0.18);
+}
+
+/* 10 / 空き / クリア を “5行目” にする */
+.key-10{
+  grid-column: 1;
+}
+
+.key-clear{
+  grid-column: 3;
+}
+
+.key-gap{
+  height: 64px;
+}
+
+/* ===== ⑤：こたえあわせ(2列) + いっしょに(1列)（3列維持） ===== */
+.action-row5{
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;                 /* ★他と同じギャップ */
+  align-items: center;
+}
+
+.action-row5 .check-btn{
+  grid-column: 1 / span 2;   /* ★数字キー2個分＋間の隙間ぶん */
+  justify-self: stretch;     /* ★セルいっぱいに伸ばす */
+  width: 100%;               /* ★共通CSSに勝つ */
+  min-width: 0;              /* ★min-contentで縮まない事故を防ぐ */
+  height: 64px;
+  border-radius: 14px;
+  border: 0;
+  background: #f7a500;
+  color: #111;
+  font-size: 22px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.action-row5 .check-btn:disabled{
+  opacity: 1;
+  cursor: default;
+  background: #e6e6e6;
+  color: rgba(0,0,0,0.55);
+}
+
+.action-row5 .teach-btn{
+  grid-column: 3;
+  justify-self: stretch;     /* ★セルいっぱいに伸ばす */
+  width: 100%;               /* ★共通CSSに勝つ */
+  min-width: 0;
+  height: 64px;
+  border-radius: 14px;
+  border: 2px solid rgba(0,0,0,0.18);
+  background: #fff;
+  font-size: 16px;           /* ★2行なので少し下げる */
+  font-weight: 900;
+  line-height: 1.05;
+  padding: 6px 6px;
+  text-align: center;
+}
+
+/* ★いっしょに かぞえる：OFF のときも “出したまま” グレーアウト（こたえあわせと同思想） */
+.action-row5 .teach-btn[aria-disabled="true"],
+.action-row5 .teach-btn:disabled{
+  opacity: 1;
+  cursor: default;
+  pointer-events: none;
+  background: #e6e6e6;
+  color: rgba(0,0,0,0.55);
+  border-color: rgba(0,0,0,0.18);
+}
+
+/* ===== ⑥：やりなおし / もどる（2列） ===== */
+.action-row6{
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;                 /* ★他と同じギャップ */
+  align-items: center;
+}
+
+.action-row6 .danger-btn{
+  justify-self: stretch;     /* ★セルいっぱいに伸ばす */
+  width: 100%;               /* ★共通CSSに勝つ */
+  min-width: 0;              /* ★min-contentで縮まない事故を防ぐ */
+
+  height: 60px;
+  border-radius: 14px;
+  border: 2px solid rgba(0,0,0,0.18);
+  background: #fff;
+  font-size: 18px;
+  font-weight: 900;
+  position: relative;        /* ★ゲージ表示の土台 */
+  overflow: hidden;          /* ★ゲージが角丸からはみ出さない */
+}
+
+/* ★出ているけど押せない（aria-disabled）を、こたえあわせの disabled と同じグレーに揃える */
+.action-row6 .danger-btn[aria-disabled="true"]{
+  opacity: 1;
+  cursor: default;
+  pointer-events: none;
+  background: #e6e6e6;
+  color: rgba(0,0,0,0.55);
+}
+
+/* ★長押しゲージ：attachHold() が付ける .hold と --hold(0..1) を可視化 */
+.danger-btn.hold::after{
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 14px;            /* ★少し太めに */
+  background:
+    linear-gradient(90deg,
+      rgba(155,120,220,0.60) 0%,                      /* 紫 */
+      rgba(155,120,220,0.60) calc(var(--hold, 0) * 100%),
+      rgba(0,0,0,0)          calc(var(--hold, 0) * 100%),
+      rgba(0,0,0,0)          100%
+    );
+}
+
+/* ★いっしょに かぞえる も長押しゲージを出す（見える機能） */
+.teach-btn{
+  position: relative;        /* ★ゲージ表示の土台 */
+  overflow: hidden;          /* ★角丸からはみ出さない */
+}
+.teach-btn.hold::after{
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 14px;
+  background:
+    linear-gradient(90deg,
+      rgba(155,120,220,0.60) 0%,
+      rgba(155,120,220,0.60) calc(var(--hold, 0) * 100%),
+      rgba(0,0,0,0)          calc(var(--hold, 0) * 100%),
+      rgba(0,0,0,0)          100%
+    );
+}
+
+
+/* ====== 正解マーク（花丸/○）：左カラム内に“ドーン” ====== */
+.overlay{
+  position: absolute;        /* ★左カラム内に閉じる */
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;   /* ★白い幕は不要 */
+  z-index: 50;
+  pointer-events: none;      /* ★操作を邪魔しない */
+}
+
+/* ★今の約3倍感：左カラムの“幅の7割”くらいを上限にドーン */
+.overlay-mark{
+  /* ★imgでも必ず見えるように、縦横を明示（高さ0を防ぐ） */
+  width: min(70%, 560px);
+  height: min(70%, 560px);
+  display: block;
+
+  /* ★count.html は <img> なので src の画像を “中に収めて表示” する */
+  object-fit: contain;
+  object-position: center;
+
+  /* （保険）将来 div に戻しても表示できるように残す */
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+}
+
+/* ★方式Aにするので、画面上の “つぎへボタン” は使わない */
+.next-btn{
+  display: none;
+}
+
+/* ====== 左エリアのアイテム ====== */
+.item{
+  position: absolute;
+  width: 128px;
+  height: 128px;
+  display: grid;
+  place-items: center;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+}
+.item img{
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+/* 丸枠ラベル */
+.badge{
+  position: absolute;
+
+  /* ★幅は段階固定（2/3/4/6文字分） */
+  min-width: var(--badge-w, 3.2em);
+  width: var(--badge-w, 3.2em);
+
+  min-height: 34px;
+  height: auto;
+  padding: 6px 8px;
+  box-sizing: border-box;
+
+  border-radius: 999px;
+  border: 2px solid rgba(0,0,0,0.30);
+  background: rgba(255,255,255,0.92);
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  text-align: center;
+  line-height: 1.05;
+
+  font-weight: 900;
+}
+
+/* 幅プリセット：2/3/4/6文字 */
+.badge.w2{ --badge-w: 3.0em; }
+.badge.w3{ --badge-w: 3.6em; }
+.badge.w4{ --badge-w: 4.4em; }
+.badge.w6{ --badge-w: 6.2em; }
+
+/* 2行の中身（count.js が作る） */
+.badge .badge-num{
+  display: block;
+  font-size: 18px;   /* ★10〜20はこのまま */
+  line-height: 1.05;
+}
+
+/* ★A案：りんご4段階に同期（読みは今のまま） */
+.badge.hn1 .badge-num{ font-size: 26px; } /* 1〜5   ：最大 */
+.badge.hn2 .badge-num{ font-size: 22px; } /* 6〜9   ：大 */
+.badge.hn3 .badge-num{ font-size: 20px; } /* 10〜14 ：中 */
+.badge.hn4 .badge-num{ font-size: 18px; } /* 15〜20 ：小（現状維持） */
+
+.badge .badge-yomi{
+  display: block;
+  font-size: 14px;
+  line-height: 1.05;
+
+  /* ★重要：日本語が1文字ずつ折れるのを止める */
+  white-space: nowrap;
+}
+
+/* よみラベル（丸枠） */
+.yomi{
+  position: absolute;
+  min-width: 44px;
+  height: 34px;
+  padding: 0 10px;
+  border-radius: 999px;
+  border: 2px solid rgba(0,0,0,0.30);
+  background: rgba(255,255,255,0.92);
+  display: grid;
+  place-items: center;
+  font-weight: 900;
+  font-size: 18px;
+}
+
+/* チェック（丸枠） */
+.chk{
+  position: absolute;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  border: 2px solid rgba(0,0,0,0.30);
+  background: rgba(255,255,255,0.92);
+  display: grid;
+  place-items: center;
+  font-weight: 900;
+  font-size: 20px;
+}
+
+.shake{
+  animation: shakeX 240ms ease-in-out 0s 2;
+}
+@keyframes shakeX{
+  0%{ transform: translateX(0); }
+  25%{ transform: translateX(-6px); }
+  50%{ transform: translateX(6px); }
+  75%{ transform: translateX(-4px); }
+  100%{ transform: translateX(0); }
+}
+
+.blink{
+  animation: blink 700ms ease-in-out infinite;
+}
+@keyframes blink{
+  0%{ opacity: 0.25; }
+  50%{ opacity: 1; }
+  100%{ opacity: 0.25; }
+}
+
+/* ====== はみ出し対策：角丸で欠けないように「見た目の安全余白」を確保 ====== */
+.count-left{
+  padding: 18px; /* ← 角丸(16px)ぶん見た目が欠けるので、内側に余白 */
+  box-sizing: border-box;
+}
+
+/* ====== 設定モーダル（歯車） ====== */
+.modal{
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: grid;
+  place-items: center;
+}
+
+.modal-backdrop{
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.28);
+}
+
+.modal-panel{
+  position: relative;
+  width: min(520px, calc(100vw - 32px));
+  border-radius: 18px;
+  background: #fff;
+  border: 2px solid rgba(0,0,0,0.18);
+  box-shadow: 0 18px 40px rgba(0,0,0,0.22);
+  overflow: hidden;
+}
+
+.modal-head{
+  display: grid;
+  grid-template-columns: 1fr 56px;
+  align-items: center;
+  padding: 14px 14px 10px;
+  border-bottom: 1px solid rgba(0,0,0,0.12);
+}
+
+.modal-title{
+  font-size: 22px;
+  font-weight: 900;
+}
+
+.modal-close{
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  border: 2px solid rgba(0,0,0,0.18);
+  background: #fff;
+  font-size: 24px;
+  font-weight: 900;
+  cursor: pointer;
+  justify-self: end;
+}
+
+.modal-body{
+  padding: 14px;
+  display: grid;
+  gap: 12px;
+}
+
+.set-row{
+  display: grid;
+  grid-template-columns: 24px 1fr;
+  align-items: center;
+  gap: 10px;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.set-row input{
+  width: 20px;
+  height: 20px;
+}
+
+.set-block{
+  display: grid;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 2px solid rgba(0,0,0,0.12);
+  background: rgba(0,0,0,0.02);
+}
+
+.set-label{
+  font-size: 16px;
+  font-weight: 900;
+}
+
+.set-slider{
+  display: grid;
+  grid-template-columns: 1fr 60px; /* ★右端の○枠（set-lv）と同じ幅に */
+  align-items: center;
+  gap: 12px;
+}
+
+#setHelpLv{
+  width: 100%;
+}
+
+.set-lv{
+  height: 62px;                 /* ★○枠はこのまま */
+  width: 60px;
+  border-radius: 999px;
+  border: 2px solid rgba(0,0,0,0.18);
+  background: #fff;
+
+  position: relative;           /* ★▲▼を外へ出す基準点 */
+  display: flex;                /* ★数字は常に中央 */
+  align-items: center;
+  justify-content: center;
+}
+
+.lv-btn{
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 28px;          /* ★少し広げる */
+
+  border: 0;
+  background: transparent;
+  color: #111;
+  font-weight: 900;
+  font-size: 18px;      /* ★▲▼を大きく */
+  line-height: 1;
+  padding: 0;
+  cursor: pointer;
+}
+
+.lv-btn.lv-up{
+  top: -26px;                   /* ★さらに外へ：○から生える感じ */
+}
+
+.lv-btn.lv-down{
+  bottom: -26px;                /* ★さらに外へ */
+}
+
+.lv-num{
+  width: 100%;
+  height: 100%;
+  display: flex;                /* ★縦横ど真ん中 */
+  align-items: center;
+  justify-content: center;
+
+  font-weight: 900;
+  font-size: 30px;              /* ★数字を主役に（必要なら32でもOK） */
+  line-height: 1;
+}
+
+.set-help{
+  font-size: 13px;
+  font-weight: 800;
+  opacity: 0.80;
+  line-height: 1.35;
+}
+
+.modal-foot{
+  padding: 12px 14px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-top: 1px solid rgba(0,0,0,0.12);
+}
+
+.modal-foot-note{
+  font-size: 14px;
+  font-weight: 800;
+  opacity: 0.75;
+  line-height: 1.25;
+}
+
+.modal-apply{
+  height: 48px;
+  padding: 0 16px;
+  border-radius: 14px;
+  border: 0;
+  background: #f7a500;
+  color: #111;
+  font-size: 18px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+/* ============================================================
+   ★いっしょにかぞえる：タップ反応（ポン）＋タップ済み数字を青
+   ============================================================ */
+
+.item.pop{
+  animation: popTap 220ms ease-out;
+  transform-origin: 50% 50%;
+}
+
+@keyframes popTap{
+  0%{ transform: scale(1); }
+  40%{ transform: scale(1.18); }
+  100%{ transform: scale(1); }
+}
+
+/* ★タップ済み：数字は黒のまま */
+.item.tapped .badge-num{
+  color: #000;
+}
+
+/* ★タップ済み：丸枠を「白寄りの水色」で塗る（中が見える） */
+.item.tapped .badge{
+  background: #EAF3FF;          /* 透明ではない薄水色 */
+  border-color: #6FA8DC;        /* 枠を少し強調 */
+}

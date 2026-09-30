@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>10の分解（コース選択付き）</title>
+<style>
+  :root{
+    --title-size: clamp(64px, 10vw, 120px);
+    --btn-font:   clamp(64px, 10vw, 120px);
+    --num-scale-y: 1.2;
+
+    --btn-min-h: clamp(120px, 22vh, 210px);
+    --btn-min-w: calc(var(--btn-min-h) * 2);
+    --btn-pad:   clamp(10px, 2vh, 16px);
+    --border-w: 8px;
+    --border-color: #999;
+
+    --page-padding: clamp(16px, 4vh, 40px);
+    --gap: clamp(16px, 3vh, 28px);
+    --footer-spacer: clamp(24px, 12vh, 160px);
+
+    --ok-color: #e53935;
+    --ng-dim: 0.5;
+
+    --confirm-ms: 100ms;
+    --slide-ms:   220ms;
+    --countdown-step-ms: 700ms;
+
+    --burst-ms: 360ms;
+    --confetti-min-ms: 2800ms;
+    --confetti-max-ms: 4000ms;
+
+    --panel-font:  clamp(24px, 5.2vw, 34px);
+    --chip-font:   clamp(22px, 4.8vw, 28px);
+    --gear-size:   clamp(30px, 6.4vw, 38px);
+    --start-btn-h: clamp(52px, 9.6vh, 84px);
+    --input-h:     clamp(50px, 8.8vh, 78px);
+
+    /* 選択強調色・コースタイル高さ */
+    --select-blue: #e7f2ff;
+    --select-blue-border: #5aa7ff;
+    --course-h: clamp(110px, 22vw, 160px);
+  }
+
+  * { box-sizing: border-box; }
+  html, body {
+    height: 100%; margin: 0; background: #fff;
+    font-family:
+      'Roboto','Inter','Segoe UI',
+      'Yu Gothic UI','Yu Gothic',Meiryo,'BIZ UDPGothic','MS PGothic','Noto Sans JP',
+      system-ui,-apple-system,sans-serif;
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+
+  .app {
+    min-height: 100%;
+    padding: var(--page-padding);
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    gap: var(--gap);
+    position: relative;
+    overflow: hidden;
+  }
+
+  header { display: grid; place-items: center; position: relative; }
+  header h1 { margin: 0; font-size: var(--title-size); letter-spacing: .04em; font-weight: 800; }
+  header.hide { display:none; }
+
+  .progress {
+    position: absolute; right: 0; top: 0; transform: translateY(-10%);
+    font-size: clamp(22px, 3.2vw, 30px);
+    background: rgba(255,255,255,.95);
+    padding: 6px 12px; border-radius: 999px; border: 2px solid #ccc;
+  }
+
+  main.center { display: grid; place-items: center; position: relative; overflow: hidden; }
+  .viewport { position: relative; width: 100%; display: grid; place-items: center; }
+  .card {
+    position: absolute; inset: 0; display: grid; place-items: center;
+    transition: transform var(--slide-ms) ease, opacity var(--slide-ms) ease;
+  }
+  .hidden { opacity: 0; pointer-events: none; }
+  .at-rest { transform: translateY(0); opacity: 1; }
+  .pre-in  { transform: translateY(12%); opacity: 0; }
+  .slide-out { transform: translateY(-12%); opacity: 0; }
+
+  .choices {
+    display: grid; grid-auto-flow: column; gap: var(--gap);
+    align-items: stretch; justify-content: center; width: 100%;
+  }
+  .choice {
+    display: flex; justify-content: space-evenly; align-items: center; position: relative;
+    min-width: var(--btn-min-w); min-height: var(--btn-min-h); padding: var(--btn-pad);
+
+    font-size: var(--btn-font); font-weight: 800; line-height: 1;
+    background: #fff; color: #000; cursor: pointer; user-select: none; touch-action: manipulation;
+
+    border-radius: 9999px; border: var(--border-w) solid var(--border-color);
+    overflow: hidden; transition: border-color 120ms ease, filter 120ms ease, transform 120ms ease;
+  }
+  .choice[disabled]{ pointer-events: none; }
+  .choice::before{
+    content:""; position:absolute; top: calc(-1 * var(--border-w)); bottom: calc(-1 * var(--border-w));
+    left: 50%; transform: translateX(-50%); width: 0;
+    border-left: var(--border-w) solid var(--border-color); pointer-events:none;
+  }
+  .num { display:inline-block; min-width:1.2em; text-align:center;
+         transform: scaleY(var(--num-scale-y)); transform-origin:center center; }
+
+  .choice.correct { border-color: var(--ok-color); }
+  .choice.wrongFlash { animation: shake 300ms ease-in-out 1; filter: grayscale(var(--ng-dim)) brightness(.96); }
+  .choice.wrongPersistent { filter: grayscale(var(--ng-dim)) brightness(.92); }
+  @keyframes shake {
+    0%{transform:translateX(0)} 20%{transform:translateX(-8px)} 40%{transform:translateX(8px)}
+    60%{transform:translateX(-6px)} 80%{transform:translateX(6px)} 100%{transform:translateX(0)}
+  }
+
+  .footer-spacer{ height: var(--footer-spacer); }
+
+  /* スタート（なまえ） */
+  .overlay { position: fixed; inset:0; background:#fff; display:grid; place-items:center; z-index:50; }
+  .overlay.hide { display:none; }
+
+  .startPanel{
+    display:grid; gap:18px; padding:28px 30px; border:2px solid #ddd; border-radius:16px;
+    background:#fff; width:min(92vw, 780px);
+    font-size: var(--panel-font);
+  }
+  .startPanel h2{ margin:0 0 10px; font-size: calc(var(--panel-font) * 1.15); }
+  .nameRow{ display:flex; gap:12px; align-items:center; }
+  .nameRow .flex{ flex:1; position:relative; }
+  .startPanel input{
+    width:100%; font-size: var(--panel-font); height: var(--input-h);
+    padding: 8px 56px 8px 16px; border:2px solid #bbb; border-radius:12px;
+  }
+  .gearBtn{ position:absolute; right:8px; top:50%; transform:translateY(-50%); border:none; background:transparent; cursor:pointer; padding:6px; }
+  .gearBtn svg{ width: var(--gear-size); height: var(--gear-size); opacity:.85; }
+  .startPanel button#startBtn{
+    font-size: var(--panel-font); height: var(--start-btn-h);
+    padding: 10px 18px; border:2px solid #666; border-radius:14px; background:#fff; cursor:pointer;
+  }
+
+  /* 名前選択 */
+  .settings{ position: fixed; inset:0; display:none; z-index:60; }
+  .settings.show{ display:grid; place-items:center; background: rgba(0,0,0,.25); }
+  .settingsPanel{
+    width:min(92vw, 820px); background:#fff; border-radius:16px; border:2px solid #ddd;
+    padding:20px 22px; display:grid; gap:14px; font-size: var(--panel-font);
+  }
+  .settingsHeader{ display:flex; justify-content:space-between; align-items:center; }
+  .chips{ display:flex; flex-wrap:wrap; gap:12px; }
+  .chip{
+    border:2px solid #bbb; border-radius:999px; padding:12px 18px; background:#fff; cursor:pointer;
+    font-size: var(--chip-font);
+  }
+  .closeBtn{ border:2px solid #bbb; border-radius:10px; background:#fff; padding:10px 16px; cursor:pointer;
+    font-size: var(--panel-font); }
+
+  /* コース選択（同サイズ＆選択色） */
+  .selectOverlay{ position: fixed; inset:0; background:#fff; z-index:55; display:none; }
+  .selectOverlay.show{ display:grid; grid-template-rows: auto 1fr; gap:16px; padding: clamp(16px, 4vh, 40px); }
+  .selTitle{ text-align:center; font-size: calc(var(--panel-font) * 1.15); font-weight: 800; }
+  .courseGrid{
+    display:grid; place-items:stretch; gap: clamp(12px, 3vw, 18px);
+    grid-template-columns: repeat(3, minmax(0,1fr));
+    grid-auto-rows: var(--course-h);
+    width:min(96vw,900px); margin: 0 auto;
+  }
+  .courseBtn{
+    height:100%; width:100%;
+    display:grid; place-items:center; padding: 18px;
+    border: 3px solid #888; background:#fff; border-radius: 18px; cursor:pointer;
+    font-size: clamp(34px, 7.6vw, 56px); font-weight:800; text-align:center;
+  }
+  .courseBtn.selected{ background: var(--select-blue); border-color: var(--select-blue-border); }
+  .courseBtn span{ display:block; }
+  .courseBtn small{ font-size: .5em; opacity:.6; }
+
+  /* 難易度/順序（選択色） */
+  .optionPanel{ display:grid; gap:16px; width:min(96vw, 900px); margin: 0 auto; }
+  .group{ border:2px solid #ddd; border-radius:16px; padding:16px; }
+  .groupTitle{ font-weight:800; margin-bottom:10px; text-align:center; font-size: calc(var(--panel-font) * 1.0); }
+  .optionBtns{ display:grid; grid-template-columns: repeat(3, 1fr); gap:12px; }
+  .option{
+    border:2px solid #888; border-radius:14px; background:#fff; padding:14px; text-align:center;
+    font-size: clamp(24px, 4.6vw, 34px); cursor:pointer;
+  }
+  .option.selected{ background: var(--select-blue); border-color: var(--select-blue-border); }
+  .startGo{
+    margin-top: 6px; display:block; width:100%; text-align:center;
+    border:3px solid #333; border-radius:16px; background:#fff; padding: 16px;
+    font-size: clamp(28px, 5.6vw, 38px); cursor:pointer;
+  }
+
+  .countdown { position: fixed; inset:0; background:#fff; display:grid; place-items:center; z-index:70;
+    font-weight:900; font-size: clamp(72px, 18vw, 200px); }
+
+  /* 最終画面（ボタン同サイズ＆中央） */
+  .finishOverlay{
+    position: fixed; inset:0; background:#fff; z-index:80;
+    display:flex; flex-direction:column; justify-content:space-between; align-items:center;
+    padding: clamp(16px,4vh,40px);
+  }
+  .heroBadge{
+    margin-top: clamp(8px, 6vh, 60px);
+    display:inline-block; padding:12px 20px; border-radius:999px;
+    background:#ffe8e8; color:#d33; border:1px solid #f5bcbc;
+    font-size: clamp(40px, 7.4vw, 60px); font-weight:800;
+  }
+  .statsBox{
+    width: min(92vw, 900px);
+    border: 3px solid #ddd; border-radius: 16px; background:#fff;
+    padding: clamp(14px, 4vh, 28px) clamp(20px, 4.8vw, 40px);
+    text-align: center; line-height: 1.7;
+    font-size: clamp(36px, 6.2vw, 48px);
+  }
+  .finBtns{
+    display:flex; gap: clamp(12px, 3.2vw, 22px); margin-bottom: clamp(8px, 4vh, 28px);
+    width: min(92vw, 680px);
+  }
+  .finBtn{
+    flex: 1 1 0; text-align:center;
+    font-size: clamp(28px, 5.6vw, 38px);
+    padding: 16px 22px; border: 3px solid #666; border-radius: 14px; background:#fff; cursor:pointer;
+  }
+  .finBtn.primary { border-color:#333; }
+
+  /* クラッカー＆紙吹雪 */
+  .cracker{
+    position: fixed; z-index: 86;
+    font-size: clamp(64px, 12vw, 120px); line-height:1;
+    left: 50%; top: 12vh; transform: translateX(-50%) scale(.6) rotate(-10deg);
+    opacity: 0; animation: crackerIn 500ms ease-out forwards;
+    filter: drop-shadow(0 4px 0 rgba(0,0,0,.08));
+  }
+  @keyframes crackerIn{
+    0%{ opacity:0; transform: translateX(-50%) scale(.6) rotate(-10deg); }
+    60%{ opacity:1; transform: translateX(-50%) scale(1.12) rotate(6deg); }
+    100%{ opacity:1; transform: translateX(-50%) scale(1) rotate(0deg); }
+  }
+  .cracker.fadeout{ animation: crackerOut 320ms ease-in forwards; }
+  @keyframes crackerOut{ to{ opacity:0; transform: translateX(-50%) scale(.9) translateY(-6px); } }
+  .burstPiece{
+    position: fixed; z-index: 85; width:8px; height:12px; opacity:.95;
+    background: #f44336; border-radius:2px; animation: burst var(--burst-ms) ease-out forwards;
+  }
+  @keyframes burst{ from{transform:translate(0,0) rotate(0deg)} to{transform:var(--to) rotate(420deg); opacity:.6} }
+  .confetti{
+    position: fixed; top:-12px; width:8px; height:14px; opacity:.95; z-index:84;
+    animation: confFall var(--fall-ms) ease-out forwards;
+  }
+  @keyframes confFall{
+    0%{ transform: translateY(-12px) rotate(0deg); opacity:.95; }
+    90%{ opacity:.95; }
+    100%{ transform: translateY(82vh) rotate(540deg); opacity: 0; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .card{ transition: none !important; transform:none !important; opacity:1 !important; }
+    .choice.wrongFlash{ animation:none !important; }
+    .cracker, .burstPiece, .confetti{ display:none !important; }
+  }
+</style>
+</head>
+<body>
+  <div class="app">
+    <header id="header">
+      <h1>10 は</h1>
+      <div class="progress" id="progress" aria-live="polite"></div>
+    </header>
+
+    <main class="center">
+      <div class="viewport" id="viewport">
+        <div class="card at-rest" id="cardA">
+          <div class="choices">
+            <button class="choice" id="aLeft"><span class="num" id="aL1"></span><span class="num" id="aL2"></span></button>
+            <button class="choice" id="aRight"><span class="num" id="aR1"></span><span class="num" id="aR2"></span></button>
+          </div>
+        </div>
+        <div class="card hidden pre-in" id="cardB">
+          <div class="choices">
+            <button class="choice" id="bLeft"><span class="num" id="bL1"></span><span class="num" id="bL2"></span></button>
+            <button class="choice" id="bRight"><span class="num" id="bR1"></span><span class="num" id="bR2"></span></button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <div class="footer-spacer" aria-hidden="true"></div>
+  </div>
+
+  <!-- スタート：なまえ -->
+  <div class="overlay" id="startOverlay">
+    <div class="startPanel">
+      <h2>なまえ を おしえてください</h2>
+      <div class="nameRow">
+        <div class="flex">
+          <input id="nameInput" type="text" placeholder="なまえ（きろくよう）" />
+          <button class="gearBtn" id="gearBtn" aria-label="せってい">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M12 8.5a3.5 3.5 0 1 1 0 7 3.5 3.5 0 0 1 0-7Zm8.94 3.12-.94-.54.17-1.09a2 2 0 0 0-1.63-2.3l-1.1-.2-.53-.95a2 2 0 0 0-2.73-.73l-.97.55-.97-.55a2 2 0 0 0-2.73.73l-.53.95-1.1.2a2 2 0 0 0-1.63 2.3l.17 1.09-.94.54a2 2 0 0 0 .73 2.73l-.55.97-.55.97a2 2 0 0 0 .73 2.73l.94.54-.17 1.09a2 2 0 0 0 1.63 2.3l1.1.2.53.95a2 2 0 0 0 2.73.73l.97-.55.97.55a2 2 0 0 0 2.73-.73l.53-.95 1.1-.2a2 2 0 0 0 1.63-2.3l-.17-1.09.94-.54a2 2 0 0 0 .73-2.73l-.55-.97.55-.97a2 2 0 0 0-.73-2.73Zm-4.07 5.01a4.99 4.99 0 1 1 0-9.98 4.99 4.99 0 0 1 0 9.98Z"/>
+            </svg>
+          </button>
+        </div>
+        <button id="startBtn" type="button">つぎへ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 名前選択 -->
+  <div class="settings" id="settings">
+    <div class="settingsPanel">
+      <div class="settingsHeader">
+        <div><strong>なまえ を えらぶ</strong>（あたらしい じゅん）</div>
+        <button class="closeBtn" id="settingsClose" type="button">とじる</button>
+      </div>
+      <div class="chips" id="nameChips"></div>
+    </div>
+  </div>
+
+  <!-- コース選択 -->
+  <div class="selectOverlay" id="courseOverlay">
+    <div class="selTitle">コース を えらんでね</div>
+    <div class="courseGrid" id="courseGrid">
+      <button class="courseBtn" data-course="10"><span>10</span></button>
+      <button class="courseBtn" data-course="9"><span>9</span></button>
+      <button class="courseBtn" data-course="8"><span>8</span></button>
+      <button class="courseBtn" data-course="7"><span>7</span></button>
+      <button class="courseBtn" data-course="6"><span>6</span></button>
+      <button class="courseBtn" data-course="5"><span>5</span></button>
+      <button class="courseBtn" data-course="432"><span>4・3・2</span><small>まとめ</small></button>
+    </div>
+  </div>
+
+  <!-- 難易度・順序 -->
+  <div class="selectOverlay" id="optionOverlay">
+    <div class="selTitle">せってい を えらんでね</div>
+    <div class="optionPanel">
+      <div class="group">
+        <div class="groupTitle">むずかしさ</div>
+        <div class="optionBtns" id="diffBtns">
+          <button class="option selected" data-diff="easy">かんたん<br><small>ひだりが おなじ</small></button>
+          <button class="option" data-diff="normal">ふつう<br><small>みぎが おなじ</small></button>
+          <button class="option" data-diff="hard">むずかしい<br><small>ひだり/みぎ が おなじ</small></button>
+        </div>
+      </div>
+      <div class="group">
+        <div class="groupTitle">じゅんばん</div>
+        <div class="optionBtns" id="orderBtns">
+          <button class="option selected" data-order="1">① まえから</button>
+          <button class="option" data-order="2">② うしろから</button>
+          <button class="option" data-order="3">③ ばらばら</button>
+        </div>
+      </div>
+      <button class="startGo" id="goBtn">はじめる</button>
+    </div>
+  </div>
+
+<script>
+  /* ========= 参照 ========= */
+  let QUESTIONS = [];
+  const header = document.getElementById('header');
+  const progress = document.getElementById('progress');
+
+  const startOverlay = document.getElementById('startOverlay');
+  const startBtn = document.getElementById('startBtn');
+  const nameInput = document.getElementById('nameInput');
+  const gearBtn = document.getElementById('gearBtn');
+  const settings = document.getElementById('settings');
+  const settingsClose = document.getElementById('settingsClose');
+  const nameChips = document.getElementById('nameChips');
+
+  const courseOverlay = document.getElementById('courseOverlay');
+  const optionOverlay = document.getElementById('optionOverlay');
+  const courseGrid = document.getElementById('courseGrid');
+  const diffBtns = document.getElementById('diffBtns');
+  const orderBtns = document.getElementById('orderBtns');
+  const goBtn = document.getElementById('goBtn');
+
+  // 二重カード
+  const ids = (prefix)=>({
+    card: document.getElementById(prefix),
+    leftBtn: document.getElementById(prefix==='cardA'?'aLeft':'bLeft'),
+    rightBtn: document.getElementById(prefix==='cardA'?'aRight':'bRight'),
+    l1: document.getElementById(prefix==='cardA'?'aL1':'bL1'),
+    l2: document.getElementById(prefix==='cardA'?'aL2':'bL2'),
+    r1: document.getElementById(prefix==='cardA'?'aR1':'bR1'),
+    r2: document.getElementById(prefix==='cardA'?'aR2':'bR2'),
+  });
+  const A = ids('cardA'); const B = ids('cardB');
+
+  /* ========= 状態 ========= */
+  let active = A, standby = B;
+  let idx = 0, correctSide = 'left';
+  let wrongClicks = {left:0,right:0};
+  let mistakeThisQuestion = false, totalMistakeQuestions = 0;
+  let startTime = 0;
+  let playerName = '';
+  let selectedCourse = '10';
+  let selectedDiff = 'easy';
+  let selectedOrder = 1;
+
+  const keyBest = name => `ten2_best_ms:${name||'default'}:${selectedCourse}:${selectedDiff}:${selectedOrder}`;
+  const keyNames = () => 'ten2_names_v1';
+
+  /* ========= ★ 色（重複なし） ========= */
+  const PALETTE = ['#e53935','#fb8c00','#43a047','#1e88e5','#8e24aa','#fdd835'];
+
+  /* ========= 名前リスト ========= */
+  function loadNames(){ try { return JSON.parse(localStorage.getItem(keyNames())||'[]'); } catch{ return []; } }
+  function saveNames(arr){ localStorage.setItem(keyNames(), JSON.stringify(arr)); }
+  function upsertName(name){
+    if(!name) return;
+    let arr = loadNames(); const t = Date.now();
+    const i = arr.findIndex(x=>x.name===name);
+    if(i>=0){ arr[i].lastUsed = t; arr[i].count = (arr[i].count||0)+1; }
+    else { arr.push({name, lastUsed:t, count:1}); }
+    arr.sort((a,b)=> (b.lastUsed||0)-(a.lastUsed||0));
+    saveNames(arr);
+  }
+  function renderNameChips(){
+    const arr = loadNames(); nameChips.innerHTML = '';
+    arr.forEach(o=>{
+      const chip = document.createElement('button');
+      chip.className = 'chip'; chip.textContent = o.name;
+      chip.addEventListener('click', ()=>{ nameInput.value = o.name; settings.classList.remove('show'); });
+      nameChips.appendChild(chip);
+    });
+  }
+  (function restoreName(){ const arr = loadNames(); if(arr[0]) nameInput.value = arr[0].name; })();
+
+  /* ========= 出題データ生成 ========= */
+  function buildPairsForSum(S){
+    const pairs=[]; for(let a=S-1; a>=1; a--){ pairs.push([a, S-a]); } return pairs;
+  }
+  function shuffle(arr){ for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; } return arr; }
+  function orderPairs(pairs, orderMode){
+    if(orderMode===1) return pairs.slice();
+    if(orderMode===2) return pairs.slice().reverse();
+    return shuffle(pairs.slice());
+  }
+  function pickDiffNumber(exclude, min=1, max=9){
+    let n = exclude; while(n===exclude){ n = Math.floor(Math.random()*(max-min+1))+min; } return n;
+  }
+  function buildQuestions(course, diff, orderMode){
+    let qs=[];
+    if(course==='432'){
+      let all=[];
+      [4,3,2].forEach(S=>{
+        const p = buildPairsForSum(S).map(pair=>({sum:S, pair}));
+        all = all.concat(p);
+      });
+      if(orderMode===2) all.reverse(); else if(orderMode===3) all = shuffle(all);
+      qs = all.map(({sum, pair:[a,b]})=>{
+        let wrong;
+        if(diff==='easy'){ wrong = [a, pickDiffNumber(b,1,9)]; }
+        else if(diff==='normal'){ wrong = [pickDiffNumber(a,1,9), b]; }
+        else { wrong = (Math.random()<0.5) ? [a, pickDiffNumber(b,1,9)]
+                                          : [pickDiffNumber(a,1,9), b]; }
+        if(wrong[0]===a && wrong[1]===b){
+          (Math.random()<0.5) ? (wrong[1]=pickDiffNumber(b,1,9)) : (wrong[0]=pickDiffNumber(a,1,9));
+        }
+        return { sum, correct:[a,b], wrong };
+      });
+    }else{
+      const S = parseInt(course,10);
+      const ordered = orderPairs(buildPairsForSum(S), orderMode);
+      qs = ordered.map(([a,b])=>{
+        let wrong;
+        if(diff==='easy'){ wrong = [a, pickDiffNumber(b,1,9)]; }
+        else if(diff==='normal'){ wrong = [pickDiffNumber(a,1,9), b]; }
+        else { wrong = (Math.random()<0.5) ? [a, pickDiffNumber(b,1,9)]
+                                          : [pickDiffNumber(a,1,9), b]; }
+        if(wrong[0]===a && wrong[1]===b){
+          (Math.random()<0.5) ? (wrong[1]=pickDiffNumber(b,1,9)) : (wrong[0]=pickDiffNumber(a,1,9));
+        }
+        return { sum:S, correct:[a,b], wrong };
+      });
+    }
+    return qs;
+  }
+
+  /* ========= UIユーティリティ ========= */
+  const getVarMs = (name, def)=> {
+    const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    if(v.endsWith('ms')) return parseFloat(v);
+    if(v.endsWith('s'))  return parseFloat(v)*1000;
+    const n = parseFloat(v); return isNaN(n)? def : n;
+  };
+  const labelForAria = (pair)=> `${pair[0]} と ${pair[1]}`;
+  const fillPair = (l1,l2,r1,r2,pairLeft,pairRight)=>{
+    l1.textContent = pairLeft[0]; l2.textContent = pairLeft[1];
+    r1.textContent = pairRight[0]; r2.textContent = pairRight[1];
+  };
+  const formatSecondsRounded = (ms)=> `${Math.round(ms/1000)}びょう`;
+
+  function resetPerRun(){
+    idx = 0; totalMistakeQuestions = 0;
+    wrongClicks = {left:0,right:0}; mistakeThisQuestion = false;
+    header.classList.remove('hide');
+    active = A; standby = B;
+    [A.card,B.card].forEach(c=>{ c.className = 'card hidden pre-in'; });
+    A.card.classList.remove('hidden','pre-in'); A.card.classList.add('at-rest');
+  }
+  function resetEffects(card){
+    [card.leftBtn, card.rightBtn].forEach(b=>{
+      b.classList.remove('correct','wrongFlash','wrongPersistent');
+      b.disabled = false; b.style.filter = '';
+    });
+    wrongClicks = {left:0,right:0}; mistakeThisQuestion = false;
+  }
+
+  function setQuestion(card, q, correctIsLeft){
+    // 見出し「〇 は」に切り替え
+    header.querySelector('h1').textContent = `${q.sum} は`;
+
+    if(correctIsLeft){
+      fillPair(card.l1,card.l2,card.r1,card.r2, q.correct, q.wrong);
+      card.leftBtn.setAttribute('aria-label', labelForAria(q.correct));
+      card.rightBtn.setAttribute('aria-label', labelForAria(q.wrong));
+    }else{
+      fillPair(card.l1,card.l2,card.r1,card.r2, q.wrong, q.correct);
+      card.leftBtn.setAttribute('aria-label', labelForAria(q.wrong));
+      card.rightBtn.setAttribute('aria-label', labelForAria(q.correct));
+    }
+    resetEffects(card);
+    progress.textContent = `${idx+1} / ${QUESTIONS.length}`;
+  }
+  function bindClicks(card){
+    card.leftBtn.onclick = ()=> handleClick('left', card);
+    card.rightBtn.onclick= ()=> handleClick('right', card);
+  }
+  bindClicks(A); bindClicks(B);
+
+  function renderFirst(){
+    resetPerRun();
+    QUESTIONS = buildQuestions(selectedCourse, selectedDiff, selectedOrder);
+    const q = QUESTIONS[idx];
+    correctSide = Math.random()<0.5 ? 'left' : 'right';
+    setQuestion(active, q, correctSide==='left');
+    standby.card.classList.add('hidden','pre-in');
+  }
+  function goNextQuestion(){
+    if(idx < QUESTIONS.length-1){
+      idx++;
+      const q = QUESTIONS[idx];
+      correctSide = Math.random()<0.5 ? 'left' : 'right';
+      setQuestion(standby, q, correctSide==='left');
+
+      const a = active.card, s = standby.card;
+      a.classList.remove('at-rest'); a.classList.add('slide-out');
+      const slideMs = getVarMs('--slide-ms', 220);
+      setTimeout(()=>{
+        a.classList.add('hidden'); a.classList.remove('slide-out');
+        s.classList.remove('hidden','pre-in'); s.classList.add('at-rest');
+        const tmp = active; active = standby; standby = tmp;
+      }, slideMs);
+    }else{
+      finish();
+    }
+  }
+
+  function handleClick(side, onCard){
+    const isCorrect = (side === correctSide);
+    const target = (side==='left') ? onCard.leftBtn : onCard.rightBtn;
+    if(isCorrect){
+      target.classList.add('correct');
+      onCard.leftBtn.disabled = true; onCard.rightBtn.disabled = true;
+      if(mistakeThisQuestion) totalMistakeQuestions++;
+      const wait = getVarMs('--confirm-ms', 100);
+      setTimeout(goNextQuestion, wait);
+    }else{
+      wrongClicks[side] = (wrongClicks[side]||0)+1;
+      target.classList.add('wrongFlash');
+      if(wrongClicks[side] >= 2) target.classList.add('wrongPersistent');
+      target.disabled = true;
+      setTimeout(()=>{ target.classList.remove('wrongFlash'); target.disabled = false; }, 400);
+      mistakeThisQuestion = true;
+    }
+  }
+
+  /* ★ ここだけに定義（重複なし） */
+  function startCountdownAndBegin(){
+    const cd = document.createElement('div');
+    cd.className = 'countdown';
+    document.body.appendChild(cd);
+    const steps = ['3','2','1']; let i=0;
+    const stepMs = getVarMs('--countdown-step-ms', 700);
+    function next(){
+      if(i<steps.length){ cd.textContent = steps[i++]; setTimeout(next, stepMs); }
+      else { cd.remove(); startTime = performance.now(); renderFirst(); }
+    }
+    next();
+  }
+
+  /* ========= 最終画面（演出は排他） ========= */
+  function showFinishOverlay({isNew, elapsedMs, recordMs}){
+    const ov = document.createElement('div');
+    ov.className = 'finishOverlay';
+    const heroText = isNew ? 'すごいぞ！しんきろく！' : (totalMistakeQuestions===0 ? 'ぜんぶあったね！' : '');
+    ov.innerHTML = `
+      <div class="finishTop">${heroText ? `<div class="heroBadge">${heroText}</div>` : ''}</div>
+      <div class="statsBox">
+        <div>せいかい：<strong>${QUESTIONS.length}もん</strong>/<strong>${QUESTIONS.length}もんちゅう</strong></div>
+        <div>かかった じかん：<strong>${formatSecondsRounded(elapsedMs)}</strong></div>
+        <div>きろく（おまけふくむ）：<strong>${formatSecondsRounded(recordMs)}</strong></div>
+      </div>
+      <div class="finBtns">
+        <button class="finBtn primary" id="retryBtn">もういちど</button>
+        <button class="finBtn" id="exitBtn">おわる</button>
+      </div>
+    `;
+    document.body.appendChild(ov);
+
+    ov.querySelector('#retryBtn').addEventListener('click', ()=>{ hideFinishOverlay(); startCountdownAndBegin(); });
+    ov.querySelector('#exitBtn').addEventListener('click', ()=>{
+      hideFinishOverlay(); startOverlay.classList.remove('hide'); renderNameChips(); settings.classList.add('show');
+    });
+
+    setTimeout(()=>{
+      if(isNew && totalMistakeQuestions===0){
+        launchConfettiSlow(120);           // 新記録＆全問正解：紙吹雪のみ
+      }else if(!isNew && totalMistakeQuestions===0){
+        const cracker = document.createElement('div');   // 全問正解のみ：クラッカー
+        cracker.className = 'cracker'; cracker.textContent = '🎉';
+        document.body.appendChild(cracker);
+        setTimeout(()=>{ burstFromElementCenter(cracker); cracker.classList.add('fadeout'); setTimeout(()=> cracker.remove(), 360); }, 600);
+      }
+    }, 300);
+  }
+  function hideFinishOverlay(){ const el = document.querySelector('.finishOverlay'); if(el) el.remove(); }
+
+  function finish(){
+    const end = performance.now();
+    const elapsedMs = end - startTime;
+    const penaltyMs = totalMistakeQuestions * 5000;
+    const recordMs  = elapsedMs + penaltyMs;
+
+    const bestKey = keyBest(playerName);
+    const prevBest = parseInt(localStorage.getItem(bestKey)||'0',10) || null;
+    const isNew = (prevBest===null) || (recordMs < prevBest);
+    localStorage.setItem(bestKey, String(recordMs));
+
+    header.classList.add('hide');
+    showFinishOverlay({isNew, elapsedMs, recordMs});
+  }
+
+  /* ========= 祝演出 ========= */
+  function burstFromElementCenter(el){ const r = el.getBoundingClientRect(); burstAt(r.left+r.width/2, r.top+r.height/2); }
+  function burstAt(cx, cy){
+    const n = 14 + Math.floor(Math.random()*6), dur = getVarMs('--burst-ms', 360);
+    for(let i=0;i<n;i++){
+      const b = document.createElement('div');
+      b.className = 'burstPiece'; b.style.left = `${cx}px`; b.style.top = `${cy}px`;
+      b.style.background = PALETTE[i%PALETTE.length];
+      const ang = (Math.PI*2) * (i/n) + (Math.random()*0.3-0.15);
+      const dist = 140 + Math.random()*80; const tx = Math.cos(ang)*dist, ty = Math.sin(ang)*dist;
+      b.style.setProperty('--to', `translate(${tx}px, ${ty}px)`); document.body.appendChild(b);
+      setTimeout(()=> b.remove(), dur+100);
+    }
+  }
+  function launchConfettiSlow(n=120){
+    for(let i=0;i<n;i++){
+      const c = document.createElement('div');
+      c.className = 'confetti';
+      c.style.left = (Math.random()*100)+'vw';
+      c.style.background = PALETTE[Math.floor(Math.random()*PALETTE.length)];
+      const min = getVarMs('--confetti-min-ms',2800), max = getVarMs('--confetti-max-ms',4000);
+      const fall = Math.floor(min + Math.random()*(max-min));
+      c.style.setProperty('--fall-ms', fall+'ms');
+      c.style.width  = (6 + Math.random()*6) + 'px';
+      c.style.height = (10 + Math.random()*10) + 'px';
+      document.body.appendChild(c);
+      setTimeout(()=> c.remove(), fall+220);
+    }
+  }
+
+  /* ========= フロー ========= */
+  function showStart(){ startOverlay.classList.remove('hide'); }
+  function hideStart(){ startOverlay.classList.add('hide'); }
+  gearBtn.addEventListener('click', ()=>{ renderNameChips(); settings.classList.add('show'); });
+  settingsClose.addEventListener('click', ()=> settings.classList.remove('show'));
+
+  // 名前 → コース
+  startBtn.addEventListener('click', ()=>{
+    playerName = (nameInput.value || '').trim(); if(playerName){ upsertName(playerName); }
+    hideStart(); courseOverlay.classList.add('show');
+  });
+
+  // コース選択（選択色付与してから遷移）
+  courseGrid.addEventListener('click', (e)=>{
+    const btn = e.target.closest('.courseBtn'); if(!btn) return;
+    [...courseGrid.querySelectorAll('.courseBtn')].forEach(b=> b.classList.remove('selected'));
+    btn.classList.add('selected');
+    selectedCourse = btn.dataset.course;
+    setTimeout(()=>{ courseOverlay.classList.remove('show'); optionOverlay.classList.add('show'); }, 120);
+  });
+
+  // むずかしさ／じゅんばん（薄い青で強調）
+  diffBtns.addEventListener('click', (e)=>{
+    const b = e.target.closest('.option'); if(!b) return;
+    selectedDiff = b.dataset.diff;
+    [...diffBtns.querySelectorAll('.option')].forEach(el=> el.classList.toggle('selected', el===b));
+  });
+  orderBtns.addEventListener('click', (e)=>{
+    const b = e.target.closest('.option'); if(!b) return;
+    selectedOrder = parseInt(b.dataset.order,10);
+    [...orderBtns.querySelectorAll('.option')].forEach(el=> el.classList.toggle('selected', el===b));
+  });
+
+  // はじめる
+  goBtn.addEventListener('click', ()=>{ optionOverlay.classList.remove('show'); startCountdownAndBegin(); });
+</script>
+</body>
+</html>

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<!--
+entry.full.html（Entry Lego）
+- これは「共通骨組み」の参照用。
+- 実運用では各アプリの entry.html を開く（相対パス基準のため）。
+-->
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>entry</title>
+
+  <link rel="stylesheet" href="./header.css">
+  <link rel="stylesheet" href="./setup.full.css">
+  <link rel="stylesheet" href="./entry.full.css">
+</head>
+<body>
+
+  <div id="slot-header"
+       data-slot="header"
+       data-title="entry"
+       data-back="history"></div>
+
+  <main id="mainArea"></main>
+
+  <script>
+    window.AppShellLayout = {
+      header: {
+        left:  ['backlink'],
+        center:['title'],
+        right: ['settingsGear']
+      },
+      pbar:   { left:[], center:[], right:[] },
+      main:   { bottomCenter:[] },
+      footer: { left:[], center:[], right:[] }
+    };
+  </script>
+
+<script src="./kit.full.js"></script>
+  <script src="./header.full.js"></script>
+  <script src="./tenkeypad.full.js"></script>
+  <script src="./setup.full.js"></script>
+  <script src="./entry.full.js"></script>
+</body>
+</html>

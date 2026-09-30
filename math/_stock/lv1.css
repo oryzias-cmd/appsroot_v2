@@ -1,0 +1,26 @@
+/* --- フッター3分割レイアウト --- */
+footer.ctrl {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: var(--ctrl-h);
+  padding: 0 16px;
+  border-top: 2px solid #eee;
+}
+
+.ctrl-left,
+.ctrl-center,
+.ctrl-right {
+  display: flex;
+  align-items: center;
+  gap: 12px; /* ← 中央2ボタンの間隔 */
+}
+
+.ctrl-center {
+  justify-content: center;
+  flex: 1;
+}
+
+.ctrl-right {
+  justify-content: flex-end;
+}

@@ -1,0 +1,65 @@
+/* shapes_entry 専用 */
+
+/* SetupCard の選択肢（ラジオ＋文字）を左詰めにする（セレクタ強化版）
+   ねらい：
+   - ○の列を縦にそろえる
+   - 文字の1文字目（「か」）の開始位置を縦にそろえる
+   - ボタン横幅はレゴ側のまま（見た目は崩さない）
+*/
+
+/* まずは「選択肢の行」になり得る要素を全部左詰めに寄せる */
+.setupcard-option,
+.setupcard-option *{
+  text-align: left;
+}
+
+/* 行が flex の場合：左詰めに固定 */
+.setupcard-option{
+  justify-content: flex-start !important;
+  align-items: center !important;
+}
+
+/* radio と label を横並びにする“実体”へも保険をかける */
+.setupcard-option label{
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  width: 14em;            /* 文字の開始位置を固定するための幅 */
+  white-space: nowrap;    /* 2行にしない */
+  text-align: left !important;
+}
+
+/* ○と文字の間隔（今と同程度） */
+.setupcard-option label input[type="radio"],
+.setupcard-option input[type="radio"]{
+  margin-right: 12px !important;
+}
+
+/* 右カードを JS が display:none にするので、ここでは触らない */
+
+/* shapes_entry：SetupCard pill の整列を教材向けに矯正する */
+
+/* pill は grid で組まれているため、文字位置が揃わない。
+   ここで flex に上書きして、○＋文字を左基準に固定する */
+.setupcard-pill.select-pill{
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+}
+
+/* ○（radio）の位置を固定 */
+.setupcard-pill.select-pill input[type="radio"]{
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+
+/* 文字列は常に左詰め・同一開始位置 */
+.setupcard-pill.select-pill span:first-of-type{
+  text-align: left;
+  white-space: nowrap;   /* 2行にしない */
+}
+
+/* grid用の spacer は flex では不要なので無効化 */
+.setupcard-pill-spacer{
+  display: none !important;
+}

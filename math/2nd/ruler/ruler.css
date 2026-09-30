@@ -1,0 +1,505 @@
+:root{
+  --bg: #f6f7fb;
+  --panel: #ffffff;
+  --ink: #111;
+  --muted: #666;
+  --line: rgba(0,0,0,.12);
+
+  --radius: 14px;
+  --gap: 12px;
+
+  /* 下段：中央を広めに */
+  --col-center: 2.2fr;
+  --col-side: 1fr;
+
+  /* テンキーボタン */
+  --key-h: 56px;
+}
+
+html, body{
+  height: 100%;
+}
+
+body{
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  overflow: hidden; /* ★縦スクロール禁止 */
+
+  /* ★レイアウト変化時にブラウザが勝手に位置調整しない（鉛筆だけ下がる対策の保険） */
+  overflow-anchor: none;
+
+  font-family: system-ui, -apple-system, "BIZ UDPGothic", "BIZ UDGothic", "Hiragino Sans", "Yu Gothic", sans-serif;
+}
+
+#mainArea{
+  height: 100vh;
+  display:flex;
+  flex-direction:column;
+
+  /* ★上段と下段の間に余白を作らない（定規を上段の最下段へ） */
+  gap: 0;
+
+  padding: 10px 12px 12px;
+  box-sizing:border-box;
+}
+
+/* 上半分：測定ゾーン */
+#rulerTop{
+  /* ★上段は「残り全部」を取る（50%固定をやめる） */
+  flex: 1 1 auto;
+
+  min-height: 220px;
+  display:flex;
+}
+
+.ruler-wrap{
+  flex:1;
+
+  /* ★「枠付きパネル感」を消してメインに直置き */
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  border-radius: 0;
+
+  /* ★定規は下固定にするので padding-top は不要 */
+  padding: 0;
+
+  box-sizing:border-box;
+  overflow:hidden;
+  position: relative;
+  width: 100%;
+
+  /* ★定規の表示高さ（調整：もっと下へ） */
+  --ruler-h: 70px;
+}
+
+/* SVG：padding後の領域にフィット */
+#rulerSvg{
+  position:absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+
+  width: 100%;
+  height: var(--ruler-h);
+  display:block;
+}
+
+/* ★物レイヤ（定規の上に置く） */
+.item-layer{
+  position:absolute;
+  inset: 0;
+  pointer-events:none;
+}
+
+/* =========================================================
+   ★回転ボタン：物の左下に固定（物と一緒に動く）
+   ========================================================= */
+.rot-on-item{
+  position:absolute;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background:#fff;
+  font-weight: 900;
+  cursor:pointer;
+  box-shadow: 0 2px 10px rgba(0,0,0,.10);
+  pointer-events:auto; /* item-layer は none なので、これだけ操作可にする */
+  touch-action: none;
+}
+
+.rot-on-item:active{
+  transform: translateY(1px);
+}
+
+.rot-on-item.is-disabled{
+  opacity: .35;
+  pointer-events:none;
+}
+
+/* ★仮の色つき長方形 */
+.item-rect{
+  position:absolute;
+  left: 0;
+  top: 0;
+
+  border-radius: 10px;
+  background: linear-gradient(180deg, #7aa7ff, #4f7dff);
+  border: 2px solid rgba(0,0,0,.18);
+  box-shadow: 0 6px 16px rgba(0,0,0,.15);
+
+  /* ★これを入れて「枠線込みの高さ・幅」にする（定規の黒線を隠さない） */
+  box-sizing: border-box;
+
+  pointer-events:auto;
+  touch-action:none;
+
+  /* ★B案：出現時だけ一瞬浮かせる（通常時は何もしない） */
+  transform: translateY(0);
+  will-change: transform;
+}
+
+.item-rect::after{
+  content:"";
+  position:absolute;
+  inset: 6px;
+  border-radius: 8px;
+  border: 2px dashed rgba(255,255,255,.55);
+}
+
+/* =========================================================
+   ★B案：出現時だけ（1回）一瞬浮かせる
+   - 追加演出なし（拡大/回転/光などは一切しない）
+   ========================================================= */
+@keyframes rulerPopLift{
+  0%   { transform: translateY(0); }
+  40%  { transform: translateY(-10px); }
+  100% { transform: translateY(0); }
+}
+
+.item-rect.is-pop{
+  animation: rulerPopLift 180ms ease-out 1;
+}
+
+@media (prefers-reduced-motion: reduce){
+  .item-rect.is-pop{
+    animation: none !important;
+  }
+}
+
+/* ★見本（sample）は直角（角丸なし） */
+.item-rect[data-kind="sample"]{
+  border-radius: 0;
+}
+.item-rect[data-kind="sample"]::after{
+  border-radius: 0;
+}
+
+/* 下半分 */
+#rulerBottom{
+  flex: 0 0 auto;
+}
+
+/* ★10cm見本の「下の土台パネル（トレー）」 */
+.bottom-tray{
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: 0 2px 10px rgba(0,0,0,.06);
+
+  padding: 14px;
+  box-sizing: border-box;
+}
+
+.bottom-grid{
+  display:grid;
+  grid-template-columns: var(--col-side) var(--col-center) var(--col-side);
+  gap: var(--gap);
+}
+
+.col .panel{
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow:hidden;
+}
+
+.panel-title{
+  font-weight: 800;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--line);
+  display:flex;
+  align-items:center;
+  gap: 10px;
+}
+
+.mode-chip{
+  margin-left:auto;
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background:#f2f3f6;
+  color:#111;
+  font-weight: 800;
+}
+
+.panel-body{
+  padding: 10px 12px 12px;
+}
+
+.panel-note{
+  padding: 0 12px 12px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+/* 左：チップ */
+#caseList{
+  display:flex;
+  flex-wrap:wrap;
+  gap: 10px;
+}
+
+.chip{
+  display:inline-flex;
+  align-items:center;
+  gap: 8px;
+  border: 1px solid var(--line);
+  background:#f2f3f6;
+  color:#111;
+  border-radius: 999px;
+  padding: 10px 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.chip:active{
+  transform: translateY(1px);
+}
+
+/* 中：入力ブロック */
+.answer-block{
+  display:flex;
+  flex-direction:column;
+  gap: 10px;
+  margin-bottom: 20px; /* ★入力欄↔テンキー距離：ボタン間隔(10px)×2 */
+}
+
+.ans-row{
+  display:flex;
+  align-items:stretch;
+  gap: 10px;
+}
+
+.ans-field{
+  flex: 1;
+  display:flex;
+  align-items:center;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow:hidden;
+  background:#fff;
+}
+
+.ans-unit{
+  padding: 10px 10px;
+  background:#f2f3f6;
+  border-right: 1px solid var(--line);
+  font-weight: 900;
+  min-width: 44px;
+  text-align:center;
+}
+
+.ans-field input{
+  border: 0;
+  outline: none;
+  width: 100%;
+  font-size: 26px;
+  font-weight: 900;
+  padding: 10px 10px;
+  box-sizing:border-box;
+}
+
+.rot{
+  width: 52px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background:#fff;
+  font-weight: 900;
+  cursor:pointer;
+}
+
+.rot:active{
+  transform: translateY(1px);
+}
+
+.ans-hint{
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.25;
+}
+
+.ans-msg{
+  min-height: 20px;
+  font-weight: 900;
+}
+
+/* テンキー */
+.keypad{
+  display:grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.keypad.is-two-row{
+  grid-auto-rows: var(--key-h);
+  align-items: stretch;
+}
+
+.key-spacer{
+  height: var(--key-h);
+}
+
+.key{
+  height: var(--key-h);
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background:#fff;
+  font-size: 22px;
+  font-weight: 900;
+  cursor:pointer;
+}
+
+.key.is-fn{
+  background:#f2f3f6;
+}
+
+.key:active{
+  transform: translateY(1px);
+}
+
+.units{
+  display:flex;
+  gap: 10px;
+}
+
+.unit, .check{
+  flex: 1;
+  height: 52px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background:#fff;
+  font-weight: 900;
+  cursor:pointer;
+}
+
+.unit.is-on{
+  background:#111;
+  color:#fff;
+  border-color:#111;
+}
+
+.check{
+  background:#ffcc4d;
+  border-color:#e1b23e;
+}
+
+@media (prefers-reduced-motion: reduce){
+  *{ scroll-behavior:auto !important; }
+}
+
+/* =========================================================
+   ★B案：ふでたて（右カラム）
+   ========================================================= */
+.stand-grid{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.stand-item{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  width: 100%;
+  padding: 10px 10px;
+  border-radius: 12px;
+
+  border: 1px solid var(--line);
+  background: #fff;
+  box-shadow: 0 2px 10px rgba(0,0,0,.06);
+
+  cursor: pointer;
+}
+
+.stand-item:active{
+  transform: translateY(1px);
+}
+
+.stand-item .swatch{
+  width: 34px;
+  height: 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(0,0,0,.18);
+  box-shadow: 0 3px 8px rgba(0,0,0,.10);
+}
+
+.stand-item .label{
+  font-weight: 800;
+  font-size: 14px;
+  letter-spacing: .02em;
+}
+
+/* swatch 色（data-kind） */
+.stand-item .swatch[data-kind="pencil"]{
+  background: linear-gradient(180deg, #ffd56a, #ffb347);
+}
+.stand-item .swatch[data-kind="eraser"]{
+  background: linear-gradient(180deg, #ff86b2, #ff4f8e);
+}
+.stand-item .swatch[data-kind="card"]{
+  background: linear-gradient(180deg, #7ee7c7, #3ec9a7);
+}
+
+/* =========================================================
+   ★B案：物の見た目（data-kind）
+   - いまの .item-rect をベースに、種類ごとに色だけ変える
+   ========================================================= */
+.item-rect[data-kind="sample"]{
+  background: linear-gradient(180deg, #7aa7ff, #4f7dff);
+}
+
+.item-rect[data-kind="pencil"]{
+  border-radius: 10px;
+  background: linear-gradient(180deg, #ffd56a, #ffb347);
+}
+
+.item-rect[data-kind="eraser"]{
+  border-radius: 12px;
+  background: linear-gradient(180deg, #ff86b2, #ff4f8e);
+}
+
+.item-rect[data-kind="card"]{
+  border-radius: 8px;
+  background: linear-gradient(180deg, #7ee7c7, #3ec9a7);
+}
+
+.check-round{
+  height: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: 9999px;
+  border: 1px solid var(--line);
+  background:#fff;
+  font-weight: 900;
+  cursor:pointer;
+  line-height: 1.05;
+}
+
+.ans-row.is-one{
+  align-items: stretch;
+}
+
+.ans-field.is-one{
+  flex: 1;
+}
+
+.below-row{
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.hidden{
+  display:none !important;
+}
+
+.key.unit.is-disabled{
+  opacity: .35;
+  pointer-events: none;
+}

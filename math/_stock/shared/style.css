@@ -1,0 +1,39 @@
+:root{
+  /* ボタン・レイアウト共通トークン */
+  --btn-h: 44px;
+  --btn-minw: 160px;
+  --btn-radius: 12px;
+  --gap: 12px;
+  --panel-bg: #fff;
+  --line-color: #222;
+  --accent: #ff6;
+  --toast-bg: #333;
+  --toast-fg: #fff;
+}
+
+/* 教科書体フォールバック */
+html, body, button, input, select {
+  font-family: "UD デジタル 教科書体 N-R", "UD デジタル 教科書体 NK-R",
+               "BIZ UDMincho", "Yu Gothic UI", "YuGothic", "Hiragino Kaku Gothic ProN",
+               system-ui, -apple-system, "Segoe UI", "Noto Sans JP", sans-serif;
+}
+
+/* 共通ボタン：文字数で幅が揺れない */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: var(--btn-minw); height: var(--btn-h);
+  padding: 0 14px; border-radius: var(--btn-radius);
+  border: 1px solid #ccc; background: #f7f7f7; cursor: pointer;
+  line-height: var(--btn-h); user-select: none; text-decoration: none; color: #111;
+}
+.btn:active { transform: translateY(1px); }
+
+/* バッジ・トースト */
+.badge { display:inline-block; padding:2px 8px; border-radius:999px; background:#eef; border:1px solid #ccd; font-size:12px;}
+.toast {
+  position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%);
+  background: var(--toast-bg); color: var(--toast-fg);
+  padding: 10px 14px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,.2);
+  opacity: 0; pointer-events:none; transition: opacity .2s;
+}
+.toast.show { opacity: 1; }

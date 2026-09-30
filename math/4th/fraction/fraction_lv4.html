@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>分数Lv4（同じ大きさの分数）</title>
+
+  <!-- ▼ レゴ共通CSS -->
+  <link rel="stylesheet" href="../../../common/shell/header.full.css" />
+
+  <!-- ▼ セットアップ（最新 SetupCard） -->
+  <link rel="stylesheet" href="../../../common/shell/setup.full.css" />
+
+  <!-- ▼ 分数Lv4 専用 -->
+  <link rel="stylesheet" href="./fraction_lv4.css" />
+</head>
+<body data-phase="app">
+  <!-- ▼ レゴ：ヘッダー用スロット -->
+  <div id="slot-header" data-slot="header"></div>
+
+  <!-- ▼ メインエリア -->
+  <main id="mainArea"></main>
+
+  <!-- ▼ レゴ：フッター用スロット -->
+  <div id="slot-footer" data-slot="footer"></div>
+
+  <!-- ▼ レゴレイアウト宣言 -->
+  <script>
+    window.AppShellLayout = {
+      header: {
+        left:   ['backlink'],
+        center: ['title'],
+        right:  ['settingsGear']
+      }
+    };
+  </script>
+
+  <!-- ▼ レゴ共通JS -->
+  <script src="../../../common/shell/kit.full.js"></script>
+  <script src="../../../common/shell/header.full.js"></script>
+
+  <!-- ▼ セットアップ（最新 SetupCard） -->
+  <script src="../../../common/shell/setup.full.js"></script>
+
+  <!-- ▼ 分数Lv4 専用 JS -->
+  <script src="./fraction_lv4.js"></script>
+</body>
+</html>
